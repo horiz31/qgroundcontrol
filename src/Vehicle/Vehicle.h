@@ -140,6 +140,14 @@ public:
     };
     Q_ENUM(CheckList)
 
+    enum ActiveInterfaces
+    {
+         Primary = 0,
+         Secondary,
+         Unknown,
+    };
+    Q_ENUM(ActiveInterfaces)
+
     Q_PROPERTY(int                  id                          READ id                                                             CONSTANT)
     Q_PROPERTY(AutoPilotPlugin*     autopilot                   MEMBER _autopilotPlugin                                             CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate                  READ coordinate                                                     NOTIFY coordinateChanged)
@@ -237,6 +245,8 @@ public:
     Q_PROPERTY(bool                 readyToFly                  READ readyToFly                                                     NOTIFY readyToFlyChanged)
     Q_PROPERTY(QObject*             sysStatusSensorInfo         READ sysStatusSensorInfo                                            CONSTANT)
     Q_PROPERTY(bool                 allSensorsHealthy           READ allSensorsHealthy                                              NOTIFY allSensorsHealthyChanged)    //< true: all sensors in SYS_STATUS reported as healthy
+     Q_PROPERTY(qint32              activeIPAddr                READ activeIPAddr                                                   CONSTANT)
+     Q_PROPERTY(bool                activePort                  READ activePort                                                     CONSTANT)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
@@ -554,6 +564,8 @@ public:
     QGCMapCircle*   orbitMapCircle              () { return &_orbitMapCircle; }
     bool            readyToFlyAvailable         () { return _readyToFlyAvailable; }
     bool            readyToFly                  () { return _readyToFly; }
+    qint32          activeIPAddr                () { return _activeIPAddr; }
+    qint16          activePort                  () { return _activePort; }
     bool            allSensorsHealthy           () { return _allSensorsHealthy; }
     QObject*        sysStatusSensorInfo         () { return &_sysStatusSensorInfo; }
 
@@ -865,7 +877,7 @@ signals:
     void initialConnectComplete         ();
 
 private slots:
-    void _mavlinkMessageReceived            (LinkInterface* link, mavlink_message_t message);
+    void _mavlinkMessageReceived            (LinkInterface* link, qint32 address, qint16 port, mavlink_message_t message);
     void _sendMessageMultipleNext           ();
     void _parametersReady                   (bool parametersReady);
     void _remoteControlRSSIChanged          (uint8_t rssi);
@@ -950,6 +962,9 @@ private:
     void _chunkedStatusTextCompleted    (uint8_t compId);
 
     static void _rebootCommandResultHandler(void* resultHandlerData, int compId, MAV_RESULT commandResult, MavCmdResultFailureCode_t failureCode);
+
+    qint32 _activeIPAddr= 0;
+    qint16 _activePort = 0;
 
     int     _id;                    ///< Mavlink system id
     int     _defaultComponentId;
@@ -1099,6 +1114,8 @@ private:
     float       _mavlinkLossPercent     = 0.0f;
 
     QMap<QString, QTime> _noisySpokenPrearmMap; ///< Used to prevent PreArm messages from being spoken too often
+
+    ActiveInterfaces _currentActiveInterface= Unknown;
 
     // Orbit status values
     bool            _orbitActive = false;

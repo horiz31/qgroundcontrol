@@ -79,7 +79,7 @@ public:
 
 public slots:
     /** @brief Receive bytes from a communication interface */
-    void receiveBytes(LinkInterface* link, QByteArray b);
+    void receiveBytes(LinkInterface* link, qint32 address, qint16 port, QByteArray b);
 
     /** @brief Log bytes sent from a communication interface */
     void logSentBytes(LinkInterface* link, QByteArray b);
@@ -122,7 +122,7 @@ signals:
     void vehicleHeartbeatInfo(LinkInterface* link, int vehicleId, int componentId, int vehicleFirmwareType, int vehicleType);
 
     /** @brief Message received and directly copied via signal */
-    void messageReceived(LinkInterface* link, mavlink_message_t message);
+    void messageReceived(LinkInterface* link, qint32 address, qint16 port, mavlink_message_t message);
     /** @brief Emitted if version check is enabled / disabled */
     void versionCheckChanged(bool enabled);
     /** @brief Emitted if a message from the protocol should reach the user */

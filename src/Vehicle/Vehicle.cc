@@ -549,8 +549,41 @@ void Vehicle::resetCounters()
     _heardFrom          = false;
 }
 
-void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
+void Vehicle::_mavlinkMessageReceived(LinkInterface* link, qint32 address, qint16 port, mavlink_message_t message)
 {
+    ActiveInterfaces desired = Primary;
+
+    //data will be coming in from multiple sources, we would like to filter out one based on the desired interface
+    //if we have data from both, then choose secondary
+    //if we only have data from one, then choose primary
+    if (address != 0)
+    {
+
+        if (desired == Primary)
+        {
+              if ((address & QHostAddress("172.20.0.0").toIPv4Address()) == QHostAddress("172.20.0.0").toIPv4Address())  //secondary
+              {
+                  //qDebug() << "Filtering data from 172.20";
+                  //return;
+              }
+        }
+        else if (desired == Secondary)
+        {
+            if ((address & QHostAddress("192.168.0.0").toIPv4Address()) == QHostAddress("192.168.0.0").toIPv4Address())  //primary
+            {
+                //qDebug() << "Filtering data from 192.168";
+               // return;
+            }
+        }
+        _activeIPAddr = address;
+        _activePort = port;
+
+
+    }
+
+     //if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT)
+        //qDebug() << "Got heartbeat from" << QHostAddress(address).toString();
+
     // If the link is already running at Mavlink V2 set our max proto version to it.
     unsigned mavlinkVersion = _mavlink->getCurrentVersion();
     if (_maxProtoVersion != mavlinkVersion && mavlinkVersion >= 200) {
@@ -1624,8 +1657,7 @@ bool Vehicle::sendMessageOnLinkThreadSafe(LinkInterface* link, mavlink_message_t
 
     // Write message into buffer, prepending start sign
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-    int len = mavlink_msg_to_send_buffer(buffer, &message);
-
+    int len = mavlink_msg_to_send_buffer(buffer, &message);    
     link->writeBytesThreadSafe((const char*)buffer, len);
     _messagesSent++;
     emit messagesSentChanged();

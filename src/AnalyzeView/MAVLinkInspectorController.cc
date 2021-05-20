@@ -864,7 +864,7 @@ MAVLinkInspectorController::_vehicleRemoved(Vehicle* vehicle)
 
 //-----------------------------------------------------------------------------
 void
-MAVLinkInspectorController::_receiveMessage(LinkInterface*, mavlink_message_t message)
+MAVLinkInspectorController::_receiveMessage(LinkInterface*, qint32 address, qint16 port, mavlink_message_t message)
 {
     QGCMAVLinkMessage* m = nullptr;
     QGCMAVLinkSystem* v = _findVehicle(message.sysid);

@@ -671,7 +671,7 @@ void APMSensorsComponentController::_handleCommandLong(mavlink_message_t& messag
     }
 }
 
-void APMSensorsComponentController::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
+void APMSensorsComponentController::_mavlinkMessageReceived(LinkInterface* link, qint32 address, qint16 port, mavlink_message_t message)
 {
     Q_UNUSED(link);
 

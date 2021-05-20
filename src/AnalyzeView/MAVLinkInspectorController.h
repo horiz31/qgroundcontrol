@@ -290,7 +290,7 @@ signals:
     void rangeListChanged   ();
 
 private slots:
-    void _receiveMessage    (LinkInterface* link, mavlink_message_t message);
+    void _receiveMessage    (LinkInterface* link, qint32 address, qint16 port, mavlink_message_t message);
     void _vehicleAdded      (Vehicle* vehicle);
     void _vehicleRemoved    (Vehicle* vehicle);
     void _setActiveVehicle  (Vehicle* vehicle);

@@ -76,8 +76,8 @@ void TCPLink::_readBytes()
         {
             QByteArray buffer;
             buffer.resize(byteCount);
-            _socket->read(buffer.data(), buffer.size());
-            emit bytesReceived(this, buffer);
+            _socket->read(buffer.data(), buffer.size());            
+            emit bytesReceived(this, _socket->peerAddress().toIPv4Address(), _socket->peerPort(), buffer);
 #ifdef TCPLINK_READWRITE_DEBUG
             writeDebugBytes(buffer.data(), buffer.size());
 #endif

@@ -18,12 +18,14 @@
 #include <QSharedPointer>
 #include <QDebug>
 #include <QTimer>
+#include <QHostInfo>
 
 #include <memory>
 
 #include "QGCMAVLink.h"
 #include "LinkConfiguration.h"
 #include "MavlinkMessagesTimer.h"
+
 
 class LinkManager;
 
@@ -67,11 +69,12 @@ public:
     bool    decodedFirstMavlinkPacket   (void) const { return _decodedFirstMavlinkPacket; }
     bool    setDecodedFirstMavlinkPacket(bool decodedFirstMavlinkPacket) { return _decodedFirstMavlinkPacket = decodedFirstMavlinkPacket; }
     void    writeBytesThreadSafe        (const char *bytes, int length);
+    void    writeBytesThreadSafe        (const char *bytes, qint32 addr, qint16 port, int length);
     void    addVehicleReference         (void);
     void    removeVehicleReference      (void);
 
 signals:
-    void bytesReceived      (LinkInterface* link, QByteArray data);
+    void bytesReceived      (LinkInterface* link, qint32 address, qint16 port, QByteArray data);
     void bytesSent          (LinkInterface* link, QByteArray data);
     void connected          (void);
     void disconnected       (void);

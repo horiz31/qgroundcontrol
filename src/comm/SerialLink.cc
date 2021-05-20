@@ -236,7 +236,7 @@ void SerialLink::_readBytes(void)
             QByteArray buffer;
             buffer.resize(byteCount);
             _port->read(buffer.data(), buffer.size());
-            emit bytesReceived(this, buffer);
+            emit bytesReceived(this, 0, 0, buffer);
         }
     } else {
         // Error occurred

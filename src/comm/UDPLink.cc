@@ -143,20 +143,39 @@ void UDPLink::_writeBytes(const QByteArray data)
         return;
     }
     emit bytesSent(this, data);
+    bool UDPSent = false;
+    //if this vehicle is using primary/secondary comms, then send only to that matching target ip address
+    auto vehicle = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+    //
+    if (vehicle != nullptr)
+    {
+        if (vehicle->activeIPAddr() != 0)
+        {
+           // qDebug() << "sending UDP to active client" << QHostAddress(vehicle->activeIPAddr()).toString();
+            UDPCLient* target = new UDPCLient(QHostAddress(vehicle->activeIPAddr()), vehicle->activePort());
+            _writeDataGram(data, target);
+            UDPSent = true;
+        }
 
-    QMutexLocker locker(&_sessionTargetsMutex);
+    }
 
-    // Send to all manually targeted systems
-    for (int i=0; i<_udpConfig->targetHosts().count(); i++) {
-        UDPCLient* target = _udpConfig->targetHosts()[i];
-        // Skip it if it's part of the session clients below
-        if(!contains_target(_sessionTargets, target->address, target->port)) {
+    if (!UDPSent)
+    {
+
+        QMutexLocker locker(&_sessionTargetsMutex);
+
+        // Send to all manually targeted systems
+        for (int i=0; i<_udpConfig->targetHosts().count(); i++) {
+            UDPCLient* target = _udpConfig->targetHosts()[i];
+            // Skip it if it's part of the session clients below
+            if(!contains_target(_sessionTargets, target->address, target->port)) {
+                _writeDataGram(data, target);
+            }
+        }
+        // Send to all connected systems
+        for(UDPCLient* target: _sessionTargets) {
             _writeDataGram(data, target);
         }
-    }
-    // Send to all connected systems
-    for(UDPCLient* target: _sessionTargets) {
-        _writeDataGram(data, target);
     }
 }
 
@@ -174,6 +193,8 @@ void UDPLink::readBytes()
         return;
     }
     QByteArray databuffer;
+    qint32 address;
+    qint16 port;
     while (_socket->hasPendingDatagrams())
     {
         QByteArray datagram;
@@ -186,20 +207,26 @@ void UDPLink::readBytes()
         if (slen == -1) {
             break;
         }
+
+        QHostAddress asender = sender;
+        if(_isIpLocal(sender)) {
+            asender = QHostAddress(QString("127.0.0.1"));
+        }
+
+        address = asender.toIPv4Address();
+        port = senderPort;
         databuffer.append(datagram);
         //-- Wait a bit before sending it over
         if (databuffer.size() > 10 * 1024) {
-            emit bytesReceived(this, databuffer);
+
+            emit bytesReceived(this, address, port, databuffer);
             databuffer.clear();
         }
         // TODO: This doesn't validade the sender. Anything sending UDP packets to this port gets
         // added to the list and will start receiving datagrams from here. Even a port scanner
         // would trigger this.
         // Add host to broadcast list if not yet present, or update its port
-        QHostAddress asender = sender;
-        if(_isIpLocal(sender)) {
-            asender = QHostAddress(QString("127.0.0.1"));
-        }
+
         QMutexLocker locker(&_sessionTargetsMutex);
         if (!contains_target(_sessionTargets, asender, senderPort)) {
             qDebug() << "Adding target" << asender << senderPort;
@@ -210,7 +237,8 @@ void UDPLink::readBytes()
     }
     //-- Send whatever is left
     if (databuffer.size()) {
-        emit bytesReceived(this, databuffer);
+        qDebug() << "got bytes";
+        emit bytesReceived(this, address, port, databuffer);
     }
 }
 
@@ -251,9 +279,11 @@ bool UDPLink::_hardwareConnect()
     QHostAddress host = QHostAddress::AnyIPv4;
     _socket = new QUdpSocket(this);
     _socket->setProxy(QNetworkProxy::NoProxy);
+    qDebug() << "Connecting to UDP socket" << host.toString() << _udpConfig->localPort();
     _connectState = _socket->bind(host, _udpConfig->localPort(), QAbstractSocket::ReuseAddressHint | QUdpSocket::ShareAddress);
     if (_connectState) {
-        _socket->joinMulticastGroup(QHostAddress("224.0.0.1"));
+        _socket->joinMulticastGroup(QHostAddress("224.10.10.10")); //Primary mcast group
+        _socket->joinMulticastGroup(QHostAddress("225.10.10.10")); //Secondary mcast group
         //-- Make sure we have a large enough IO buffers
 #ifdef __mobile__
         _socket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption,     64 * 1024);
