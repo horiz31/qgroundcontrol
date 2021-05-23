@@ -104,6 +104,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
+
 #if defined(QGC_GST_STREAMING)
     GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
 #ifndef QGC_DISABLE_UVC
@@ -798,7 +799,29 @@ VideoManager::_stopReceiver(unsigned id)
 void
 VideoManager::_setActiveVehicle(Vehicle* vehicle)
 {
+
+    //try getting the link directly
+    WeakLinkInterfacePtr weakLink = vehicle->vehicleLinkManager()->primaryLink();
+    if (!weakLink.expired()) {
+        SharedLinkInterfacePtr sharedLink = weakLink.lock();
+        qDebug() << "Active Vehicle Changed to" << vehicle->id() << ", primary link endpoint is" << QHostAddress(sharedLink.get()->getTargetEndpoint()).toString();
+    }
+   //WeakLinkInterfacePtr  link        = vehicle->vehicleLinkManager()->primaryLink();
+   //SharedLinkInterfacePtr  sharedLink = link.lock();
+   //qDebug() << "Active Vehicle Changed, primary link endpoint is" << QHostAddress(sharedLink.get()->getTargetEndpoint()).toString();
+   // UDPLink*             myUDPLink  = qobject_cast<UDPLink*>(sharedLink.get());
+   // if (myUDPLink) {
+   //     return myUDPLink->targetHost;
+
+    //UDPLink*             myUDPLink  = qobject_cast<UDPLink*>(vehicle->vehicleLinkManager()->primaryLink().lock().get());
+   // if (myUDPLink) {
+    //   qDebug() << "Active Vehicle Changed" << myUDPLink->targetHost()->address.toString();
+   // }
+
+    //qDebug() << "Active Vehicle Changed" << vehicle->vehicleLinkManager()->primaryLinkUDPTarget()->address.toString();
     if(_activeVehicle) {
+        //disconnect old slots
+        disconnect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::primaryLinkChanged, this, &VideoManager::_primaryLinkChanged);
         disconnect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this, &VideoManager::_communicationLostChanged);
         if(_activeVehicle->cameraManager()) {
             QGCCameraControl* pCamera = _activeVehicle->cameraManager()->currentCameraInstance();
@@ -810,6 +833,7 @@ VideoManager::_setActiveVehicle(Vehicle* vehicle)
     }
     _activeVehicle = vehicle;
     if(_activeVehicle) {
+        connect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::primaryLinkChanged, this, &VideoManager::_primaryLinkChanged);
         connect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this, &VideoManager::_communicationLostChanged);
         if(_activeVehicle->cameraManager()) {
             connect(_activeVehicle->cameraManager(), &QGCCameraManager::streamChanged, this, &VideoManager::_restartAllVideos);
@@ -834,6 +858,13 @@ VideoManager::_communicationLostChanged(bool connectionLost)
         //-- Disable full screen video if connection is lost
         setfullScreen(false);
     }
+}
+
+void
+VideoManager::_primaryLinkChanged(qint32 target)
+{
+    qDebug()<< "VideoManager.cc: Primary Link changed to" << QHostAddress(target).toString();
+    //calculate the mcast address
 }
 
 //----------------------------------------------------------------------------------------

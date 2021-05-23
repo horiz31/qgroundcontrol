@@ -51,6 +51,7 @@
 #include "VehicleBatteryFactGroup.h"
 #ifdef QT_DEBUG
 #include "MockLink.h"
+#include "UDPLink.h"
 #endif
 
 #if defined(QGC_AIRMAP_ENABLED)
@@ -178,7 +179,9 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     _commonInit();
 
+    qDebug() << "Vehicle.cc: Adding link to vehiclelinkmanager" << (void*)link;
     _vehicleLinkManager->_addLink(link);
+
 
     // Set video stream to udp if running ArduSub and Video is disabled
     if (sub() && _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoDisabled) {
@@ -551,6 +554,14 @@ void Vehicle::resetCounters()
 
 void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
+
+
+    //qDebug() << _vehicleLinkManager->primaryLinkUDPTarget();  //the target of the primary link
+    //UDPLink* myUDPLink = qobject_cast<UDPLink*>(link);
+    //if (myUDPLink) {
+        // if true, we know the linkinterface is UDP, and we can get the targethost address and port
+        // myUDPLink->targetHost->address.toString();
+    //}
     // If the link is already running at Mavlink V2 set our max proto version to it.
     unsigned mavlinkVersion = _mavlink->getCurrentVersion();
     if (_maxProtoVersion != mavlinkVersion && mavlinkVersion >= 200) {
@@ -564,6 +575,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
             return;
         }
     }
+
 
     // We give the link manager first whack since it it reponsible for adding new links
     _vehicleLinkManager->mavlinkMessageReceived(link, message);
@@ -625,6 +637,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         _handleHomePosition(message);
         break;
     case MAVLINK_MSG_ID_HEARTBEAT:
+        //qDebug() << "Vehicle.cc: Got heartbeat from" << link->getTargetEndpoint() << "sysid" << _id;
         _handleHeartbeat(message);
         break;
     case MAVLINK_MSG_ID_RADIO_STATUS:
@@ -1461,6 +1474,9 @@ void Vehicle::_handlePing(LinkInterface* link, mavlink_message_t& message)
 
 void Vehicle::_handleHeartbeat(mavlink_message_t& message)
 {
+
+   // qDebug() << "Got HB from " << _vehicleLinkManager->primaryLinkUDPTarget()->address.toString();
+
     if (message.compid != _defaultComponentId) {
         return;
     }

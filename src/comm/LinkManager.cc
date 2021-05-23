@@ -40,7 +40,7 @@
 QGC_LOGGING_CATEGORY(LinkManagerLog, "LinkManagerLog")
 QGC_LOGGING_CATEGORY(LinkManagerVerboseLog, "LinkManagerVerboseLog")
 
-const char* LinkManager::_defaultUDPLinkName =       "UDP Link (AutoConnect)";
+const char* LinkManager::_defaultUDPLinkName =       "LOS";
 const char* LinkManager::_mavlinkForwardingLinkName =       "MAVLink Forwarding Link";
 
 const int LinkManager::_autoconnectUpdateTimerMSecs =   1000;

@@ -91,6 +91,12 @@ void LinkInterface::addVehicleReference(void)
     _vehicleReferenceCount++;
 }
 
+void LinkInterface::addAssociatedSysID(byte sysid)
+{
+    _associatedSysID = sysid;
+    qDebug() << "associating link with" << sysid;
+}
+
 void LinkInterface::removeVehicleReference(void)
 {
     if (_vehicleReferenceCount != 0) {

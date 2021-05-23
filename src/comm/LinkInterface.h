@@ -45,6 +45,7 @@ public:
 
     Q_PROPERTY(bool isPX4Flow   READ isPX4Flow  CONSTANT)
     Q_PROPERTY(bool isMockLink  READ isMockLink CONSTANT)
+    Q_PROPERTY(qint32 targetEndpoint  READ getTargetEndpoint CONSTANT)
 
     // Property accessors
     bool isPX4Flow(void) const { return _isPX4Flow; }
@@ -54,6 +55,7 @@ public:
     bool isMockLink(void) { return false; }
 #endif
 
+    qint32 getTargetEndpoint(void) { return _targetEndpoint;}
     SharedLinkConfigurationPtr linkConfiguration(void) { return _config; }
 
     Q_INVOKABLE virtual void    disconnect  (void) = 0;
@@ -68,10 +70,12 @@ public:
     bool    setDecodedFirstMavlinkPacket(bool decodedFirstMavlinkPacket) { return _decodedFirstMavlinkPacket = decodedFirstMavlinkPacket; }
     void    writeBytesThreadSafe        (const char *bytes, int length);
     void    addVehicleReference         (void);
+    void    addAssociatedSysID          (byte sysid);
+    byte    associatedSysID             (void) { return _associatedSysID; }
     void    removeVehicleReference      (void);
 
 signals:
-    void bytesReceived      (LinkInterface* link, QByteArray data);
+    void bytesReceived      (LinkInterface* link, QByteArray data);    
     void bytesSent          (LinkInterface* link, QByteArray data);
     void connected          (void);
     void disconnected       (void);
@@ -95,6 +99,7 @@ protected:
     ///
     virtual bool _allocateMavlinkChannel();
     virtual void _freeMavlinkChannel    ();
+    qint32  _targetEndpoint             = 0;
 
 private:
     // connect is private since all links should be created through LinkManager::createConnectedLink calls
@@ -106,6 +111,8 @@ private:
     bool    _decodedFirstMavlinkPacket  = false;
     bool    _isPX4Flow                  = false;
     int     _vehicleReferenceCount      = 0;
+    byte    _associatedSysID;
+
 
     mutable QMutex _writeBytesMutex;
 

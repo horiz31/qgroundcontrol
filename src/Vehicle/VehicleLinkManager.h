@@ -17,6 +17,7 @@
 
 #include "QGCMAVLink.h"
 #include "LinkInterface.h"
+#include "UDPLink.h"
 
 Q_DECLARE_LOGGING_CATEGORY(VehicleLinkManagerLog)
 
@@ -36,6 +37,7 @@ public:
 
     Q_PROPERTY(bool             primaryLinkIsPX4Flow        READ primaryLinkIsPX4Flow                                           NOTIFY primaryLinkChanged)
     Q_PROPERTY(QString          primaryLinkName             READ primaryLinkName            WRITE setPrimaryLinkByName          NOTIFY primaryLinkChanged)
+    Q_PROPERTY(UDPCLient*       primaryLinkUDPTarget        READ primaryLinkUDPTarget                                           NOTIFY primaryUDPTargetChanged)
     Q_PROPERTY(QStringList      linkNames                   READ linkNames                                                      NOTIFY linkNamesChanged)
     Q_PROPERTY(QStringList      linkStatuses                READ linkStatuses                                                   NOTIFY linkStatusesChanged)
     Q_PROPERTY(bool             communicationLost           READ communicationLost                                              NOTIFY communicationLostChanged)
@@ -47,6 +49,7 @@ public:
     bool                    containsLink                (LinkInterface* link);
     WeakLinkInterfacePtr    primaryLink                 (void) { return _primaryLink; }
     QString                 primaryLinkName             (void) const;
+    UDPCLient*              primaryLinkUDPTarget        (void) ;
     QStringList             linkNames                   (void) const;
     QStringList             linkStatuses                (void) const;
     bool                    communicationLost           (void) const { return _communicationLost; }
@@ -56,7 +59,9 @@ public:
     void                    closeVehicle                (void);
 
 signals:
-    void primaryLinkChanged             (void);
+    //void primaryLinkChanged             (void);
+    void primaryLinkChanged             (qint32 addr);
+    void primaryUDPTargetChanged        (UDPCLient* client);
     void allLinksRemoved                (Vehicle* vehicle);
     void communicationLostChanged       (bool communicationLost);
     void communicationLostEnabledChanged(bool communicationLostEnabled);
@@ -78,6 +83,7 @@ private:
 
     typedef struct LinkInfo {
         SharedLinkInterfacePtr  link;
+        QHostAddress            sourceIP;  //this is the source IP address responsible for creating this link
         bool                    commLost = false;
         QElapsedTimer           heartbeatElapsedTimer;
     } LinkInfo_t;

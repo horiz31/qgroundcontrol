@@ -12,6 +12,7 @@
 #include "QGCLoggingCategory.h"
 #include "LinkManager.h"
 #include "QGCApplication.h"
+#include "UDPLink.h"
 
 QGC_LOGGING_CATEGORY(VehicleLinkManagerLog, "VehicleLinkManagerLog")
 
@@ -30,6 +31,7 @@ VehicleLinkManager::VehicleLinkManager(Vehicle* vehicle)
 void VehicleLinkManager::mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {
     // Radio status messages come from Sik Radios directly. It doesn't indicate there is any life on the other end.
+
     if (message.msgid != MAVLINK_MSG_ID_RADIO_STATUS) {
         int linkIndex = _containsLinkIndex(link);
         if (linkIndex == -1) {
@@ -172,9 +174,15 @@ void VehicleLinkManager::_addLink(LinkInterface* link)
             qCDebug(VehicleLinkManagerLog) << "_addLink stale link" << (void*)link;
             return;
         }
+
+        qDebug() << "Adding link " << (void*)link << "for sysid"<< _vehicle->id() <<"target endpoint" << sharedLink->getTargetEndpoint();
         qCDebug(VehicleLinkManagerLog) << "_addLink:" << link->linkConfiguration()->name() << QString("%1").arg((qulonglong)link, 0, 16);
 
         link->addVehicleReference();
+
+        link->addAssociatedSysID(_vehicle->id());
+
+        emit primaryLinkChanged(link->getTargetEndpoint());
 
         LinkInfo_t linkInfo;
         linkInfo.link = sharedLink;
@@ -207,7 +215,9 @@ void VehicleLinkManager::_removeLink(LinkInterface* link)
 
         if (link == _primaryLink.lock().get()) {
             _primaryLink.reset();
-            emit primaryLinkChanged();
+            emit primaryLinkChanged(0);
+            qDebug() << "VehicleLinkManager.cc: Primary Link Changed for Vehicle" << _vehicle->id();
+
         }
 
         disconnect(link, &LinkInterface::disconnected, this, &VehicleLinkManager::_linkDisconnected);
@@ -262,7 +272,22 @@ SharedLinkInterfacePtr VehicleLinkManager::_bestActivePrimaryLink(void)
         if (!linkInfo.commLost) {
             SharedLinkInterfacePtr      link    = linkInfo.link;
             SharedLinkConfigurationPtr  config  = link->linkConfiguration();
-            if (config && !config->isHighLatency()) {
+            // we should prioritize LOS (14550) over cell (14560)
+            // and what if there are multiple UDP links
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+
+            if (udpConfig && udpConfig->localPort()==14550)
+            {
+                //this is a LOS connection
+            }
+            else if (udpConfig && udpConfig->localPort()==14560)
+            {
+                //this is a cell connection
+            }
+            //
+            //if (config && !config->isHighLatency()) {
+            if (config && !config->isHighLatency() && (link->associatedSysID() == _vehicle->id())) {
+                qDebug() << "Determined best link is the one associated with" << link->associatedSysID();
                 return link;
             }
         }
@@ -294,6 +319,8 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
     SharedLinkInterfacePtr primaryLink = _primaryLink.lock();
     int linkIndex = _containsLinkIndex(primaryLink.get());
     if (linkIndex != -1 && !_rgLinkInfo[linkIndex].commLost && !primaryLink->linkConfiguration()->isHighLatency()) {
+        //qDebug() << "VehicleLinkManager.cc: current link is still valid";
+        //emit primaryLinkChanged(_primaryLink.lock().get()->getTargetEndpoint());
         // Current priority link is still valid
         return false;
     }
@@ -302,6 +329,8 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
 
     if (linkIndex != -1 && !bestActivePrimaryLink) {
         // Nothing better available, leave things set to current primary link
+        //qDebug() << "VehicleLinkManager.cc: leave set to current primary link";
+        //emit primaryLinkChanged(_primaryLink.lock().get()->getTargetEndpoint());
         return false;
     } else {
         if (bestActivePrimaryLink != primaryLink) {
@@ -312,9 +341,10 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
                                0); // Stop transmission on this link
             }
 
-            _primaryLink = bestActivePrimaryLink;
-            emit primaryLinkChanged();
+            _primaryLink = bestActivePrimaryLink;           
 
+            emit primaryLinkChanged(_primaryLink.lock().get()->getTargetEndpoint());
+            //qDebug() << "VehicleLinkManager.cc: Primary Link Changed for Vehicle" << QHostAddress(_primaryLink.lock().get()->getTargetEndpoint()).toString() << "Vehicle ID" << _vehicle->id();
             if (bestActivePrimaryLink && bestActivePrimaryLink->linkConfiguration()->isHighLatency()) {
                 _vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1,
                                MAV_CMD_CONTROL_HIGH_LATENCY,
@@ -363,12 +393,39 @@ QString VehicleLinkManager::primaryLinkName() const
 
     return QString();
 }
+
+UDPCLient* VehicleLinkManager::primaryLinkUDPTarget()   //if the link is a UDP link, return the current target IP address
+{
+    WeakLinkInterfacePtr  link        = _primaryLink;
+    SharedLinkInterfacePtr  sharedLink = link.lock();
+    UDPLink*             myUDPLink  = qobject_cast<UDPLink*>(sharedLink.get());
+    if (myUDPLink) {
+        return myUDPLink->targetHost();
+    }
+    qDebug() << "returning nullptr from primaryLinkUDPTarget";
+    return nullptr;
+}
 void VehicleLinkManager::setPrimaryLinkByName(const QString& name)
 {
     for (const LinkInfo_t& linkInfo: _rgLinkInfo) {
         if (linkInfo.link->linkConfiguration()->name() == name) {
             _primaryLink = linkInfo.link;
-            emit primaryLinkChanged();
+            emit primaryLinkChanged(_primaryLink.lock().get()->getTargetEndpoint());
+            //qDebug() << "VehicleLinkManager.cc: Primary Link Changed for Vehicle" << QHostAddress(_primaryLink.lock().get()->getTargetEndpoint()).toString() << "Vehicle ID" << _vehicle->id();
+
+            //if this primary link is a UDP link, also notify that the primary UDP target is changed, this is used to update the video receiver endpoint
+            //SharedLinkInterfacePtr  sharedLink = _primaryLink.lock();
+            //UDPLink*             myUDPLink  = qobject_cast<UDPLink*>(sharedLink.get());
+            /*
+            UDPLink* myUDPLink = qobject_cast<UDPLink*>(_primaryLink.lock().get());
+            if (myUDPLink) {
+                qDebug() << "setPrimaryLinkByName Changing primary UDP Target to" << myUDPLink->targetHost()->address.toString();
+                 emit primaryUDPTargetChanged(myUDPLink->targetHost());
+            }
+            else
+            {
+                qDebug() << "Link change detected, but not UDP Link";
+            }*/
         }
     }
 }

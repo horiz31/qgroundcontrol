@@ -21,6 +21,7 @@
 #include "VideoReceiver.h"
 #include "QGCToolbox.h"
 #include "SubtitleWriter.h"
+#include "UDPLink.h"
 
 Q_DECLARE_LOGGING_CATEGORY(VideoManagerLog)
 
@@ -137,6 +138,7 @@ protected slots:
     void _setActiveVehicle          (Vehicle* vehicle);
     void _aspectRatioChanged        ();
     void _communicationLostChanged  (bool communicationLost);
+    void _primaryLinkChanged   (qint32 target);
 
 protected:
     friend class FinishVideoInitialization;
@@ -173,6 +175,7 @@ protected:
     QString                 _videoSourceID;
     bool                    _fullScreen             = false;
     Vehicle*                _activeVehicle          = nullptr;
+    QList<qint32>           _videoAddress;
 };
 
 #endif

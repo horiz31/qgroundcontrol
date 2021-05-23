@@ -203,6 +203,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
         return;
     }
 
+
     uint8_t mavlinkChannel = link->mavlinkChannel();
 
     for (int position = 0; position < b.size(); position++) {

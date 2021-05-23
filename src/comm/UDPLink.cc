@@ -68,6 +68,7 @@ static bool contains_target(const QList<UDPCLient*> list, const QHostAddress& ad
 UDPLink::UDPLink(SharedLinkConfigurationPtr& config)
     : LinkInterface     (config)
     , _running          (false)
+    , _targetHost       (nullptr)
     , _socket           (nullptr)
     , _udpConfig        (qobject_cast<UDPConfiguration*>(config.get()))
     , _connectState     (false)
@@ -83,6 +84,7 @@ UDPLink::UDPLink(SharedLinkConfigurationPtr& config)
         QHostAddress &address = allAddresses[i];
         _localAddresses.append(QHostAddress(address));
     }
+    qDebug() << "Starting up a UDPLink Instance...";
     moveToThread(this);
 }
 
@@ -174,18 +176,21 @@ void UDPLink::readBytes()
         return;
     }
     QByteArray databuffer;
+    QHostAddress asender;
+    quint16 senderPort;
     while (_socket->hasPendingDatagrams())
     {
         QByteArray datagram;
         datagram.resize(_socket->pendingDatagramSize());
         QHostAddress sender;
-        quint16 senderPort;
+
         // If the other end is reset then it will still report data available,
         // but will fail on the readDatagram call
         qint64 slen = _socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
         if (slen == -1) {
             break;
         }
+
         databuffer.append(datagram);
         //-- Wait a bit before sending it over
         if (databuffer.size() > 10 * 1024) {
@@ -196,7 +201,7 @@ void UDPLink::readBytes()
         // added to the list and will start receiving datagrams from here. Even a port scanner
         // would trigger this.
         // Add host to broadcast list if not yet present, or update its port
-        QHostAddress asender = sender;
+        asender = sender;
         if(_isIpLocal(sender)) {
             asender = QHostAddress(QString("127.0.0.1"));
         }
@@ -204,7 +209,7 @@ void UDPLink::readBytes()
         if (!contains_target(_sessionTargets, asender, senderPort)) {
             qDebug() << "Adding target" << asender << senderPort;
             UDPCLient* target = new UDPCLient(asender, senderPort);
-            _sessionTargets.append(target);
+            _sessionTargets.append(target);            
         }
         locker.unlock();
     }
@@ -212,7 +217,31 @@ void UDPLink::readBytes()
     if (databuffer.size()) {
         emit bytesReceived(this, databuffer);
     }
+    _targetEndpoint = asender.toIPv4Address();
+    //save the most recent sender as the target Host
+    /*
+    UDPCLient* compareHost = new UDPCLient(asender, senderPort);
+    if (_targetHost != nullptr)
+    {
+        if (_targetHost->address.toIPv4Address() != compareHost->address.toIPv4Address())
+        {
+           // qDebug() << "Current Target Host is " << _targetHost->address.toString() << "Current data coming from"<< compareHost->address.toString();
+            _targetHost = compareHost;
+           // qDebug() << "Setting target Host to" << _targetHost->address.toString();
+        }
+    }
+    else
+        _targetHost = compareHost;
+
+        */
+
+    //_targetHost = new UDPCLient(asender, senderPort);
+    //if targetHostChange, emit
+
+
+
 }
+
 
 void UDPLink::disconnect(void)
 {
@@ -252,8 +281,10 @@ bool UDPLink::_hardwareConnect()
     _socket = new QUdpSocket(this);
     _socket->setProxy(QNetworkProxy::NoProxy);
     _connectState = _socket->bind(host, _udpConfig->localPort(), QAbstractSocket::ReuseAddressHint | QUdpSocket::ShareAddress);
+    qDebug () << "Binding to socket on port"<<_udpConfig->localPort();
     if (_connectState) {
-        _socket->joinMulticastGroup(QHostAddress("224.0.0.1"));
+        _socket->joinMulticastGroup(QHostAddress("224.10.10.10"));
+        _socket->joinMulticastGroup(QHostAddress("225.10.10.10"));
         //-- Make sure we have a large enough IO buffers
 #ifdef __mobile__
         _socket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption,     64 * 1024);

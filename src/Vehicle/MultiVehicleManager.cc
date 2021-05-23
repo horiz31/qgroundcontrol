@@ -370,7 +370,28 @@ void MultiVehicleManager::_sendGCSHeartbeat(void)
     // Send a heartbeat out on each link
     for (int i=0; i<sharedLinks.count(); i++) {
         LinkInterface* link = sharedLinks[i].get();
+        //todo
+        //ideally we don't see this out on non-primary links
+/*
+        if (_activeVehicle && _activeVehicle->vehicleLinkManager()->containsLink(link))
+        {
+
+            SharedLinkInterfacePtr sharedLink = _activeVehicle->vehicleLinkManager()->primaryLink().lock();
+            if (sharedLink) {
+                LinkInterface* primaryLink = sharedLink.get();
+                if (primaryLink)
+                {
+                    bool isPrimaryLink = link == primaryLink;
+                    if (!isPrimaryLink)
+                        return;  //only send HBs to primary link
+                }
+            }
+
+        }
+
+*/
         auto linkConfiguration = link->linkConfiguration();
+
         if (link->isConnected() && linkConfiguration && !linkConfiguration->isHighLatency()) {
             mavlink_message_t message;
             mavlink_msg_heartbeat_pack_chan(_mavlinkProtocol->getSystemId(),

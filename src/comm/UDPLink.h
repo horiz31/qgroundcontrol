@@ -107,6 +107,9 @@ public:
     // QThread overrides
     void run(void) override;
 
+    //add external target host for the link
+    UDPCLient*  targetHost(void) {return _targetHost; }
+
 public slots:
     void readBytes(void);
 
@@ -126,6 +129,7 @@ private:
     void _writeDataGram     (const QByteArray data, const UDPCLient* target);
 
     bool                _running;
+    UDPCLient*          _targetHost;
     QUdpSocket*         _socket;
     UDPConfiguration*   _udpConfig;
     bool                _connectState;
