@@ -711,6 +711,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
     case MAVLINK_MSG_ID_OBSTACLE_DISTANCE:
         _handleObstacleDistance(message);
         break;
+    case MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION:
+        _handleVideoStreamInfo(message);
+        break;
 
     case MAVLINK_MSG_ID_SERIAL_CONTROL:
     {
@@ -2810,11 +2813,12 @@ void Vehicle::_sendMavCommandResponseTimeoutCheck(void)
 
 void Vehicle::_handleCommandAck(mavlink_message_t& message)
 {
+
     mavlink_command_ack_t ack;
     mavlink_msg_command_ack_decode(&message, &ack);
 
     QString rawCommandName  =_toolbox->missionCommandTree()->rawName(static_cast<MAV_CMD>(ack.command));
-    qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));
+    qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));    
 
     if (ack.command == MAV_CMD_DO_SET_ROI_LOCATION) {
         if (ack.result == MAV_RESULT_ACCEPTED) {
@@ -3776,6 +3780,27 @@ void Vehicle::_handleObstacleDistance(const mavlink_message_t& message)
     mavlink_obstacle_distance_t o;
     mavlink_msg_obstacle_distance_decode(&message, &o);
     _objectAvoidance->update(&o);
+}
+
+void Vehicle::_handleVideoStreamInfo(const mavlink_message_t& message)
+{
+    QByteArray  b;
+    QString     videoUri;
+
+    mavlink_video_stream_information_t o;
+    mavlink_msg_video_stream_information_decode(&message, &o);
+
+    b.resize(MAVLINK_MSG_VIDEO_STREAM_INFORMATION_FIELD_URI_LEN+1);
+    strncpy(b.data(), o.uri, MAVLINK_MSG_VIDEO_STREAM_INFORMATION_FIELD_URI_LEN);
+    b[b.length()-1] = '\0';
+    videoUri = QString(b);
+
+    qDebug() << "Got updated video endpoint uri of" << videoUri;
+    if (videoUri != _videoEndpoint)
+    {
+        _videoEndpoint = videoUri;
+        emit videoInfoChanged();
+    }
 }
 
 void Vehicle::updateFlightDistance(double distance)

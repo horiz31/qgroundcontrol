@@ -93,7 +93,7 @@ QGCCameraManager::_mavlinkMessageReceived(const mavlink_message_t& message)
                 _handleParamValue(message);
                 break;
             case MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION:
-                _handleVideoStreamInfo(message);
+                // _handleVideoStreamInfo(message);  //h31 edit, we will handle this ourselves
                 break;
             case MAVLINK_MSG_ID_VIDEO_STREAM_STATUS:
                 _handleVideoStreamStatus(message);

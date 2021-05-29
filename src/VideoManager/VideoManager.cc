@@ -679,7 +679,18 @@ VideoManager::_updateSettings(unsigned id)
     }
     QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+    {
+        //h31 edit, get settings from the _activevehicle video endpoint
+        if (_activeVehicle && _activeVehicle->videoEndpoint()!="")
+        {
+            qDebug() << "Changing video settings to a uri of" << _activeVehicle->videoEndpoint();
+            settingsChanged |= _updateVideoUri(0, QStringLiteral("%1").arg(_activeVehicle->videoEndpoint()));
+        }
+        else
+        {
+            settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+        }
+    }
     else if (source == VideoSettings::videoSourceUDPH265)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceMPEGTS)
@@ -800,6 +811,7 @@ VideoManager::_setActiveVehicle(Vehicle* vehicle)
 {
     if(_activeVehicle) {
         disconnect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this, &VideoManager::_communicationLostChanged);
+        disconnect(_activeVehicle, &Vehicle::videoInfoChanged, this, &VideoManager::_videoInfoChanged); // this will fire when a video info message is received, indicating the video endpoint has changed
         if(_activeVehicle->cameraManager()) {
             QGCCameraControl* pCamera = _activeVehicle->cameraManager()->currentCameraInstance();
             if(pCamera) {
@@ -810,7 +822,8 @@ VideoManager::_setActiveVehicle(Vehicle* vehicle)
     }
     _activeVehicle = vehicle;
     if(_activeVehicle) {
-        connect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this, &VideoManager::_communicationLostChanged);
+        connect(_activeVehicle->vehicleLinkManager(), &VehicleLinkManager::communicationLostChanged, this, &VideoManager::_communicationLostChanged);     
+        connect(_activeVehicle, &Vehicle::videoInfoChanged, this, &VideoManager::_videoInfoChanged);
         if(_activeVehicle->cameraManager()) {
             connect(_activeVehicle->cameraManager(), &QGCCameraManager::streamChanged, this, &VideoManager::_restartAllVideos);
             QGCCameraControl* pCamera = _activeVehicle->cameraManager()->currentCameraInstance();
@@ -834,6 +847,14 @@ VideoManager::_communicationLostChanged(bool connectionLost)
         //-- Disable full screen video if connection is lost
         setfullScreen(false);
     }
+}
+
+//----------------------------------------------------------------------------------------
+void
+VideoManager::_videoInfoChanged()
+{
+    qDebug() << "VideoManager: video info change detect, restarting all videos";
+   _restartAllVideos();
 }
 
 //----------------------------------------------------------------------------------------

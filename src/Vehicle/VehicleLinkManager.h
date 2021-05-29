@@ -79,7 +79,10 @@ private:
     typedef struct LinkInfo {
         SharedLinkInterfacePtr  link;
         bool                    commLost = false;
+        bool                    stable = false;  //determines if the link is stable
+        int                     hbCounter = 0;
         QElapsedTimer           heartbeatElapsedTimer;
+        QElapsedTimer           stableLinkQualityTimer;  //used for checking link stability
     } LinkInfo_t;
 
     Vehicle*                _vehicle                    = nullptr;

@@ -12,6 +12,7 @@
 #include "QGCLoggingCategory.h"
 #include "LinkManager.h"
 #include "QGCApplication.h"
+#include "UDPLink.h"
 
 QGC_LOGGING_CATEGORY(VehicleLinkManagerLog, "VehicleLinkManagerLog")
 
@@ -40,6 +41,24 @@ void VehicleLinkManager::mavlinkMessageReceived(LinkInterface* link, mavlink_mes
             if (_rgLinkInfo[linkIndex].commLost) {
                 _commRegainedOnLink(link);
             }
+            if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT && !_rgLinkInfo[linkIndex].stable){
+                ++_rgLinkInfo[linkIndex].hbCounter;
+                qDebug() << "Got heartbeat on link" << linkIndex << "Counter is"<< _rgLinkInfo[linkIndex].hbCounter;
+                if (_rgLinkInfo[linkIndex].stableLinkQualityTimer.elapsed() < 5000 &&  _rgLinkInfo[linkIndex].hbCounter >= 3)
+                {
+                    qDebug() << "Setting link" << linkIndex << "stable!!!";
+                    _rgLinkInfo[linkIndex].stable = true;
+                }
+
+                if (_rgLinkInfo[linkIndex].stableLinkQualityTimer.elapsed() > 5000)
+                {
+                    //never established a good link, so start over
+                     qDebug() << "Link stability check timed out for link" << linkIndex;
+                    _rgLinkInfo[linkIndex].hbCounter = 0;
+                    _rgLinkInfo[linkIndex].stableLinkQualityTimer.restart();
+                }
+            }
+
         }
     }
 }
@@ -55,6 +74,9 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     }
 
     _rgLinkInfo[linkIndex].commLost = false;
+
+    _rgLinkInfo[linkIndex].stableLinkQualityTimer.restart();
+    _rgLinkInfo[linkIndex].hbCounter = 0;
 
     // Notify the user of communication regained
     bool isPrimaryLink = link == _primaryLink.lock().get();
@@ -74,7 +96,7 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     }
     if (!primarySwitchMessage.isEmpty()) {
         _vehicle->_say(primarySwitchMessage);
-        qgcApp()->showAppMessage(primarySwitchMessage);
+        //qgcApp()->showAppMessage(primarySwitchMessage);
     }
 
     emit linkStatusesChanged();
@@ -107,6 +129,7 @@ void VehicleLinkManager::_commLostCheck(void)
     for (LinkInfo_t& linkInfo: _rgLinkInfo) {
         if (!linkInfo.commLost && !linkInfo.link->linkConfiguration()->isHighLatency() && linkInfo.heartbeatElapsedTimer.elapsed() > _heartbeatMaxElpasedMSecs) {
             linkInfo.commLost = true;
+            linkInfo.stable = false;
             linkStatusChange = true;
 
             // Notify the user of individual link communication loss
@@ -125,7 +148,7 @@ void VehicleLinkManager::_commLostCheck(void)
     if (_updatePrimaryLink()) {
         QString msg = tr("%1Switching communication to secondary link.").arg(_vehicle->_vehicleIdSpeech());
         _vehicle->_say(msg);
-        qgcApp()->showAppMessage(msg);
+        //qgcApp()->showAppMessage(msg);
     }
 
     // Check for total communication loss
@@ -173,12 +196,14 @@ void VehicleLinkManager::_addLink(LinkInterface* link)
             return;
         }
         qCDebug(VehicleLinkManagerLog) << "_addLink:" << link->linkConfiguration()->name() << QString("%1").arg((qulonglong)link, 0, 16);
+        qDebug() << "_addLink:" << link->linkConfiguration()->name() << QString("%1").arg((qulonglong)link, 0, 16);
 
         link->addVehicleReference();
 
         LinkInfo_t linkInfo;
         linkInfo.link = sharedLink;
         if (!link->linkConfiguration()->isHighLatency()) {
+            linkInfo.stableLinkQualityTimer.start();
             linkInfo.heartbeatElapsedTimer.start();
         }
         _rgLinkInfo.append(linkInfo);
@@ -256,6 +281,48 @@ SharedLinkInterfacePtr VehicleLinkManager::_bestActivePrimaryLink(void)
         }
     }
 #endif
+    //h31 edit
+    //if both primary and secondary links are good, prioritize the los
+    /*
+    SharedLinkInterfacePtr LOSLink;
+    SharedLinkInterfacePtr CellularLink;
+    bool isLOSActive = false;
+    bool isCellActive = false;
+
+    for (const LinkInfo_t& linkInfo: _rgLinkInfo) {
+
+            SharedLinkInterfacePtr      link    = linkInfo.link;
+            SharedLinkConfigurationPtr  config  = link->linkConfiguration();
+
+            if (config)
+            {
+                qDebug() << "Examining link" << config->name();
+                UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+                if (udpConfig)
+                {
+
+                    if (udpConfig->localPort() == 14550 && !linkInfo.commLost)
+                    {
+                        LOSLink = link;
+                        isLOSActive = true;
+                        qDebug() << "LOS Link is active on 14550";
+                    }
+                    else if (udpConfig->localPort() == 14560 && !linkInfo.commLost)
+                    {
+                        CellularLink = link;
+                        isCellActive = true;
+                        qDebug() << "Cellular Link is active on 14560";
+                    }
+                }
+            }
+
+    }
+
+    if (isLOSActive)
+        return LOSLink;
+    else if (isCellActive)
+        return CellularLink;
+*/
 
     // Next best is normal latency link
     for (const LinkInfo_t& linkInfo: _rgLinkInfo) {
@@ -291,13 +358,122 @@ SharedLinkInterfacePtr VehicleLinkManager::_bestActivePrimaryLink(void)
 
 bool VehicleLinkManager::_updatePrimaryLink(void)
 {
-    SharedLinkInterfacePtr primaryLink = _primaryLink.lock();
-    int linkIndex = _containsLinkIndex(primaryLink.get());
+
+    SharedLinkInterfacePtr primaryLink = _primaryLink.lock();    
+    //int linkIndex = _containsLinkIndex(primaryLink.get());  // get _rgLinkInfo index into the array if it contains the current primary link. -1 means this link does not exist in our array of links
+
+    SharedLinkInterfacePtr LOSLink;
+    SharedLinkInterfacePtr CellularLink;
+    SharedLinkInterfacePtr bestActivePrimaryLink;
+    bool isLOSActive = false;
+    bool isCellActive = false;
+    bool linkChange = false;
+    bool isLOSStable = false;
+
+    for (const LinkInfo_t& linkInfo: _rgLinkInfo) {
+
+        SharedLinkInterfacePtr      link    = linkInfo.link;        
+        SharedLinkConfigurationPtr  config  = link->linkConfiguration();
+
+        if (config)
+        {
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+            if (udpConfig)
+            {
+                if ((udpConfig->localPort() == 14550) && !linkInfo.commLost)
+                {
+                    LOSLink = link;
+                    isLOSStable = linkInfo.stable;
+                    isLOSActive = true;
+                }
+
+                if ((udpConfig->localPort() == 14560) && !linkInfo.commLost)
+                {
+                    CellularLink = link;
+                    isCellActive = true;
+                }
+            }
+        }
+    }
+
+    //if los link is up and the current link is anything but that, switch to it
+    if (isLOSActive && primaryLink != LOSLink)
+    {
+        if (primaryLink == CellularLink)
+        {
+            if (isLOSStable)  //don't switch from cell to los without first knowing the los is stable
+            {
+                qDebug()<< "LOS is stable, so swiwthing primary link";
+                linkChange = true;
+                _primaryLink = LOSLink;
+            }
+            else
+                qDebug()<< "LOS is NOT YET stable, so NOT primary link";
+        }
+        else
+        {
+            linkChange = true;
+            _primaryLink = LOSLink;
+        }
+    }
+    else if (!isLOSActive && isCellActive && primaryLink != CellularLink)
+    {
+        linkChange = true;
+        _primaryLink = CellularLink;
+    }
+
+
+    if (linkChange)
+    {
+        UDPLink*             udpLink  = qobject_cast<UDPLink*>(_primaryLink.lock().get());
+        if (udpLink) {
+            SharedLinkConfigurationPtr config = udpLink->linkConfiguration();
+            if (config) {
+                UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+                if (udpConfig)
+                {
+                    qDebug() << "The port associated with vehicle" << _vehicle->id() << "changed to " << udpConfig->localPort();
+                    //send a MAV_CMD_REQUEST_MESSAGE message to the vehicle which includes
+                    //at startup if we have iterate through both links, we can get a scenario where the link
+                    //quickly changes from cell to los, and this command fails to send because the previous one has not acked yet
+                    //adding some hystersis to the switchover to LOS will probably also fix this.. however it would be ideal
+                    //if we started out on LOS. But I'm not sure how to handle that, the system just seems to consistently
+                    //get the first packet on the cell interface
+                    qDebug() << "Sending mav_cmd_request_message with port number";
+                    _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
+                                   MAV_CMD_REQUEST_MESSAGE,
+                                   true,
+                                   MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
+                                   1, //stream number
+                                   udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report                 
+                }
+
+            }
+        }
+
+        qDebug() << "The primary Link set to" << _primaryLink.lock().get();
+        emit primaryLinkChanged();
+
+        if (bestActivePrimaryLink && bestActivePrimaryLink->linkConfiguration()->isHighLatency()) {
+            _vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1,
+                           MAV_CMD_CONTROL_HIGH_LATENCY,
+                           true,
+                           1); // Start transmission on this link
+        }
+
+        return true;
+    }
+    return false;  //no link change
+
+/*
     if (linkIndex != -1 && !_rgLinkInfo[linkIndex].commLost && !primaryLink->linkConfiguration()->isHighLatency()) {
         // Current priority link is still valid
+        //qDebug() << "current priority link is still valid";
         return false;
     }
 
+
+    qDebug() << "checking for best active link";
     SharedLinkInterfacePtr bestActivePrimaryLink = _bestActivePrimaryLink();
 
     if (linkIndex != -1 && !bestActivePrimaryLink) {
@@ -313,6 +489,32 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
             }
 
             _primaryLink = bestActivePrimaryLink;
+            //get config associated with this link
+
+            SharedLinkInterfacePtr  link        = bestActivePrimaryLink;
+            UDPLink*             udpLink  = qobject_cast<UDPLink*>(link.get());
+            if (udpLink) {
+                SharedLinkConfigurationPtr config = udpLink->linkConfiguration();
+                if (config) {
+                    UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+                    if (udpConfig)
+                    {
+                        qDebug() << "The port associated with vehicle" << _vehicle->id() << "changed to " << udpConfig->localPort();
+                        //send a MAV_CMD_REQUEST_MESSAGE message to the vehicle which includes
+
+                        _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
+                                       MAV_CMD_REQUEST_MESSAGE,
+                                       true,
+                                       MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
+                                       1, //stream number
+                                       udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report
+
+                    }
+
+                }
+            }
+
+
             emit primaryLinkChanged();
 
             if (bestActivePrimaryLink && bestActivePrimaryLink->linkConfiguration()->isHighLatency()) {
@@ -326,6 +528,7 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
             return false;
         }
     }
+    */
 }
 
 void VehicleLinkManager::closeVehicle(void)
