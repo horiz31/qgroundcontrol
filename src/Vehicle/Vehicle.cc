@@ -856,7 +856,7 @@ void Vehicle::_chunkedStatusTextCompleted(uint8_t compId)
 
     if (readAloud) {
         if (!skipSpoken) {
-            qgcApp()->toolbox()->audioOutput()->say(messageText);
+            //qgcApp()->toolbox()->audioOutput()->say(messageText);
         }
     }
     emit textMessageReceived(id(), compId, severity, messageText);

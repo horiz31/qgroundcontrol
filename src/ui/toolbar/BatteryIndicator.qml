@@ -61,6 +61,17 @@ Item {
             anchors.bottom: parent.bottom
 
             function getBatteryColor() {
+
+                //h31 hack edit for 6s battery TML robot
+                if (!isNaN(battery.voltage.rawValue)) {
+                    if (battery.voltage.rawValue < 23)
+                        return qgcPal.colorRed
+                    else if (battery.voltage.rawValue < 25)
+                        return qcgPal.colorOrange
+                    else
+                        return qcgPal.txt
+                }
+                /*
                 switch (battery.chargeState.rawValue) {
                 case MAVLink.MAV_BATTERY_CHARGE_STATE_OK:
                     return qgcPal.text
@@ -74,9 +85,17 @@ Item {
                 default:
                     return qgcPal.text
                 }
+                */
             }
 
             function getBatteryPercentageText() {
+
+                //h31 rover edit
+                if (!isNaN(battery.voltage.rawValue)) {
+                      return battery.voltage.valueString + battery.voltage.units
+                }
+
+                /*
                 if (!isNaN(battery.percentRemaining.rawValue)) {
                     if (battery.percentRemaining.rawValue > 98.9) {
                         return qsTr("100%")
@@ -87,7 +106,7 @@ Item {
                     return battery.voltage.valueString + battery.voltage.units
                 } else if (battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED) {
                     return battery.chargeState.enumStringValue
-                }
+                }*/
                 return ""
             }
 
