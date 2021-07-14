@@ -2273,7 +2273,7 @@ QString Vehicle::_vehicleIdSpeech()
 
 void Vehicle::_handleFlightModeChanged(const QString& flightMode)
 {
-    _say(tr("%1 %2 flight mode").arg(_vehicleIdSpeech()).arg(flightMode));
+    _say(tr("%1 %2 mode").arg(_vehicleIdSpeech()).arg(flightMode));
     emit guidedModeChanged(_firmwarePlugin->isGuidedMode(this));
 }
 
