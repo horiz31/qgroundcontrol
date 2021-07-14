@@ -51,6 +51,9 @@ bool APMRadioComponent::requiresSetup(void) const
 
 bool APMRadioComponent::setupComplete(void) const
 {
+    //h31 edit, we do not want to require a radio, but rather just a joystick,so bypassing these checks
+    return true;
+
     // The best we can do to detect the need for a radio calibration is look for attitude
     // controls to be mapped as well as all attitude control rc min/max/trim still at defaults.
     QList<int> mapValues;
@@ -59,6 +62,7 @@ bool APMRadioComponent::setupComplete(void) const
     for (int i=0; i<_mapParams.count(); i++) {
         mapValues << _vehicle->parameterManager()->getParameter(FactSystem::defaultComponentId, _mapParams[i])->rawValue().toInt();
         if (mapValues[i] <= 0) {
+            qDebug() << "radio component false";
             return false;
         }
     }
@@ -76,7 +80,7 @@ bool APMRadioComponent::setupComplete(void) const
             return true;
         }
     }
-    
+
     return false;
 }
 

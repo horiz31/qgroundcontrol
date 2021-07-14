@@ -26,6 +26,7 @@ VehicleLinkManager::VehicleLinkManager(Vehicle* vehicle)
 
     _commLostCheckTimer.setSingleShot(false);
     _commLostCheckTimer.setInterval(_commLostCheckTimeoutMSecs);
+
 }
 
 void VehicleLinkManager::mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
@@ -81,9 +82,12 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     // Notify the user of communication regained
     bool isPrimaryLink = link == _primaryLink.lock().get();
     if (_rgLinkInfo.count() > 1) {
+        _requestVideoStreamInfo();
         commRegainedMessage = tr("%1Communication regained on %2 link").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
     } else {
+        _requestVideoStreamInfo();
         commRegainedMessage = tr("%1Communication regained").arg(_vehicle->_vehicleIdSpeech());
+
     }
 
     // Try to switch to another link
@@ -117,6 +121,33 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     }
 }
 
+
+void VehicleLinkManager::_requestVideoStreamInfo(void)
+{
+
+    UDPLink* udpLink  = qobject_cast<UDPLink*>(_primaryLink.lock().get());
+    if (udpLink) {
+        SharedLinkConfigurationPtr config = udpLink->linkConfiguration();
+        if (config) {
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+            if (udpConfig)
+            {
+                qDebug() << "Requesting stream info";
+
+                _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
+                               MAV_CMD_REQUEST_MESSAGE,
+                               true,
+                               MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
+                               1, //stream number
+                               udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report
+
+            }
+
+        }
+    }
+
+}
+
 void VehicleLinkManager::_commLostCheck(void)
 {
     QString switchingPrimaryLinkMessage;
@@ -147,7 +178,7 @@ void VehicleLinkManager::_commLostCheck(void)
     // Switch to better primary link if needed
     if (_updatePrimaryLink()) {
         QString msg = tr("%1Switching communication to secondary link.").arg(_vehicle->_vehicleIdSpeech());
-        _vehicle->_say(msg);
+        //_vehicle->_say(msg);
         //qgcApp()->showAppMessage(msg);
     }
 
@@ -425,31 +456,7 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
 
     if (linkChange)
     {
-        UDPLink*             udpLink  = qobject_cast<UDPLink*>(_primaryLink.lock().get());
-        if (udpLink) {
-            SharedLinkConfigurationPtr config = udpLink->linkConfiguration();
-            if (config) {
-                UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
-                if (udpConfig)
-                {
-                    qDebug() << "The port associated with vehicle" << _vehicle->id() << "changed to " << udpConfig->localPort();
-                    //send a MAV_CMD_REQUEST_MESSAGE message to the vehicle which includes
-                    //at startup if we have iterate through both links, we can get a scenario where the link
-                    //quickly changes from cell to los, and this command fails to send because the previous one has not acked yet
-                    //adding some hystersis to the switchover to LOS will probably also fix this.. however it would be ideal
-                    //if we started out on LOS. But I'm not sure how to handle that, the system just seems to consistently
-                    //get the first packet on the cell interface
-                    qDebug() << "Sending mav_cmd_request_message with port number";
-                    _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
-                                   MAV_CMD_REQUEST_MESSAGE,
-                                   true,
-                                   MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
-                                   1, //stream number
-                                   udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report                 
-                }
-
-            }
-        }
+        _requestVideoStreamInfo();
 
         qDebug() << "The primary Link set to" << _primaryLink.lock().get();
         emit primaryLinkChanged();

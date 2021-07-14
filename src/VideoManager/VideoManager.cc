@@ -683,8 +683,25 @@ VideoManager::_updateSettings(unsigned id)
         //h31 edit, get settings from the _activevehicle video endpoint
         if (_activeVehicle && _activeVehicle->videoEndpoint()!="")
         {
-            qDebug() << "Changing video settings to a uri of" << _activeVehicle->videoEndpoint();
-            settingsChanged |= _updateVideoUri(0, QStringLiteral("%1").arg(_activeVehicle->videoEndpoint()));
+             qDebug() << "Changing video settings to a uri of" << _activeVehicle->videoEndpoint();
+            //if this is a multicast address, change the uri to the entire address, otherwise just change the port
+            //todo, convert string to ip address
+            //check if in range of multicast
+            QUrl convertedEndpoint = QUrl(_activeVehicle->videoEndpoint());
+            //qDebug() << "URI converted to " << convertedEndpoint.toString() << "host is"<< convertedEndpoint.host()<< "port is"<< convertedEndpoint.port();
+            QHostAddress convertedHost = QHostAddress(convertedEndpoint.host());
+            //qDebug() << "host converted to " << convertedHost.toIPv4Address();
+            if ((convertedHost.toIPv4Address() >> 28) == 14)
+            {
+                //qDebug() << "Multicast address detected";
+                settingsChanged |= _updateVideoUri(0, QStringLiteral("%1").arg(_activeVehicle->videoEndpoint()));
+            }
+            else
+            {
+                //qDebug() << "unicast address detected";
+                settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(convertedEndpoint.port()));
+            }
+
         }
         else
         {

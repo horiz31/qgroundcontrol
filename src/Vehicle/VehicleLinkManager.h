@@ -65,7 +65,7 @@ signals:
     void autoDisconnectChanged          (bool autoDisconnect);
 
 private slots:
-    void _commLostCheck(void);
+    void _commLostCheck(void);    
 
 private:
     int                     _containsLinkIndex      (LinkInterface* link);
@@ -74,6 +74,7 @@ private:
     void                    _linkDisconnected       (void);
     bool                    _updatePrimaryLink      (void);
     SharedLinkInterfacePtr  _bestActivePrimaryLink  (void);
+    void                    _requestVideoStreamInfo (void);
     void                    _commRegainedOnLink     (LinkInterface*  link);
 
     typedef struct LinkInfo {
@@ -88,6 +89,7 @@ private:
     Vehicle*                _vehicle                    = nullptr;
     LinkManager*            _linkMgr                    = nullptr;
     QTimer                  _commLostCheckTimer;
+    QTimer                  _videoRequestTimer;
     QList<LinkInfo_t>       _rgLinkInfo;
     WeakLinkInterfacePtr    _primaryLink;
     bool                    _communicationLost          = false;
