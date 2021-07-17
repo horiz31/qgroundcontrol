@@ -91,11 +91,11 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
             {
                 if ((udpConfig->localPort() == 14550))
                 {
-                    commRegainedMessage = tr("%1Communication regained on line of sight link");
+                    commRegainedMessage = tr("%1Communication regained on line of sight link").arg(_vehicle->_vehicleIdSpeech());
                 }
                 else if ((udpConfig->localPort() == 14560))
                 {
-                   commRegainedMessage = tr("%1Communication regained on cellular link");
+                   commRegainedMessage = tr("%1Communication regained on cellular link").arg(_vehicle->_vehicleIdSpeech());
                 }
                 else
                    commRegainedMessage = tr("%1Communication regained on %2 link").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
@@ -149,7 +149,7 @@ void VehicleLinkManager::_requestVideoStreamInfo(void)
             UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
             if (udpConfig)
             {
-                qDebug() << "Requesting stream info";
+                qDebug() << "Requesting stream info for"<< udpConfig->localPort();
 
                 _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
                                MAV_CMD_REQUEST_MESSAGE,
@@ -183,8 +183,30 @@ void VehicleLinkManager::_commLostCheck(void)
             // Notify the user of individual link communication loss
             bool isPrimaryLink = linkInfo.link.get() == _primaryLink.lock().get();
             if (_rgLinkInfo.count() > 1) {
-                QString msg = tr("%1Communication lost on %2 link.").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
-                _vehicle->_say(msg);
+                SharedLinkConfigurationPtr  config  = linkInfo.link.get()->linkConfiguration();
+
+                if (config)
+                {
+                    UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+                    if (udpConfig)
+                    {
+                        QString msg = tr("Communication lost");
+                        if ((udpConfig->localPort() == 14550))
+                        {
+                            msg = tr("%1Communication lost on Line of sight link.").arg(_vehicle->_vehicleIdSpeech());
+                        }
+                        else if ((udpConfig->localPort() == 14560))
+                        {
+                            msg = tr("%1Communication lost on Cellular link.").arg(_vehicle->_vehicleIdSpeech());
+                        }
+                        else
+                        {
+                            msg = tr("%1Communication lost on %2 link.").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
+                         }
+                         _vehicle->_say(msg);
+                    }
+                }
+
             }
         }
     }

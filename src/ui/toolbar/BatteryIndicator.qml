@@ -64,12 +64,12 @@ Item {
 
                 //h31 hack edit for 6s battery TML robot
                 if (!isNaN(battery.voltage.rawValue)) {
-                    if (battery.voltage.rawValue < 23)
+                    if (battery.voltage.rawValue < 22)
                         return qgcPal.colorRed
-                    else if (battery.voltage.rawValue < 25)
-                        return qcgPal.colorOrange
+                    else if (battery.voltage.rawValue < 23.5)
+                        return qgcPal.colorOrange
                     else
-                        return qcgPal.txt
+                        return qgcPal.text
                 }
                 /*
                 switch (battery.chargeState.rawValue) {
