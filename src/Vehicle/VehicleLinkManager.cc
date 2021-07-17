@@ -82,10 +82,27 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     // Notify the user of communication regained
     bool isPrimaryLink = link == _primaryLink.lock().get();
     if (_rgLinkInfo.count() > 1) {
-        _requestVideoStreamInfo();
-        commRegainedMessage = tr("%1Communication regained on %2 link").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
-    } else {
-        _requestVideoStreamInfo();
+        SharedLinkConfigurationPtr  config  = link->linkConfiguration();
+
+        if (config)
+        {
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+            if (udpConfig)
+            {
+                if ((udpConfig->localPort() == 14550))
+                {
+                    commRegainedMessage = tr("%1Communication regained on line of sight link");
+                }
+                else if ((udpConfig->localPort() == 14560))
+                {
+                   commRegainedMessage = tr("%1Communication regained on cellular link");
+                }
+                else
+                   commRegainedMessage = tr("%1Communication regained on %2 link").arg(_vehicle->_vehicleIdSpeech()).arg(isPrimaryLink ? tr("primary") : tr("secondary"));
+            }
+        }
+
+    } else {        
         commRegainedMessage = tr("%1Communication regained").arg(_vehicle->_vehicleIdSpeech());
 
     }
