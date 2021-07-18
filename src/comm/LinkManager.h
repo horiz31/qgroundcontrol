@@ -189,6 +189,7 @@ private:
 #endif
 
     static const char*  _defaultUDPLinkName;
+    static const char*  _defaultUDPCellularLinkName;
     static const char*  _mavlinkForwardingLinkName;
     static const int    _autoconnectUpdateTimerMSecs;
     static const int    _autoconnectConnectDelayMSecs;

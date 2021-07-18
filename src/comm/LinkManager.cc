@@ -41,6 +41,7 @@ QGC_LOGGING_CATEGORY(LinkManagerLog, "LinkManagerLog")
 QGC_LOGGING_CATEGORY(LinkManagerVerboseLog, "LinkManagerVerboseLog")
 
 const char* LinkManager::_defaultUDPLinkName =       "LOS";
+const char* LinkManager::_defaultUDPCellularLinkName =       "Cellular";
 const char* LinkManager::_mavlinkForwardingLinkName =       "MAVLink Forwarding Link";
 
 const int LinkManager::_autoconnectUpdateTimerMSecs =   1000;
@@ -365,21 +366,35 @@ bool LinkManager::_portAlreadyConnected(const QString& portName)
 void LinkManager::_addUDPAutoConnectLink(void)
 {
     if (_autoConnectSettings->autoConnectUDP()->rawValue().toBool()) {
-        bool foundUDP = false;
+        bool foundUDPLOS = false;
+        bool foundUDPCell = false;
 
         for (int i = 0; i < _rgLinks.count(); i++) {
             SharedLinkConfigurationPtr linkConfig = _rgLinks[i]->linkConfiguration();
             if (linkConfig->type() == LinkConfiguration::TypeUdp && linkConfig->name() == _defaultUDPLinkName) {
-                foundUDP = true;
-                break;
+                foundUDPLOS = true;
+                //break;
+            }
+            if (linkConfig->type() == LinkConfiguration::TypeUdp && linkConfig->name() == _defaultUDPCellularLinkName) {
+                foundUDPCell = true;
+                //break;
             }
         }
 
-        if (!foundUDP) {
-            qCDebug(LinkManagerLog) << "New auto-connect UDP port added";
+        if (!foundUDPLOS) {
+            qDebug() << "New auto-connect LOS UDP port added";
             //-- Default UDPConfiguration is set up for autoconnect
             UDPConfiguration* udpConfig = new UDPConfiguration(_defaultUDPLinkName);
             udpConfig->setDynamic(true);
+            SharedLinkConfigurationPtr config = addConfiguration(udpConfig);
+            createConnectedLink(config);
+        }
+        if (!foundUDPCell) {
+            qDebug() << "New auto-connect Cellular UDP port added";
+            //-- Default UDPConfiguration is set up for autoconnect
+            UDPConfiguration* udpConfig = new UDPConfiguration(_defaultUDPCellularLinkName);
+            udpConfig->setDynamic(true);
+            udpConfig->setLocalPort(14560);
             SharedLinkConfigurationPtr config = addConfiguration(udpConfig);
             createConnectedLink(config);
         }
