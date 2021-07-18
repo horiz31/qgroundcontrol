@@ -2571,6 +2571,33 @@ void Vehicle::sendMavCommand(int compId, MAV_CMD command, bool showError, float 
                           param1, param2, param3, param4, param5, param6, param7);
 }
 
+void Vehicle::sendRequestVideoStream(int port)
+{
+    //send these as command longs without ack, because due to the nature of these messages we may not get an ack
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog) << "_sendMavCommandFromList: primary link gone!";
+        return;
+    }
+    mavlink_message_t msg;
+
+   mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                      defaultComponentId(),
+                                      sharedLink->mavlinkChannel(),
+                                      &msg,
+                                      _id,
+                                      MAV_COMP_ID_ONBOARD_COMPUTER,   // target component
+                                      MAV_CMD_REQUEST_MESSAGE,    // command id
+                                      0,                                // 0=first transmission of command
+                                      MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,
+                                      1,
+                                      (float)port,
+                                      0,
+                                      0,
+                                      0,
+                                      0);
+   sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+}
 void Vehicle::sendCommand(int compId, int command, bool showError, double param1, double param2, double param3, double param4, double param5, double param6, double param7)
 {
     sendMavCommand(
