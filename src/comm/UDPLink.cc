@@ -319,7 +319,7 @@ UDPConfiguration::UDPConfiguration(const QString& name) : LinkConfiguration(name
     AutoConnectSettings* settings = qgcApp()->toolbox()->settingsManager()->autoConnectSettings();
     _localPort = settings->udpListenPort()->rawValue().toInt();
     QString targetHostIP = settings->udpTargetHostIP()->rawValue().toString();
-    if (!targetHostIP.isEmpty()) {
+    if (!targetHostIP.isEmpty()) {        
         addHost(targetHostIP, settings->udpTargetHostPort()->rawValue().toUInt());
     }
 }

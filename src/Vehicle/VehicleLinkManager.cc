@@ -27,6 +27,12 @@ VehicleLinkManager::VehicleLinkManager(Vehicle* vehicle)
     _commLostCheckTimer.setSingleShot(false);
     _commLostCheckTimer.setInterval(_commLostCheckTimeoutMSecs);
 
+    connect(&_videoRequestTimer, &QTimer::timeout, this, &VehicleLinkManager::_videoRequestTimeout);
+    _videoRequestTimer.setInterval(_videoRequestTimeoutMSecs);
+    _videoRequestTimer.setSingleShot(true);
+
+    _videoRequestState = Idle;
+
 }
 
 void VehicleLinkManager::mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
@@ -61,6 +67,26 @@ void VehicleLinkManager::mavlinkMessageReceived(LinkInterface* link, mavlink_mes
             }
 
         }
+    }
+}
+
+void VehicleLinkManager::VideoStreamInfoAck()
+{
+    //called when a mavlink_video_stream_information message is processed, this is an acknowledge than request video stream has been processed and we can stop sending
+    qDebug() << "Got video stream info, stopping one shot timer";
+    _videoRequestState = Acked;
+    _videoRequestTimer.stop();
+}
+
+void VehicleLinkManager::_videoRequestTimeout()
+{
+
+    if (_videoRequestState == WaitingForAck)
+    {
+        //we never got an ack, so send again
+        qDebug() << "Timeout occured without getting video stream info, requesting again..";
+        _requestVideoStreamInfo();
+
     }
 }
 
@@ -157,6 +183,10 @@ void VehicleLinkManager::_requestVideoStreamInfo(void)
                                MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
                                1, //stream number
                                udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report
+
+                _videoRequestState = WaitingForAck;
+                _videoRequestTimer.start();
+
 
             }
 

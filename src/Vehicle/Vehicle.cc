@@ -3795,7 +3795,7 @@ void Vehicle::_handleVideoStreamInfo(const mavlink_message_t& message)
     strncpy(b.data(), o.uri, MAVLINK_MSG_VIDEO_STREAM_INFORMATION_FIELD_URI_LEN);
     b[b.length()-1] = '\0';
     videoUri = QString(b);
-
+    _vehicleLinkManager->VideoStreamInfoAck();  //tell the link manager that we received this
     qDebug() << "Got updated video endpoint uri of" << videoUri;
     if (videoUri != _videoEndpoint)
     {

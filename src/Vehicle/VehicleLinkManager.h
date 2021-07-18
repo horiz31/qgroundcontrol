@@ -54,6 +54,7 @@ public:
     void                    setPrimaryLinkByName        (const QString& name);
     void                    setCommunicationLostEnabled (bool communicationLostEnabled);
     void                    closeVehicle                (void);
+    void                    VideoStreamInfoAck          (void);
 
 signals:
     void primaryLinkChanged             (void);
@@ -76,6 +77,7 @@ private:
     SharedLinkInterfacePtr  _bestActivePrimaryLink  (void);
     void                    _requestVideoStreamInfo (void);
     void                    _commRegainedOnLink     (LinkInterface*  link);
+    void                    _videoRequestTimeout   (void);
 
     typedef struct LinkInfo {
         SharedLinkInterfacePtr  link;
@@ -98,4 +100,12 @@ private:
 
     static const int _commLostCheckTimeoutMSecs     = 1000;  // Check for comm lost once a second
     static const int _heartbeatMaxElpasedMSecs      = 3500;  // No heartbeat for longer than this indicates comm loss
+    static const int _videoRequestTimeoutMSecs      = 3000;  // No response to video request will trigger a retry
+
+    enum State {
+        Idle,
+        WaitingForAck,
+        Acked,
+    };
+    State  _videoRequestState = Idle;
 };
