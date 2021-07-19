@@ -253,8 +253,17 @@ bool UDPLink::_hardwareConnect()
     _socket->setProxy(QNetworkProxy::NoProxy);
     _connectState = _socket->bind(host, _udpConfig->localPort(), QAbstractSocket::ReuseAddressHint | QUdpSocket::ShareAddress);
     if (_connectState) {
-        _socket->joinMulticastGroup(QHostAddress("224.10.10.10"));
-        _socket->joinMulticastGroup(QHostAddress("225.10.10.10"));
+
+        //join multicast groups on all interfaces available
+        foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces())
+        {
+            if (interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::CanMulticast) && !interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+            {
+                 _socket->joinMulticastGroup(QHostAddress("224.10.10.10"), QNetworkInterface::interfaceFromIndex(interface.index()));
+                 _socket->joinMulticastGroup(QHostAddress("225.10.10.10"), QNetworkInterface::interfaceFromIndex(interface.index()));
+            }
+        }
+
         //-- Make sure we have a large enough IO buffers
 #ifdef __mobile__
         _socket->setSocketOption(QAbstractSocket::SendBufferSizeSocketOption,     64 * 1024);
