@@ -20,6 +20,8 @@
 #include <QUrl>
 #include <QDateTime>
 #include <QSysInfo>
+#include <QList>
+#include <QNetworkInterface>
 
 QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
 
@@ -723,6 +725,22 @@ GstVideoReceiver::_makeSource(const QString& uri)
                 GstCaps* caps = nullptr;
 
                 if(isUdp264) {
+                    QString ifaceList = "";
+                    int counter = 0;
+                    foreach(QNetworkInterface iface, QNetworkInterface::allInterfaces())
+                    {
+                        if (iface.flags().testFlag(QNetworkInterface::IsUp) && iface.flags().testFlag(QNetworkInterface::CanMulticast) && !iface.flags().testFlag(QNetworkInterface::IsLoopBack))
+                        {
+                            if (counter++ > 0)
+                                ifaceList.append(",");
+                            ifaceList.append(iface.humanReadableName());
+                        }
+                    }
+
+                   // qDebug() << "iface list is"<< ifaceList.toUtf8().constData();
+                    g_object_set(static_cast<gpointer>(source), "auto-multicast", TRUE, nullptr);
+                    g_object_set(static_cast<gpointer>(source), "multicast-iface", ifaceList.toUtf8().constData(), nullptr);
+
                     if ((caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264")) == nullptr) {
                         qCCritical(VideoReceiverLog) << "gst_caps_from_string() failed";
                         break;

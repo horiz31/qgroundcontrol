@@ -255,12 +255,12 @@ bool UDPLink::_hardwareConnect()
     if (_connectState) {
 
         //join multicast groups on all interfaces available
-        foreach(QNetworkInterface interface, QNetworkInterface::allInterfaces())
+        foreach(QNetworkInterface iface, QNetworkInterface::allInterfaces())
         {
-            if (interface.flags().testFlag(QNetworkInterface::IsUp) && interface.flags().testFlag(QNetworkInterface::CanMulticast) && !interface.flags().testFlag(QNetworkInterface::IsLoopBack))
+            if (iface.flags().testFlag(QNetworkInterface::CanMulticast) && !iface.flags().testFlag(QNetworkInterface::IsLoopBack))
             {
-                 _socket->joinMulticastGroup(QHostAddress("224.10.10.10"), QNetworkInterface::interfaceFromIndex(interface.index()));
-                 _socket->joinMulticastGroup(QHostAddress("225.10.10.10"), QNetworkInterface::interfaceFromIndex(interface.index()));
+                 _socket->joinMulticastGroup(QHostAddress("224.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
+                 _socket->joinMulticastGroup(QHostAddress("225.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
             }
         }
 
