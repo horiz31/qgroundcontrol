@@ -108,4 +108,12 @@ private:
         Acked,
     };
     State  _videoRequestState = Idle;
+
+    enum CommModes {
+        Automatic,
+        LOS,
+        Cellular,
+    };
+
+    CommModes _commMode = Automatic;
 };

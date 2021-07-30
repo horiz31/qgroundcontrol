@@ -60,6 +60,8 @@ Item {
     property real   _fullItemZorder:    0
     property real   _pipItemZorder:     QGroundControl.zOrderWidgets
 
+    property int    _commsMode:           _activeVehicle ? _activeVehicle.commsMode : 0
+
     function _calcCenterViewPort() {
         var newToolInset = Qt.rect(0, 0, width, height)
         toolstrip.adjustToolInset(newToolInset)
@@ -161,4 +163,98 @@ Item {
         show:                   !QGroundControl.videoManager.fullScreen &&
                                     (videoControl.pipState.state === videoControl.pipState.pipState || mapControl.pipState.state === mapControl.pipState.pipState)
     }
+
+    Rectangle {
+               id:                 patriosBox
+               width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
+               height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
+               radius: ScreenTools.defaultFontPixelHeight * 0.5
+               color:  Qt.rgba(0,0,0,0.25)
+               border.color:   Qt.rgba(0,0,0,0.7) //qgcPal.text
+               anchors.right:              parent.right
+               anchors.bottom:             parent.bottom
+               anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
+               anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
+               visible:        activeVehicle && !QGroundControl.videoManager.fullScreen
+               z:                          _mapAndVideo.z + 5
+
+               Column {
+                   id:                 patriosCol
+                   spacing:            ScreenTools.defaultFontPixelHeight * 0.5
+                   width:              Math.max(patriosGrid.width, patriosLabel.width)
+                   anchors.margins:    ScreenTools.defaultFontPixelHeight
+                   anchors.centerIn:   parent
+
+                   QGCLabel {
+                       id:             patriosLabel
+                       text:           qsTr("Comm. Selector")
+                       color:          "white"
+                       font.family:    ScreenTools.demiboldFontFamily
+                       anchors.horizontalCenter: parent.horizontalCenter
+                   }
+
+
+                   GridLayout {
+                       id:                 patriosGrid
+                       anchors.margins:    ScreenTools.defaultFontPixelHeight
+                       columnSpacing:      ScreenTools.defaultFontPixelWidth
+                       columns:            2
+                       anchors.horizontalCenter: parent.horizontalCenter
+
+                       QGCLabel {
+                           text: qsTr("Automatic:")
+                           color: "white"
+                           font.family:    ScreenTools.demiboldFontFamily
+                           visible:  true
+                       }
+                       QGCLabel {
+                           text: qsTr("test")
+                           color: "white"
+                           font.family:    ScreenTools.demiboldFontFamily
+                           visible:  true
+                       }
+                   }
+               }
+        }
+                       /*
+                       Item {
+                           height:                     ScreenTools.defaultFontPixelHeight * 3
+                           width:                      height
+                           z:                          _mapAndVideo.z + 5
+                           visible:                    true
+                           Rectangle {
+                               id:                 commsAutoBtnBackground
+                               anchors.top:        parent.top
+                               anchors.bottom:     parent.bottom
+                               width:              height
+                               radius:             height
+                               color:              (_commsMode == 0) ? "blue" : "gray"
+
+                           }
+                           QGCColoredImage {
+                               anchors.top:                parent.top
+                               anchors.bottom:             parent.bottom
+                               anchors.horizontalCenter:   parent.horizontalCenter
+                               width:                      height * 0.625
+                               sourceSize.width:           width
+                               source:                     "/qmlimages/SpeakerIcon.svg"
+                               visible:                    commsAutoBtnBackground.visible
+                               fillMode:                   Image.PreserveAspectFit
+                               color:                      "white"
+                           }
+                           MouseArea {
+                               anchors.fill:   parent
+                               enabled:        true
+                               onClicked: {
+                                   if (_commsMode != 0) {
+                                       _activeVehicle.setCommMode(0)
+                                       // reset blinking animation
+                                       commsAutoBtnBackground.opacity = 1
+                                   }
+                               }
+                           }
+                       }*/
+
+
+
 }

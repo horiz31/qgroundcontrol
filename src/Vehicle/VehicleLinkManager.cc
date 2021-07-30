@@ -32,6 +32,7 @@ VehicleLinkManager::VehicleLinkManager(Vehicle* vehicle)
     _videoRequestTimer.setSingleShot(true);
 
     _videoRequestState = Idle;
+    _commMode = Automatic;
 
 }
 
@@ -497,30 +498,50 @@ bool VehicleLinkManager::_updatePrimaryLink(void)
         }
     }
 
-    //if los link is up and the current link is anything but that, switch to it
-    if (isLOSActive && primaryLink != LOSLink)
-    {
-        if (primaryLink == CellularLink)
-        {
-            if (isLOSStable)  //don't switch from cell to los without first knowing the los is stable
-            {
-                qDebug()<< "LOS is stable, so swiwthing primary link";
-                linkChange = true;
-                _primaryLink = LOSLink;
-            }
-            else
-                qDebug()<< "LOS is NOT YET stable, so NOT primary link";
-        }
-        else
+    //here we can force selection or let the system decide and switch between the two
+    switch (_commMode) {
+    case LOS:
+        if (isLOSActive && primaryLink != LOSLink)
         {
             linkChange = true;
             _primaryLink = LOSLink;
         }
-    }
-    else if (!isLOSActive && isCellActive && primaryLink != CellularLink)
-    {
-        linkChange = true;
-        _primaryLink = CellularLink;
+        break;
+    case Cellular:
+        if (isCellActive && primaryLink != CellularLink)
+        {
+            linkChange = true;
+            _primaryLink = CellularLink;
+        }
+        break;
+    case Automatic :
+        //if los link is up and the current link is anything but that, switch to it
+        if (isLOSActive && primaryLink != LOSLink)
+        {
+            if (primaryLink == CellularLink)
+            {
+                if (isLOSStable)  //don't switch from cell to los without first knowing the los is stable
+                {
+                    qDebug()<< "LOS is stable, so swiwthing primary link";
+                    linkChange = true;
+                    _primaryLink = LOSLink;
+                }
+                else
+                    qDebug()<< "LOS is NOT YET stable, so NOT primary link";
+            }
+            else
+            {
+                linkChange = true;
+                _primaryLink = LOSLink;
+            }
+        }
+        else if (!isLOSActive && isCellActive && primaryLink != CellularLink)
+        {
+            linkChange = true;
+            _primaryLink = CellularLink;
+        }
+        break;
+
     }
 
 
