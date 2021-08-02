@@ -175,8 +175,8 @@ Item {
                anchors.bottom:             parent.bottom
                anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
                anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
-               visible:        activeVehicle && !QGroundControl.videoManager.fullScreen
-               z:                          _mapAndVideo.z + 5
+               visible:        true
+               z:                          _fullItemZorder + 1
 
                Column {
                    id:                 patriosCol
@@ -201,26 +201,13 @@ Item {
                        columns:            2
                        anchors.horizontalCenter: parent.horizontalCenter
 
-                       QGCLabel {
-                           text: qsTr("Automatic:")
-                           color: "white"
-                           font.family:    ScreenTools.demiboldFontFamily
-                           visible:  true
-                       }
-                       QGCLabel {
-                           text: qsTr("test")
-                           color: "white"
-                           font.family:    ScreenTools.demiboldFontFamily
-                           visible:  true
-                       }
-                   }
-               }
-        }
-                       /*
+
+
+
                        Item {
                            height:                     ScreenTools.defaultFontPixelHeight * 3
                            width:                      height
-                           z:                          _mapAndVideo.z + 5
+                           z:                          _fullItemZorder + 1
                            visible:                    true
                            Rectangle {
                                id:                 commsAutoBtnBackground
@@ -230,6 +217,7 @@ Item {
                                radius:             height
                                color:              (_commsMode == 0) ? "blue" : "gray"
 
+
                            }
                            QGCColoredImage {
                                anchors.top:                parent.top
@@ -237,7 +225,7 @@ Item {
                                anchors.horizontalCenter:   parent.horizontalCenter
                                width:                      height * 0.625
                                sourceSize.width:           width
-                               source:                     "/qmlimages/SpeakerIcon.svg"
+                               source:                     "/qmlimages/AutoIcon.svg"
                                visible:                    commsAutoBtnBackground.visible
                                fillMode:                   Image.PreserveAspectFit
                                color:                      "white"
@@ -253,7 +241,105 @@ Item {
                                    }
                                }
                            }
-                       }*/
+                       }
+                       QGCLabel {
+                           text:           qsTr("Automatic")
+                           color:          "white"
+                           font.family:    ScreenTools.demiboldFontFamily
+                       }
+
+                       // Line of sight line
+                       Item {
+                           height:                     ScreenTools.defaultFontPixelHeight * 3
+                           width:                      height
+                           z:                          _fullItemZorder + 1
+                           visible:                    true
+                           Rectangle {
+                               id:                 commsLOSBtnBackground
+                               anchors.top:        parent.top
+                               anchors.bottom:     parent.bottom
+                               width:              height
+                               radius:             height
+                               color:              (_commsMode == 1) ? "blue" : "gray"
+
+
+                           }
+                           QGCColoredImage {
+                               anchors.top:                parent.top
+                               anchors.bottom:             parent.bottom
+                               anchors.horizontalCenter:   parent.horizontalCenter
+                               width:                      height * 0.625
+                               sourceSize.width:           width
+                               source:                     "/qmlimages/WifiIcon.svg"
+                               visible:                    commsAutoBtnBackground.visible
+                               fillMode:                   Image.PreserveAspectFit
+                               color:                      "white"
+                           }
+                           MouseArea {
+                               anchors.fill:   parent
+                               enabled:        true
+                               onClicked: {
+                                   if (_commsMode != 1) {
+                                       _activeVehicle.setCommMode(1)
+                                       // reset blinking animation
+                                       commsLOSBtnBackground.opacity = 1
+                                   }
+                               }
+                           }
+                       }
+                       QGCLabel {
+                           text:           qsTr("Line of Sight")
+                           color:          "white"
+                           font.family:    ScreenTools.demiboldFontFamily
+                       }
+
+                       // Cellular line
+                       Item {
+                           height:                     ScreenTools.defaultFontPixelHeight * 3
+                           width:                      height
+                           z:                          _fullItemZorder + 1
+                           visible:                    true
+                           Rectangle {
+                               id:                 commsCellularBtnBackground
+                               anchors.top:        parent.top
+                               anchors.bottom:     parent.bottom
+                               width:              height
+                               radius:             height
+                               color:              (_commsMode == 2) ? "blue" : "gray"
+
+
+                           }
+                           QGCColoredImage {
+                               anchors.top:                parent.top
+                               anchors.bottom:             parent.bottom
+                               anchors.horizontalCenter:   parent.horizontalCenter
+                               width:                      height * 0.625
+                               sourceSize.width:           width
+                               source:                     "/qmlimages/CellularIcon.svg"
+                               visible:                    commsAutoBtnBackground.visible
+                               fillMode:                   Image.PreserveAspectFit
+                               color:                      "white"
+                           }
+                           MouseArea {
+                               anchors.fill:   parent
+                               enabled:        true
+                               onClicked: {
+                                   if (_commsMode != 2) {
+                                       _activeVehicle.setCommMode(2)
+                                       // reset blinking animation
+                                       commsCellularBtnBackground.opacity = 1
+                                   }
+                               }
+                           }
+                       }
+                       QGCLabel {
+                           text:           qsTr("Cellular")
+                           color:          "white"
+                           font.family:    ScreenTools.demiboldFontFamily
+                       }
+                   }
+               }
+    }
 
 
 

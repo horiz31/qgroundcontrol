@@ -196,5 +196,8 @@
         <file alias="ZoomMinus.svg">src/FlightMap/Images/ZoomMinus.svg</file>
         <file alias="ZoomPlus.svg">src/FlightMap/Images/ZoomPlus.svg</file>
         <file alias="horizon31_gcs_logo.png">resources/horizon31_gcs_logo.png</file>
+        <file alias="AutoIcon.svg">src/ui/toolbar/Images/AutoIcon.svg</file>
+        <file alias="WifiIcon.svg">src/ui/toolbar/Images/WifiIcon.svg</file>
+        <file alias="CellularIcon.svg">src/ui/toolbar/Images/CellularIcon.svg</file>
     </qresource>
 </RCC>

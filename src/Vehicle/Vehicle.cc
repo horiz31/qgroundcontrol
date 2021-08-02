@@ -470,6 +470,15 @@ Vehicle::~Vehicle()
 #endif
 }
 
+void Vehicle::setCommMode(int mode)
+{
+    qDebug() << "Comm mode set to " << mode;
+    _vehicleLinkManager->setCommMode(mode);
+    //update fact
+    _commsModeFact.setRawValue(static_cast<int16_t>(mode));
+}
+
+
 void Vehicle::prepareDelete()
 {
     if(_cameraManager) {

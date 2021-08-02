@@ -737,7 +737,7 @@ GstVideoReceiver::_makeSource(const QString& uri)
                         }
                     }
 
-                    qDebug() << "iface list is"<< ifaceList.toUtf8().constData();
+                   // qDebug() << "iface list is"<< ifaceList.toUtf8().constData();
                     g_object_set(static_cast<gpointer>(source), "auto-multicast", TRUE, nullptr);
                     g_object_set(static_cast<gpointer>(source), "loop", FALSE, nullptr);
                     g_object_set(static_cast<gpointer>(source), "multicast-iface", ifaceList.toUtf8().constData(), nullptr);

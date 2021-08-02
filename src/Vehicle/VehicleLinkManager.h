@@ -32,6 +32,13 @@ class VehicleLinkManager : public QObject
     friend class VehicleLinkManagerTest;
 
 public:
+
+    enum CommModes {
+        Automatic,
+        LOS,
+        Cellular,
+    };
+
     VehicleLinkManager(Vehicle* vehicle);
 
     Q_PROPERTY(bool             primaryLinkIsPX4Flow        READ primaryLinkIsPX4Flow                                           NOTIFY primaryLinkChanged)
@@ -55,6 +62,7 @@ public:
     void                    setCommunicationLostEnabled (bool communicationLostEnabled);
     void                    closeVehicle                (void);
     void                    VideoStreamInfoAck          (void);
+    void                    setCommMode                 (int mode);
 
 signals:
     void primaryLinkChanged             (void);
@@ -109,11 +117,7 @@ private:
     };
     State  _videoRequestState = Idle;
 
-    enum CommModes {
-        Automatic,
-        LOS,
-        Cellular,
-    };
+
 
     CommModes _commMode = Automatic;
 };

@@ -458,6 +458,12 @@ SharedLinkInterfacePtr VehicleLinkManager::_bestActivePrimaryLink(void)
     return {};
 }
 
+void VehicleLinkManager::setCommMode(int mode)
+{
+    CommModes val = static_cast<CommModes>(mode);
+    _commMode = val;
+}
+
 bool VehicleLinkManager::_updatePrimaryLink(void)
 {
 
