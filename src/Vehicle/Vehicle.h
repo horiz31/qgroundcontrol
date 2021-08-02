@@ -237,6 +237,7 @@ public:
     Q_PROPERTY(bool                 readyToFly                  READ readyToFly                                                     NOTIFY readyToFlyChanged)
     Q_PROPERTY(QObject*             sysStatusSensorInfo         READ sysStatusSensorInfo                                            CONSTANT)
     Q_PROPERTY(bool                 allSensorsHealthy           READ allSensorsHealthy                                              NOTIFY allSensorsHealthyChanged)    //< true: all sensors in SYS_STATUS reported as healthy
+    Q_PROPERTY(int                  commsMode                   READ commsMode                                                      NOTIFY commsModeChanged)
 
 
     // The following properties relate to Orbit status
@@ -279,7 +280,7 @@ public:
     Q_PROPERTY(Fact* distanceToGCS      READ distanceToGCS      CONSTANT)
     Q_PROPERTY(Fact* hobbs              READ hobbs              CONSTANT)
     Q_PROPERTY(Fact* throttlePct        READ throttlePct        CONSTANT)
-    Q_PROPERTY(Fact* commsMode          READ commsMode          CONSTANT)
+
 
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
     Q_PROPERTY(FactGroup*           wind            READ windFactGroup              CONSTANT)
@@ -544,6 +545,7 @@ public:
     double          defaultHoverSpeed           () const { return _defaultHoverSpeed; }
     QString         firmwareTypeString          () const;
     QString         vehicleTypeString           () const;
+    int             commsMode                   () { return _commsMode; }
     int             telemetryRRSSI              () { return _telemetryRRSSI; }
     int             telemetryLRSSI              () { return _telemetryLRSSI; }
     unsigned int    telemetryRXErrors           () { return _telemetryRXErrors; }
@@ -602,8 +604,7 @@ public:
     Fact* headingToHome                     () { return &_headingToHomeFact; }
     Fact* distanceToGCS                     () { return &_distanceToGCSFact; }
     Fact* hobbs                             () { return &_hobbsFact; }
-    Fact* throttlePct                       () { return &_throttlePctFact; }
-    Fact* commsMode                         () { return &_commsModeFact; }
+    Fact* throttlePct                       () { return &_throttlePctFact; }    
 
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
     FactGroup* windFactGroup                () { return &_windFactGroup; }
@@ -808,6 +809,7 @@ signals:
     void currentConfigChanged           ();
     void flowImageIndexChanged          ();
     void rcRSSIChanged                  (int rcRSSI);
+    void commsModeChanged               (int value);
     void telemetryRRSSIChanged          (int value);
     void telemetryLRSSIChanged          (int value);
     void telemetryRXErrorsChanged       (unsigned int value);
@@ -1008,6 +1010,7 @@ private:
     bool            _altitudeMessageAvailable               = false;
     double          _defaultCruiseSpeed = qQNaN();
     double          _defaultHoverSpeed = qQNaN();
+    int             _commsMode = 0; //default auto
     int             _telemetryRRSSI = 0;
     int             _telemetryLRSSI = 0;
     uint32_t        _telemetryRXErrors = 0;
@@ -1216,8 +1219,7 @@ private:
     Fact _headingToHomeFact;
     Fact _distanceToGCSFact;
     Fact _hobbsFact;
-    Fact _throttlePctFact;
-    Fact _commsModeFact;
+    Fact _throttlePctFact;    
 
     VehicleGPSFactGroup             _gpsFactGroup;
     VehicleWindFactGroup            _windFactGroup;
@@ -1260,7 +1262,6 @@ private:
     static const char* _distanceToGCSFactName;
     static const char* _hobbsFactName;
     static const char* _throttlePctFactName;
-    static const char* _commsModeFactName;
 
     static const char* _gpsFactGroupName;
     static const char* _windFactGroupName;

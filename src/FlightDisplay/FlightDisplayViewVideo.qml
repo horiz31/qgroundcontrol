@@ -87,6 +87,7 @@ Item {
                         });
                     }
                 }
+                /*
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
                     height: parent.height
@@ -114,7 +115,36 @@ Item {
                     height: 1
                     y:      parent.height * 0.66
                     visible: _showGrid && !QGroundControl.videoManager.fullScreen
-                }
+                }*/
+
+               //Make custom grid with circle and red dot
+               Rectangle {  //radius makes this a circle
+                   color:  Qt.rgba(0,0,0,0)
+                   //border.color:   Qt.rgba(1,1,1,0.5)
+                   border.color: Qt.rgba(1,1,1,0.5)
+                   height: parent.height * .5
+                   width:  parent.height * .5
+                   radius: width
+                   x:      parent.width * 0.5
+                   y:      parent.height * 0.5
+                   anchors.horizontalCenter: parent.horizontalCenter
+                   anchors.verticalCenter: parent.verticalCenter
+                   visible:  _showGrid
+
+               }
+               Rectangle {  //red dot
+                   color:  Qt.rgba(1,0,0,1)
+                   border.color: Qt.rgba(1,0,0,1)
+                   height: 8
+                   width:  8
+                   radius: 8
+                   x:      parent.width * 0.5
+                   y:      parent.height * 0.5
+                   anchors.horizontalCenter: parent.horizontalCenter
+                   anchors.verticalCenter: parent.verticalCenter
+                   visible:  _showGrid
+
+               }
             }
         }
         Loader {

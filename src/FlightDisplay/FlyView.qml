@@ -175,7 +175,7 @@ Item {
                anchors.bottom:             parent.bottom
                anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
                anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
-               visible:        true
+               visible:        _activeVehicle
                z:                          _fullItemZorder + 1
 
                Column {
