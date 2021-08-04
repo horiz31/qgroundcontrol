@@ -165,6 +165,25 @@ void VehicleLinkManager::_commRegainedOnLink(LinkInterface* link)
     }
 }
 
+int VehicleLinkManager::getCurrentActiveLinkType(void)
+{
+    //returns 0 if LOS and 1 if Cell
+    UDPLink* udpLink  = qobject_cast<UDPLink*>(_primaryLink.lock().get());
+    if (udpLink) {
+        SharedLinkConfigurationPtr config = udpLink->linkConfiguration();
+        if (config) {
+            UDPConfiguration* udpConfig = qobject_cast<UDPConfiguration*>(config.get());
+            if (udpConfig)
+            {
+                if (udpConfig->localPort() == 14550)
+                    return 0;
+                else if (udpConfig->localPort() == 14560)
+                    return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 void VehicleLinkManager::_requestVideoStreamInfo(void)
 {

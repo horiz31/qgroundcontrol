@@ -3833,10 +3833,19 @@ void Vehicle::_handleVideoStreamInfo(const mavlink_message_t& message)
     videoUri = QString(b);
     _vehicleLinkManager->VideoStreamInfoAck();  //tell the link manager that we received this
     qDebug() << "Got updated video endpoint uri of" << videoUri;
-    if (videoUri != _videoEndpoint)
+    byte streamID = o.stream_id;
+    //if the streamID indicated that this stream info is for a link type we aren't current using, then we probably want to ignore this
+    if (streamID == (byte)_vehicleLinkManager->getCurrentActiveLinkType())
     {
-        _videoEndpoint = videoUri;
-        emit videoInfoChanged();
+        if (videoUri != _videoEndpoint)
+        {
+            _videoEndpoint = videoUri;
+            emit videoInfoChanged();
+        }
+    }
+    else
+    {
+        qDebug() << "Ignoring this video stream info message because it is for a different link than we are on";
     }
 }
 

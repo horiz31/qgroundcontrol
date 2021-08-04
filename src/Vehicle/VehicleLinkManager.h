@@ -63,6 +63,7 @@ public:
     void                    closeVehicle                (void);
     void                    VideoStreamInfoAck          (void);
     void                    setCommMode                 (int mode);
+    int                     getCurrentActiveLinkType    (void);
 
 signals:
     void primaryLinkChanged             (void);
