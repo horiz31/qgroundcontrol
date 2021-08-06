@@ -406,7 +406,7 @@ GstVideoReceiver::startAudio()
     }
 
 
-    QString pipeline = QStringLiteral("udpsrc uri=%1 auto-multicast=true multicast-iface=%2 caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1208 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false"); //
+    QString pipeline = QStringLiteral("udpsrc uri=%1 auto-multicast=true multicast-iface='%2' caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1208 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false"); //
 
     qDebug()<<"pipeline string is"<< pipeline;
      _audioPipeline = gst_parse_launch(static_cast<char*>(pipeline.arg(audioUri, ifaceList.toUtf8().constData()).toLocal8Bit().data()) , &error);

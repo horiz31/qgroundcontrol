@@ -254,7 +254,7 @@ Item {
                            }
                        }
                        QGCLabel {
-                           text: qsTr("Audio Enable:")
+                           text: qsTr("Audio Enable")
                            color: "white"
                            visible:  QGroundControl.videoManager.isGStreamer && QGroundControl.videoManager.decoding && _audioEnabled
                        }
