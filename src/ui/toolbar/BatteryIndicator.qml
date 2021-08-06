@@ -71,6 +71,7 @@ Item {
                     else
                         return qgcPal.text
                 }
+                return qgcPal.text
                 /*
                 switch (battery.chargeState.rawValue) {
                 case MAVLink.MAV_BATTERY_CHARGE_STATE_OK:

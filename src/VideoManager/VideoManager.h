@@ -52,6 +52,7 @@ public:
     Q_PROPERTY(bool             hasThermal              READ    hasThermal                                  NOTIFY decodingChanged)
     Q_PROPERTY(QString          imageFile               READ    imageFile                                   NOTIFY imageFileChanged)
     Q_PROPERTY(bool             streaming               READ    streaming                                   NOTIFY streamingChanged)
+    Q_PROPERTY(bool             audioRunning            READ    audioRunning                                NOTIFY audioRunningChanged)
     Q_PROPERTY(bool             decoding                READ    decoding                                    NOTIFY decodingChanged)
     Q_PROPERTY(bool             recording               READ    recording                                   NOTIFY recordingChanged)
     Q_PROPERTY(QSize            videoSize               READ    videoSize                                   NOTIFY videoSizeChanged)
@@ -76,6 +77,11 @@ public:
     bool decoding(void) {
         return _decoding;
     }
+
+    bool audioRunning(void){
+        return _audioRunning;
+    }
+
 
     bool recording(void) {
         return _recording;
@@ -103,8 +109,12 @@ public:
     // Override from QGCTool
     virtual void        setToolbox          (QGCToolbox *toolbox);
 
-    Q_INVOKABLE void startVideo     ();
+    virtual void        toggleAudioPlayback();
+
+    Q_INVOKABLE void startVideo     ();    
     Q_INVOKABLE void stopVideo      ();
+    Q_INVOKABLE void startAudio     ();
+    Q_INVOKABLE void stopAudio      ();
 
     Q_INVOKABLE void startRecording (const QString& videoFile = QString());
     Q_INVOKABLE void stopRecording  ();
@@ -123,6 +133,7 @@ signals:
     void imageFileChanged           ();
     void streamingChanged           ();
     void decodingChanged            ();
+    void audioRunningChanged        ();
     void recordingChanged           ();
     void recordingStarted           ();
     void videoSizeChanged           ();
@@ -130,6 +141,8 @@ signals:
 protected slots:
     void _videoSourceChanged        ();
     void _udpPortChanged            ();
+    void _audioChanged              ();
+    void _audioUdpPortChanged       ();
     void _rtspUrlChanged            ();
     void _tcpUrlChanged             ();
     void _lowLatencyModeChanged     ();
@@ -169,6 +182,7 @@ protected:
     QAtomicInteger<bool>    _streaming              = false;
     QAtomicInteger<bool>    _decoding               = false;
     QAtomicInteger<bool>    _recording              = false;
+    QAtomicInteger<bool>    _audioRunning           = false;
     QAtomicInteger<quint32> _videoSize              = 0;
     VideoSettings*          _videoSettings          = nullptr;
     QString                 _videoSourceID;

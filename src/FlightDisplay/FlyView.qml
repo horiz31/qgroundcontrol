@@ -61,6 +61,10 @@ Item {
     property real   _pipItemZorder:     QGroundControl.zOrderWidgets
 
     property int    _commsMode:           _activeVehicle ? _activeVehicle.commsMode : 0
+    property var    _videoManager:                  QGroundControl.videoManager
+    property bool   _audioRunning:                  QGroundControl.videoManager.audioRunning
+    property bool   _streamingEnabled:              QGroundControl.settingsManager.videoSettings.streamConfigured
+    property bool   _audioEnabled:                  QGroundControl.settingsManager.videoSettings.audioEnabled
 
     function _calcCenterViewPort() {
         var newToolInset = Qt.rect(0, 0, width, height)
@@ -166,7 +170,7 @@ Item {
 
     Rectangle {
                id:                 patriosBox
-               width:  patriosCol.width   + ScreenTools.defaultFontPixelWidth  * 3
+               width:  patriosGrid2.width   + ScreenTools.defaultFontPixelWidth  * 3
                height: patriosCol.height  + ScreenTools.defaultFontPixelHeight * 2
                radius: ScreenTools.defaultFontPixelHeight * 0.5
                color:  Qt.rgba(0,0,0,0.25)
@@ -175,15 +179,98 @@ Item {
                anchors.bottom:             parent.bottom
                anchors.bottomMargin:       ScreenTools.toolbarHeight + _margins
                anchors.rightMargin:       ScreenTools.defaultFontPixelHeight * 2
-               visible:        _activeVehicle
+               visible:        true//_activeVehicle
                z:                          _fullItemZorder + 1
 
                Column {
                    id:                 patriosCol
                    spacing:            ScreenTools.defaultFontPixelHeight * 0.5
-                   width:              Math.max(patriosGrid.width, patriosLabel.width)
+                   width:              Math.max(patriosGrid1.width, patriosLabel.width)
                    anchors.margins:    ScreenTools.defaultFontPixelHeight
                    anchors.centerIn:   parent
+
+
+                   QGCLabel {
+                       id:             audioLabel
+                       text:           qsTr("Audio")
+                       color:          "white"
+                       font.family:    ScreenTools.demiboldFontFamily
+                       anchors.horizontalCenter: parent.horizontalCenter
+                       visible:  QGroundControl.videoManager.isGStreamer && QGroundControl.videoManager.decoding && _audioEnabled
+                   }
+
+                   GridLayout {
+                       id:                 patriosGrid1
+                       anchors.margins:    ScreenTools.defaultFontPixelHeight
+                       columnSpacing:      ScreenTools.defaultFontPixelWidth
+                       columns:            2
+                       anchors.horizontalCenter: parent.horizontalCenter
+                       visible:  QGroundControl.videoManager.isGStreamer && QGroundControl.videoManager.decoding && _audioEnabled
+
+
+                       Item {
+
+                           height:                     ScreenTools.defaultFontPixelHeight * 3
+                           width:                      height
+                           z:                          _fullItemZorder.z + 5
+                           visible:                    QGroundControl.videoManager.isGStreamer && QGroundControl.videoManager.decoding && _audioEnabled
+                           Rectangle {
+                               id:                 audioBtnBackground
+                               anchors.top:        parent.top
+                               anchors.bottom:     parent.bottom
+                               width:              height
+                               radius:             height //_recordingVideo ? 0 : height
+                               color:              (_audioRunning && _streamingEnabled) ? "blue" : "gray"
+                               SequentialAnimation on opacity {
+                                   running:        _audioRunning
+                                   loops:          Animation.Infinite
+                                   PropertyAnimation { to: 0.5; duration: 500 }
+                                   PropertyAnimation { to: 1.0; duration: 500 }
+                               }
+                           }
+                           QGCColoredImage {
+                               anchors.top:                parent.top
+                               anchors.bottom:             parent.bottom
+                               anchors.horizontalCenter:   parent.horizontalCenter
+                               width:                      height * 0.625
+                               sourceSize.width:           width
+                               source:                     "/qmlimages/SpeakerIcon.svg"
+                               visible:                    audioBtnBackground.visible
+                               fillMode:                   Image.PreserveAspectFit
+                               color:                      "white"
+                           }
+                           MouseArea {
+                               anchors.fill:   parent
+                               enabled:        QGroundControl.videoManager.decoding && _streamingEnabled
+                               onClicked: {
+                                   if (_audioRunning) {
+                                       _videoManager.stopAudio()
+                                       // reset blinking animation
+                                       audioBtnBackground.opacity = 1
+                                   } else {
+                                       _videoManager.startAudio()
+                                   }
+                               }
+                           }
+                       }
+                       QGCLabel {
+                           text: qsTr("Audio Enable:")
+                           color: "white"
+                           visible:  QGroundControl.videoManager.isGStreamer && QGroundControl.videoManager.decoding && _audioEnabled
+                       }
+
+                   }
+                   // add a dividing line
+                   Rectangle {
+                       color:  Qt.rgba(0,0,0,0)
+                       border.color: Qt.rgba(1,1,1,0.5)
+                       height: 1
+                       width:  patriosGrid2.width
+                       anchors.horizontalCenter: parent.horizontalCenter
+                       visible:  patriosGrid1.visible
+
+                   }
+
 
                    QGCLabel {
                        id:             patriosLabel
@@ -195,7 +282,7 @@ Item {
 
 
                    GridLayout {
-                       id:                 patriosGrid
+                       id:                 patriosGrid2
                        anchors.margins:    ScreenTools.defaultFontPixelHeight
                        columnSpacing:      ScreenTools.defaultFontPixelWidth
                        columns:            2

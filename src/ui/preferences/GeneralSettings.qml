@@ -58,6 +58,8 @@ Rectangle {
     property bool   _videoAutoStreamConfig:     QGroundControl.videoManager.autoStreamConfigured
     property bool   _showSaveVideoSettings:     _isGst || _videoAutoStreamConfig
     property bool   _disableAllDataPersistence: QGroundControl.settingsManager.appSettings.disableAllPersistence.rawValue
+    property bool   _isAudio:                   QGroundControl.settingsManager.videoSettings.audioEnabled
+
 
     property string gpsDisabled: "Disabled"
     property string gpsUdpPort:  "UDP Port"
@@ -345,6 +347,25 @@ Rectangle {
                                     text:       qsTr("Auto-Delete Saved Recordings")
                                     fact:       _videoSettings.enableStorageLimit
                                     visible:    _showSaveVideoSettings && fact.visible
+                                }
+
+                                QGCLabel {
+                                    text:                   qsTr("Enable Audio Streaming")
+                                    visible:                (_isUDP264 || _isUDP265 ) && QGroundControl.settingsManager.videoSettings.audio.visible
+                                }
+                                FactCheckBox {
+                                    text:                   ""
+                                    fact:                   QGroundControl.settingsManager.videoSettings.audio
+                                    visible:                (_isUDP264 || _isUDP265 ) && QGroundControl.settingsManager.videoSettings.audio.visible
+                                }
+                                QGCLabel {
+                                    text:                   qsTr("Audio Port")
+                                    visible:                (_isUDP264 || _isUDP265 ) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   QGroundControl.settingsManager.videoSettings.audioUdpPort
+                                    visible:                (_isUDP264 || _isUDP265 ) && QGroundControl.settingsManager.videoSettings.audioUdpPort.visible
                                 }
                             }
                         }

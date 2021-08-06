@@ -36,6 +36,8 @@ public:
     DEFINE_SETTINGFACT(disableWhenDisarmed)
     DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(forceVideoDecoder)
+    DEFINE_SETTINGFACT(audio)
+    DEFINE_SETTINGFACT(audioUdpPort)
 
     enum VideoDecoderOptions {
         ForceVideoDecoderDefault = 0,
@@ -48,6 +50,7 @@ public:
     Q_ENUM(VideoDecoderOptions)
 
     Q_PROPERTY(bool     streamConfigured        READ streamConfigured       NOTIFY streamConfiguredChanged)
+    Q_PROPERTY(bool     audioEnabled            READ audioEnabled           NOTIFY audioEnabledChanged)
     Q_PROPERTY(QString  rtspVideoSource         READ rtspVideoSource        CONSTANT)
     Q_PROPERTY(QString  udp264VideoSource       READ udp264VideoSource      CONSTANT)
     Q_PROPERTY(QString  udp265VideoSource       READ udp265VideoSource      CONSTANT)
@@ -55,6 +58,7 @@ public:
     Q_PROPERTY(QString  mpegtsVideoSource       READ mpegtsVideoSource      CONSTANT)
     Q_PROPERTY(QString  disabledVideoSource     READ disabledVideoSource    CONSTANT)
 
+    bool     audioEnabled            ();
     bool     streamConfigured       ();
     QString  rtspVideoSource        () { return videoSourceRTSP; }
     QString  udp264VideoSource      () { return videoSourceUDPH264; }
@@ -75,6 +79,7 @@ public:
 
 signals:
     void streamConfiguredChanged    (bool configured);
+    void audioEnabledChanged    ();
 
 private slots:
     void _configChanged             (QVariant value);

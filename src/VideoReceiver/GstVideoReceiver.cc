@@ -50,6 +50,7 @@ GstVideoReceiver::GstVideoReceiver(QObject* parent)
     , _videoSink(nullptr)
     , _fileSink(nullptr)
     , _pipeline(nullptr)
+    , _audioPipeline(nullptr)
     , _lastSourceFrameTime(0)
     , _lastVideoFrameTime(0)
     , _resetVideoSink(true)
@@ -66,6 +67,17 @@ GstVideoReceiver::GstVideoReceiver(QObject* parent)
 GstVideoReceiver::~GstVideoReceiver(void)
 {
     _slotHandler.shutdown();
+}
+
+bool
+GstVideoReceiver::setAudioUri(const QString & uri)
+{
+    if (uri != _audioUri)
+    {
+        _audioUri = uri;
+        return true;
+    }
+    return false;
 }
 
 void
@@ -365,6 +377,84 @@ GstVideoReceiver::stop(void)
     _dispatchSignal([this](){
         emit onStopComplete(STATUS_OK);
     });
+}
+
+void
+GstVideoReceiver::startAudio()
+{
+    qDebug()<<"Starting audio pipeline";
+     QString audioUri = _audioUri;
+     if (audioUri.isEmpty())
+     {
+         qDebug()<<"Audio uri is empty, exiting";
+         return;
+     }
+
+    GError* error = nullptr;
+
+    //get network interfaces that support multicast and group join them all
+    QString ifaceList = "";
+    int counter = 0;
+    foreach(QNetworkInterface iface, QNetworkInterface::allInterfaces())
+    {
+        if (iface.flags().testFlag(QNetworkInterface::IsUp) && iface.flags().testFlag(QNetworkInterface::CanMulticast) && !iface.flags().testFlag(QNetworkInterface::IsLoopBack))
+        {
+            if (counter++ > 0)
+                ifaceList.append(",");
+            ifaceList.append(iface.humanReadableName());
+        }
+    }
+
+
+    QString pipeline = QStringLiteral("udpsrc uri=%1 auto-multicast=true multicast-iface=%2 caps=application/x-rtp ! rtpmp4adepay ! audio/mpeg,codec_data=(buffer)1208 ! queue ! decodebin ! audioconvert ! directsoundsink sync=false"); //
+
+    qDebug()<<"pipeline string is"<< pipeline;
+     _audioPipeline = gst_parse_launch(static_cast<char*>(pipeline.arg(audioUri, ifaceList.toUtf8().constData()).toLocal8Bit().data()) , &error);
+
+
+    if(error != nullptr) {
+        qDebug()<<"Failed to create Audio pipeline";
+        qCWarning(VideoReceiverLog) << "Failed to create audio pipeline: " << error->message;
+        g_error_free(error);
+        return;
+    }
+
+    if (_audioPipeline) {
+        gst_element_set_state(_audioPipeline, GST_STATE_PLAYING);
+    } else {
+        qDebug()<<"Failed to create Audio pipeline";
+        qCWarning(VideoReceiverLog) << "Failed to create audio pipeline";
+    }
+
+    _audioRunning = true;
+
+    qDebug()<<"Audio pipeline started at " << audioUri << "on interface(s)"<< ifaceList.toUtf8().constData();
+
+    _dispatchSignal([this](){
+        emit audioChanged(_audioRunning);
+    });
+}
+
+void
+GstVideoReceiver::stopAudio() {
+    qCDebug(VideoReceiverLog) << "Stopping audio pipeline";
+
+    if(_audioPipeline) {
+        gst_element_set_state(_audioPipeline, GST_STATE_NULL);
+        gst_object_unref(_audioPipeline);
+        _audioPipeline = nullptr;
+        _audioRunning = false;
+
+        _dispatchSignal([this](){
+            emit audioChanged(_audioRunning);
+        });
+
+        qDebug() << "Stopping audio pipeline";
+    }
+    else
+    {
+        qDebug() << "audio pipeline not stopped because I didn't detect it existed";
+    }
 }
 
 void

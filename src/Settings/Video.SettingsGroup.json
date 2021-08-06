@@ -138,6 +138,21 @@
     "enumValues":       "0,1,2,3,4,5",
     "default":           0,
     "qgcRebootRequired": true
+},
+{
+    "name":             "audio",
+    "shortDescription": "Enables audio streaming",
+    "longDescription":  "If this option is enabled, audio streaming is enabled.",
+    "type":             "bool",
+    "default":          true
+},
+{
+    "name":             "audioUdpPort",
+    "shortDescription": "Audio UDP Port",
+    "longDescription":  "UDP port to bind to for audio stream.",
+    "type":             "uint16",
+    "min":              1025,
+    "default":          5601
 }
 ]
 }

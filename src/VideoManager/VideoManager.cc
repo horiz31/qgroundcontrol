@@ -98,6 +98,8 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
    connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
    connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
+   connect(_videoSettings->audioUdpPort(),  &Fact::rawValueChanged, this, &VideoManager::_audioUdpPortChanged);
+   connect(_videoSettings->audio(),         &Fact::rawValueChanged, this, &VideoManager::_audioChanged);
    connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
    connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
@@ -148,6 +150,11 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     connect(_videoReceiver[0], &VideoReceiver::decodingChanged, this, [this](bool active){
         _decoding = active;
         emit decodingChanged();
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::audioChanged, this, [this](bool active){
+        _audioRunning = active;
+        emit audioRunningChanged();
     });
 
     connect(_videoReceiver[0], &VideoReceiver::recordingChanged, this, [this](bool active){
@@ -341,6 +348,22 @@ VideoManager::stopRecording()
 #endif
 }
 
+void VideoManager::toggleAudioPlayback()
+{
+    qDebug() << "Got audio playback";
+    if (_audioRunning)
+    {
+        qDebug() << "stop audio playback";
+        stopAudio();
+    }
+    else if (!_audioRunning && _decoding)
+    {
+        qDebug() << "start audio playback";
+        startAudio();
+    }
+
+}
+
 void
 VideoManager::grabImage(const QString& imageFile)
 {
@@ -487,6 +510,68 @@ void
 VideoManager::_udpPortChanged()
 {
     _restartVideo(0);
+}
+
+void
+VideoManager::_audioChanged()
+{
+    if(!_videoSettings || !_videoReceiver[0])
+        return;
+
+    _videoReceiver[0]->stopAudio();
+
+}
+void
+VideoManager::_audioUdpPortChanged()
+{
+#if defined(QGC_GST_STREAMING)
+    qCDebug(VideoManagerLog) << "stopping audio stream due to port change";
+    _videoReceiver[0]->stopAudio();
+
+#endif
+    if (_activeVehicle)
+    {
+        QString source = _videoSettings->videoSource()->rawValue().toString();
+        if (source == VideoSettings::videoSourceUDPH264)
+        {
+            //h31 edit, get settings from the _activevehicle video endpoint
+            if (_activeVehicle && _activeVehicle->videoEndpoint()!="")
+            {
+                 //so if this is a multicast address, then we will assume that audio is on the same group at port specified in settings
+                 qDebug() << "Changing audio settings to a uri of" << _activeVehicle->videoEndpoint();
+                //if this is a multicast address, change the uri to the entire address, otherwise just change the port
+                //check if in range of multicast
+                QUrl convertedEndpoint = QUrl(_activeVehicle->videoEndpoint());
+                //qDebug() << "URI converted to " << convertedEndpoint.toString() << "host is"<< convertedEndpoint.host()<< "port is"<< convertedEndpoint.port();
+                QHostAddress convertedHost = QHostAddress(convertedEndpoint.host());
+                //qDebug() << "host converted to " << convertedHost.toIPv4Address();
+                convertedEndpoint.setPort(_videoSettings->audioUdpPort()->rawValue().toInt());  //change the port to the one for audio
+
+                qDebug() << "Setting audio uri to"<< convertedEndpoint.toString();
+
+                if ((convertedHost.toIPv4Address() >> 28) == 14)
+                {
+                    //qDebug() << "Multicast address detected";
+                    _videoReceiver[0]->setAudioUri(QStringLiteral("%1").arg(convertedEndpoint.toString()));
+                }
+                else
+                {
+                    //qDebug() << "unicast address detected";
+                    _videoReceiver[0]->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
+                }
+
+            }
+            else
+            {
+                 _videoReceiver[0]->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
+            }
+        }
+
+    }
+    else
+    {
+        _videoReceiver[0]->setAudioUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -684,8 +769,7 @@ VideoManager::_updateSettings(unsigned id)
         if (_activeVehicle && _activeVehicle->videoEndpoint()!="")
         {
              qDebug() << "Changing video settings to a uri of" << _activeVehicle->videoEndpoint();
-            //if this is a multicast address, change the uri to the entire address, otherwise just change the port
-            //todo, convert string to ip address
+            //if this is a multicast address, change the uri to the entire address, otherwise just change the port          
             //check if in range of multicast
             QUrl convertedEndpoint = QUrl(_activeVehicle->videoEndpoint());
             //qDebug() << "URI converted to " << convertedEndpoint.toString() << "host is"<< convertedEndpoint.host()<< "port is"<< convertedEndpoint.port();
@@ -694,11 +778,19 @@ VideoManager::_updateSettings(unsigned id)
             if ((convertedHost.toIPv4Address() >> 28) == 14)
             {
                 //qDebug() << "Multicast address detected";
+
+                QUrl audioConvertedEndpoint = QUrl(_activeVehicle->videoEndpoint());
+                QHostAddress convertedHost = QHostAddress(audioConvertedEndpoint.host());
+                audioConvertedEndpoint.setPort(_videoSettings->audioUdpPort()->rawValue().toInt());  //change the port to the one for audio
+
+                 qDebug() << "Setting audio uri to"<< audioConvertedEndpoint.toString();
+                _videoReceiver[0]->setAudioUri(QStringLiteral("%1").arg(audioConvertedEndpoint.toString()));
                 settingsChanged |= _updateVideoUri(0, QStringLiteral("%1").arg(_activeVehicle->videoEndpoint()));
             }
             else
             {
                 //qDebug() << "unicast address detected";
+                 _videoReceiver[0]->setAudioUri(QStringLiteral("%1").arg(_videoSettings->audioUdpPort()->rawValue().toInt()));
                 settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(convertedEndpoint.port()));
             }
 
@@ -781,6 +873,13 @@ VideoManager::_restartVideo(unsigned id)
     } else {
         _startReceiver(id);
     }
+
+    //kind of a hack, but audio is tied to videoReceiver[0], if it is running stop and restart which will pick up any new uri settings
+    if (id == 0 && _audioRunning)
+    {
+        stopAudio();
+        startAudio();
+    }
 #endif
 }
 
@@ -818,6 +917,34 @@ VideoManager::_stopReceiver(unsigned id)
         qCDebug(VideoManagerLog) << "Unsupported receiver id" << id;
     } else if (_videoReceiver[id] != nullptr) {
         _videoReceiver[id]->stop();
+    }
+#endif
+}
+
+//----------------------------------------------------------------------------------------
+void
+VideoManager::stopAudio()
+{
+    if (qgcApp()->runningUnitTests()) {
+        return;
+    }
+#if defined(QGC_GST_STREAMING)
+   if (_videoReceiver[0] != nullptr) {
+        _videoReceiver[0]->stopAudio();
+    }
+#endif
+}
+
+//----------------------------------------------------------------------------------------
+void
+VideoManager::startAudio()
+{
+    if (qgcApp()->runningUnitTests()) {
+        return;
+    }
+#if defined(QGC_GST_STREAMING)
+   if (_videoReceiver[0] != nullptr) {
+        _videoReceiver[0]->startAudio();
     }
 #endif
 }

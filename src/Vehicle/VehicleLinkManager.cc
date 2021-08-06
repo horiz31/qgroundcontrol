@@ -197,17 +197,9 @@ void VehicleLinkManager::_requestVideoStreamInfo(void)
             {
                 qDebug() << "Requesting stream info for"<< udpConfig->localPort();
                 _vehicle->sendRequestVideoStream(udpConfig->localPort());
-/*
-                _vehicle->sendMavCommand(MAV_COMP_ID_ONBOARD_COMPUTER,
-                               MAV_CMD_REQUEST_MESSAGE,
-                               true,
-                               MAVLINK_MSG_ID_VIDEO_STREAM_INFORMATION,  //message we are requesting, VIDEO_STREAM_INFORMATION
-                               1, //stream number
-                               udpConfig->localPort()); // port of the active link, which will be used by h31proxy to decide which video endpoint to report
-*/
+
                 _videoRequestState = WaitingForAck;
                 _videoRequestTimer.start();
-
 
             }
 

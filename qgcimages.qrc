@@ -199,5 +199,6 @@
         <file alias="AutoIcon.svg">src/ui/toolbar/Images/AutoIcon.svg</file>
         <file alias="WifiIcon.svg">src/ui/toolbar/Images/WifiIcon.svg</file>
         <file alias="CellularIcon.svg">src/ui/toolbar/Images/CellularIcon.svg</file>
+        <file alias="SpeakerIcon.svg">src/ui/toolbar/Images/SpeakerIcon.svg</file>
     </qresource>
 </RCC>

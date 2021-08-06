@@ -91,11 +91,14 @@ public:
 public slots:
     virtual void start(const QString& uri, unsigned timeout, int buffer = 0);
     virtual void stop(void);
+    virtual bool setAudioUri                (const QString& uri);
     virtual void startDecoding(void* sink);
     virtual void stopDecoding(void);
     virtual void startRecording(const QString& videoFile, FILE_FORMAT format);
     virtual void stopRecording(void);
     virtual void takeScreenshot(const QString& imageFile);
+    virtual void startAudio(void);
+    virtual void stopAudio(void);
 
 protected slots:
     virtual void _watchdog(void);
@@ -143,6 +146,8 @@ protected:
     GstElement*         _videoSink;
     GstElement*         _fileSink;
     GstElement*         _pipeline;
+    GstElement*         _audioPipeline;
+    GstElement*         _gstVolume;
 
     qint64              _lastSourceFrameTime;
     qint64              _lastVideoFrameTime;
@@ -155,6 +160,7 @@ protected:
     uint64_t            _udpReconnect_us;
 
     QString             _uri;
+    QString             _audioUri;
     unsigned            _timeout;
     int                 _buffer;
 
@@ -162,6 +168,7 @@ protected:
     uint32_t            _signalDepth;
 
     bool                _endOfStream;
+    bool                _audioRunning;
 
     static const char*  _kFileMux[FILE_FORMAT_MAX - FILE_FORMAT_MIN];
 };
