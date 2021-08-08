@@ -1030,9 +1030,9 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if(action == _buttonActionEmergencyStop) {
       if(buttonDown) emit emergencyStop();
     } else if(action == _buttonActionCommLOS) {
-        if(buttonDown) emit setCommMode(0);
-    } else if(action == _buttonActionCommCell) {
         if(buttonDown) emit setCommMode(1);
+    } else if(action == _buttonActionCommCell) {
+        if(buttonDown) emit setCommMode(2);
     } else if(action == _buttonActionToggleAudio) {
         if(buttonDown) emit toggleAudioPlayback();
     } else {
