@@ -64,6 +64,9 @@ const char* Joystick::_buttonActionGimbalLeft =         QT_TR_NOOP("Gimbal Left"
 const char* Joystick::_buttonActionGimbalRight =        QT_TR_NOOP("Gimbal Right");
 const char* Joystick::_buttonActionGimbalCenter =       QT_TR_NOOP("Gimbal Center");
 const char* Joystick::_buttonActionEmergencyStop =      QT_TR_NOOP("Emergency Stop");
+const char* Joystick::_buttonActionCommLOS =            QT_TR_NOOP("Set Comm Mode To LOS");
+const char* Joystick::_buttonActionCommCell =           QT_TR_NOOP("Set Comm Mode To Cellular");
+const char* Joystick::_buttonActionToggleAudio =        QT_TR_NOOP("Toggle Audio Playback");
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "RollAxis",
@@ -689,6 +692,8 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             disconnect(this, &Joystick::emergencyStop,      _activeVehicle, &Vehicle::emergencyStop);
+            disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
+            disconnect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
         }
         // Always set up the new vehicle
         _activeVehicle = vehicle;
@@ -711,6 +716,8 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             connect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             connect(this, &Joystick::emergencyStop,      _activeVehicle, &Vehicle::emergencyStop);
+            connect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
+            connect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
         }
     }
     if (!isRunning()) {
@@ -730,7 +737,10 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::gimbalYawStep,      _activeVehicle, &Vehicle::gimbalYawStep);
             disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
+            disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
+            disconnect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
         }
+
         _exitThread = true;
     }
 }
@@ -1019,6 +1029,12 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         }
     } else if(action == _buttonActionEmergencyStop) {
       if(buttonDown) emit emergencyStop();
+    } else if(action == _buttonActionCommLOS) {
+        if(buttonDown) emit setCommMode(0);
+    } else if(action == _buttonActionCommCell) {
+        if(buttonDown) emit setCommMode(1);
+    } else if(action == _buttonActionToggleAudio) {
+        if(buttonDown) emit toggleAudioPlayback();
     } else {
         qCDebug(JoystickLog) << "_buttonAction unknown action:" << action;
     }
@@ -1108,6 +1124,10 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionEmergencyStop));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleAudio));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionCommLOS));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionCommCell));
+
     for(int i = 0; i < _assignableButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableButtonActions[i]);
         _availableActionTitles << p->action();
