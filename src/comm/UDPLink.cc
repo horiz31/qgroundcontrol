@@ -259,8 +259,10 @@ bool UDPLink::_hardwareConnect()
         {
             if (iface.flags().testFlag(QNetworkInterface::CanMulticast) && !iface.flags().testFlag(QNetworkInterface::IsLoopBack))
             {
-                 _socket->joinMulticastGroup(QHostAddress("224.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
-                 _socket->joinMulticastGroup(QHostAddress("225.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
+                 _socket->joinMulticastGroup(QHostAddress(AppSettings().multicastTelemetryGroup1()->rawValueString()), QNetworkInterface::interfaceFromIndex(iface.index()));
+                 _socket->joinMulticastGroup(QHostAddress(AppSettings().multicastTelemetryGroup2()->rawValueString()), QNetworkInterface::interfaceFromIndex(iface.index()));
+                 //_socket->joinMulticastGroup(QHostAddress("224.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
+                 //_socket->joinMulticastGroup(QHostAddress("225.10.10.10"), QNetworkInterface::interfaceFromIndex(iface.index()));
             }
         }
 

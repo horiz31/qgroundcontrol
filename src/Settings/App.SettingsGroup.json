@@ -316,6 +316,18 @@
     "shortDesc":    "Use COMPONENT_INFORMATION query (beta)",
     "type":         "bool",
     "default":      false
+},
+{
+    "name":         "multicastTelemetryGroup1",
+    "shortDesc":    "Multicast address 1 to bind to for telemetry. The app will automatically bind to all multicast-enabled interfaces.",
+    "type":         "string",
+    "default":      "224.10.10.10"
+},
+{
+    "name":         "multicastTelemetryGroup2",
+    "shortDesc":    "Multicast address 2 to bind to for telemetry. The app will automatically bind to all multicast-enabled interfaces.",
+    "type":         "string",
+    "default":      "225.10.10.10"
 }
 ]
 }

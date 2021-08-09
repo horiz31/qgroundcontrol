@@ -557,6 +557,24 @@ Rectangle {
                                     visible:                _followTarget.visible
                                 }
                                 QGCLabel {
+                                    text:                   qsTr("Multicast Telemetry Group 1")
+                                    visible:                true
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   QGroundControl.settingsManager.appSettings.multicastTelemetryGroup1
+                                    visible:                true
+                                }
+                                QGCLabel {
+                                    text:                   qsTr("Multicast Telemetry Group 2")
+                                    visible:                true
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   QGroundControl.settingsManager.appSettings.multicastTelemetryGroup2
+                                    visible:                true
+                                }
+                                QGCLabel {
                                     text:                           qsTr("UI Scaling")
                                     visible:                        _appFontPointSize.visible
                                     Layout.alignment:               Qt.AlignVCenter

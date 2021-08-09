@@ -137,6 +137,10 @@ DECLARE_SETTINGSFACT(AppSettings, firstRunPromptIdsShown)
 DECLARE_SETTINGSFACT(AppSettings, forwardMavlink)
 DECLARE_SETTINGSFACT(AppSettings, forwardMavlinkHostName)
 DECLARE_SETTINGSFACT(AppSettings, useComponentInformationQuery)
+DECLARE_SETTINGSFACT(AppSettings, multicastTelemetryGroup1)
+DECLARE_SETTINGSFACT(AppSettings, multicastTelemetryGroup2)
+
+
 
 DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, indoorPalette)
 {
