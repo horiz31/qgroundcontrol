@@ -371,6 +371,54 @@ Rectangle {
                         }
                     }
 
+                    Item { width: 1; height: _margins }
+
+                            QGCLabel {
+                                id:                             doodleRssiSectionLabel
+                                text:                           qsTr("Doodle RSSI Settings")
+                                visible:                        true
+                            }
+
+
+                            Rectangle {
+                                Layout.preferredHeight: doodleRssiGrid.y + doodleRssiGrid.height + _margins
+                                Layout.preferredWidth:  doodleRssiGrid.width + (_margins * 2)
+                                color:                  qgcPal.windowShade
+                                visible:                doodleRssiSectionLabel.visible
+                                Layout.fillWidth:       true
+
+                                GridLayout {
+                                    id:                         doodleRssiGrid
+                                    anchors.margins:            _margins
+                                    anchors.top:                parent.top
+                                    anchors.horizontalCenter:   parent.horizontalCenter
+                                    Layout.fillWidth:           false
+                                    columns:                    2
+
+                                    QGCLabel {
+                                        text:                   qsTr("Retrieve RSSI From Doodle Radio")
+                                        visible:                true
+                                    }
+                                    FactCheckBox {
+                                        text:                   ""
+                                        fact:                   QGroundControl.settingsManager.appSettings.enableDoodleRssi
+                                        visible:                true
+                                    }
+
+                                    QGCLabel {
+                                        text:                   qsTr("IP Address of Doodle Radio")
+                                        visible:                QGroundControl.settingsManager.appSettings.doodleIP.visible && QGroundControl.settingsManager.appSettings.enableDoodleRssi.value
+                                    }
+                                    FactTextField {
+                                        Layout.preferredWidth:  _comboFieldWidth
+                                        fact:                   QGroundControl.settingsManager.appSettings.doodleIP
+                                        visible:                QGroundControl.settingsManager.appSettings.doodleIP.visible && QGroundControl.settingsManager.appSettings.enableDoodleRssi.value
+                                    }
+                                }
+
+
+                            }
+
                     Item { width: 1; height: _margins; visible: planViewSectionLabel.visible }
                     QGCLabel {
                         id:         planViewSectionLabel

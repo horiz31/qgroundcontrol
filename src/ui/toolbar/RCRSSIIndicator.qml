@@ -27,7 +27,25 @@ Item {
     property bool showIndicator: _activeVehicle.supportsRadio
 
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
-    property bool   _rcRSSIAvailable:   _activeVehicle ? _activeVehicle.rcRSSI > 0 && _activeVehicle.rcRSSI <= 100 : false
+    property var    _vehicleManager:     QGroundControl.multiVehicleManager
+    property bool   _rcRSSIAvailable:   true //activeVehicle ? activeVehicle.mavlinkLossPercent >= 0 && activeVehicle.mavlinkLossPercent <= 100 : false
+    //property bool   _rcRSSIAvailable:   activeVehicle ? activeVehicle.rcRSSI > 0 && activeVehicle.rcRSSI <= 100 : false
+
+    function getRssiColor() {
+        if(_vehicleManager.doodleRSSI.length > 0) {
+            if(_vehicleManager.doodleRSSIMax > 50) {
+                return qgcPal.text
+            }
+            if(_vehicleManager.doodleRSSIMax > 35) {
+                return qgcPal.colorOrange
+            }
+            if(_vehicleManager.doodleRSSIMax >= 0) {
+                return qgcPal.colorRed
+            }
+
+        }
+        return qgcPal.text
+    }
 
     Component {
         id: rcRSSIInfo
@@ -42,28 +60,52 @@ Item {
             Column {
                 id:                 rcrssiCol
                 spacing:            ScreenTools.defaultFontPixelHeight * 0.5
-                width:              Math.max(rcrssiGrid.width, rssiLabel.width)
+                //width:              Math.max(rcrssiGrid.width, rssiLabel.width)
                 anchors.margins:    ScreenTools.defaultFontPixelHeight
                 anchors.centerIn:   parent
 
                 QGCLabel {
                     id:             rssiLabel
-                    text:           _activeVehicle ? (_activeVehicle.rcRSSI !== 255 ? qsTr("RC RSSI Status") : qsTr("RC RSSI Data Unavailable")) : qsTr("N/A", "No data available")
+                    text:           activeVehicle ? (_vehicleManager.doodleRSSI.length >= 1 ? qsTr("Doodle RSSI Status") : qsTr("Mavlink Packet Loss Ratio")) : qsTr("N/A", "No data available")
                     font.family:    ScreenTools.demiboldFontFamily
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
-                GridLayout {
-                    id:                 rcrssiGrid
-                    visible:            _rcRSSIAvailable
-                    anchors.margins:    ScreenTools.defaultFontPixelHeight
-                    columnSpacing:      ScreenTools.defaultFontPixelWidth
-                    columns:            2
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    QGCLabel { text: qsTr("RSSI:") }
-                    QGCLabel { text: _activeVehicle ? (_activeVehicle.rcRSSI + "%") : 0 }
+                Row {
+                    id: mavPacket
+                    visible: (_vehicleManager.doodleRSSI.length === 0) ? true : false
+                    QGCLabel { text: activeVehicle ? (activeVehicle.mavlinkLossPercent.toFixed(0) + "% Lost ") : 0 }
                 }
+
+                Row {
+                    id: singleRssi
+                    visible: (_vehicleManager.doodleRSSI.length === 1) ? true : false
+
+                    //QGCLabel { text: activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0) + "%") : 0 }
+                    QGCLabel { text : (_vehicleManager.doodleRSSI.length === 1) ? _vehicleManager.doodleRSSI[0].qmac + ", " : "" }
+                    QGCLabel { text : (_vehicleManager.doodleRSSI.length === 1) ? _vehicleManager.doodleRSSI[0].qsignal + " dBm " : ""}
+                    QGCLabel { text : (_vehicleManager.doodleRSSI.length === 1) ? "(" +_vehicleManager.doodleRSSI[0].qpercentage + "%)" : "" }
+
+                }
+
+                    Repeater {
+                        id:     rssiList
+                        model:  _vehicleManager.doodleRSSI
+
+
+                        Row {
+                            visible: (_vehicleManager.doodleRSSI.length > 1) ? true : false
+                            QGCLabel { text : modelData.qmac + ", " }
+                            QGCLabel { text : modelData.qsignal + " dBm " }
+                            QGCLabel { text : "(" +modelData.qpercentage + "%)" }
+
+
+                        }
+                    }
+                   // QGCLabel { text: qsTr("RSSI:") }
+                    //QGCLabel { text: activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0) + "%") : 0 }
+                  //  QGCLabel { text : _activeVehicle ? _activeVehicle.doodleRSSI[0].qsignal : 0 }
+
             }
         }
     }
@@ -74,7 +116,7 @@ Item {
         anchors.bottom: parent.bottom
         spacing:        ScreenTools.defaultFontPixelWidth
 
-        QGCColoredImage {
+        /*QGCColoredImage {
             width:              height
             anchors.top:        parent.top
             anchors.bottom:     parent.bottom
@@ -84,18 +126,29 @@ Item {
             opacity:            _rcRSSIAvailable ? 1 : 0.5
             color:              qgcPal.buttonText
         }
+        */
 
         SignalStrength {
             anchors.verticalCenter: parent.verticalCenter
             size:                   parent.height * 0.5
-            percent:                _rcRSSIAvailable ? _activeVehicle.rcRSSI : 0
+            percent:                _activeVehicle ? ((_vehicleManager.doodleRSSIMax != -255) ? _vehicleManager.doodleRSSIMax : (100 - activeVehicle.mavlinkLossPercent.toFixed(0))) : 0
+
         }
+        QGCLabel {
+            id:             rssiLabel2
+            text:           _activeVehicle ? ((_vehicleManager.doodleRSSIMax != -255) ? _vehicleManager.doodleRSSIMax : (100 - activeVehicle.mavlinkLossPercent.toFixed(0))) + "%" : 0
+            color:          getRssiColor()
+            font.pointSize:         ScreenTools.mediumFontPointSize
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+
     }
 
     MouseArea {
         anchors.fill:   parent
         onClicked: {
-            mainWindow.showIndicatorPopup(_root, rcRSSIInfo)
+            mainWindow.showPopUp(_root, rcRSSIInfo)
         }
     }
 }

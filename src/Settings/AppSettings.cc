@@ -139,6 +139,8 @@ DECLARE_SETTINGSFACT(AppSettings, forwardMavlinkHostName)
 DECLARE_SETTINGSFACT(AppSettings, useComponentInformationQuery)
 DECLARE_SETTINGSFACT(AppSettings, multicastTelemetryGroup1)
 DECLARE_SETTINGSFACT(AppSettings, multicastTelemetryGroup2)
+DECLARE_SETTINGSFACT(AppSettings, enableDoodleRssi)
+DECLARE_SETTINGSFACT(AppSettings, doodleIP)
 
 
 

@@ -208,7 +208,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     _mavCommandResponseCheckTimer.setSingleShot(false);
     _mavCommandResponseCheckTimer.setInterval(_mavCommandResponseCheckTimeoutMSecs);
     _mavCommandResponseCheckTimer.start();
-    connect(&_mavCommandResponseCheckTimer, &QTimer::timeout, this, &Vehicle::_sendMavCommandResponseTimeoutCheck);
+    connect(&_mavCommandResponseCheckTimer, &QTimer::timeout, this, &Vehicle::_sendMavCommandResponseTimeoutCheck);      
 
     // Chunked status text timeout timer
     _chunkedStatusTextTimer.setSingleShot(true);

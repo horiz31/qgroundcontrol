@@ -44,6 +44,175 @@ MultiVehicleManager::MultiVehicleManager(QGCApplication* app, QGCToolbox* toolbo
     _gcsHeartbeatEnabled = settings.value(_gcsHeartbeatEnabledKey, true).toBool();
     _gcsHeartbeatTimer.setInterval(_gcsHeartbeatRateMSecs);
     _gcsHeartbeatTimer.setSingleShot(false);
+
+    // RSSI Fetch timer
+
+     _rssiTimer.setInterval(5000);
+     _rssiTimer.setSingleShot(false);
+     connect(&_rssiTimer, &QTimer::timeout, this, &MultiVehicleManager::_getDoodleRSSI);
+
+     _rssiTimer.start();
+
+
+
+}
+
+QVariantList MultiVehicleManager::doodleRSSI() const {
+    QVariantList ret;
+
+    for( const auto &item: _doodleRSSIList )
+        ret << QVariant::fromValue(item);
+
+    return ret;
+}
+
+int MultiVehicleManager::doodleRSSIMax() const {
+    int ret = -255;
+
+    for( const DoodleRSSIEntry_t &item: _doodleRSSIList )
+    {
+        //find the max value
+        if (item.percentage > ret)
+            ret = item.percentage;
+    }
+
+    return ret;
+}
+
+void MultiVehicleManager::_getDoodleRSSI()
+{
+    //use JSON-RPC to retrieve the associated station list and calulate RSSI
+    //first get a token
+    //qDebug() << "get rssi running";
+
+
+    bool enabled = qgcApp()->toolbox()->settingsManager()->appSettings()->enableDoodleRssi()->rawValue().toBool();
+
+    if (!enabled)
+    {
+        _doodleRSSIList.clear();
+        emit doodleRSSIChanged();
+        return;
+    }
+
+    QString doodleIP = qgcApp()->toolbox()->settingsManager()->appSettings()->doodleIP()->rawValue().toString();
+    QString doodleURI = QString("https://%1/ubus").arg(doodleIP);
+
+    QHostAddress addr;
+    if (!addr.setAddress(doodleIP)) {
+        return;
+    }
+
+
+    QNetworkAccessManager *mgr = new QNetworkAccessManager(this);
+    //pull the IP from settings
+    const QUrl url(doodleURI);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+
+    QByteArray data("{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\": \"call\",\"params\": [ \"00000000000000000000000000000000\", \"session\", \"login\", { \"username\": \"doodle\", \"password\": \"doodle\" } ] }" );
+
+    QNetworkReply *reply = mgr->post(request, data);
+
+    reply->ignoreSslErrors();
+
+    QObject::connect(reply, &QNetworkReply::finished, [=](){
+        if(reply->error() == QNetworkReply::NoError){
+            QString contents = QString::fromUtf8(reply->readAll());
+            //qDebug() << contents;
+            QJsonDocument document = QJsonDocument::fromJson(contents.toUtf8());
+
+            if (!document.isObject())
+                qDebug() << "document is not an object";
+
+            QJsonObject object = document.object();
+            QJsonValue result = object.value("result");
+            QJsonArray array = result.toArray();
+            QString token = array[1].toObject().value("ubus_rpc_session").toString();
+
+            //qDebug() << "result is " << token;
+            _getDoodleRSSIstep2(token, doodleURI);
+        }
+        else{
+            QString err = reply->errorString();
+            qDebug() << "Error communicating with Doodle radio" << err;
+            _doodleRSSIList.clear();
+            emit doodleRSSIChanged();
+        }
+        reply->deleteLater();
+    });
+
+
+}
+
+void MultiVehicleManager::_getDoodleRSSIstep2(QString token, QString urlString)
+{
+    const int rssi_limits[2] = {-87, -25};
+
+    QNetworkAccessManager *mgr = new QNetworkAccessManager(this);
+    const QUrl url(urlString);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(conf);
+
+    QByteArray data = QString("{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"call\", \"params\": [ \"%1\", \"iwinfo\", \"assoclist\", {\"device\":\"wlan0\"} ] }").arg(token).toUtf8();
+
+    QNetworkReply *reply = mgr->post(request, data);
+
+    reply->ignoreSslErrors();
+
+    QObject::connect(reply, &QNetworkReply::finished, [=](){
+        if(reply->error() == QNetworkReply::NoError){
+            QString contents = QString::fromUtf8(reply->readAll());
+            //qDebug() << contents;
+            QJsonDocument document = QJsonDocument::fromJson(contents.toUtf8());
+
+            if (!document.isObject())
+                qDebug() << "document is not an object";
+
+            QJsonObject object = document.object();
+            QJsonValue result = object.value("result");
+            QJsonArray arrayouter = result.toArray();
+            QJsonArray arrayinner = arrayouter[1].toObject().value("results").toArray();
+
+            _doodleRSSIList.clear();
+            foreach (const QJsonValue & value, arrayinner)
+            {
+                QString mac = value.toObject().value("mac").toString();
+                qint16 signal = value.toObject().value("signal").toInt();
+                qDebug() << "Station"<< mac << "Signal"<< signal;
+                DoodleRSSIEntry_t   rssi;
+                rssi.mac =      mac;
+                rssi.signal =   signal;
+                //calculate the percentage
+
+                if (signal >= rssi_limits[1]) rssi.percentage = 100;
+                else if (signal <= rssi_limits[0]) rssi.percentage = 0;
+                else
+                {
+                    rssi.percentage = ((100.0 / ((float)(rssi_limits[1] - rssi_limits[0]))) * (signal - rssi_limits[0] + 1));
+                }
+                 _doodleRSSIList.append(rssi);
+            }
+
+            if (_doodleRSSIList.count() > 0)
+            {
+                emit doodleRSSIChanged();
+            }
+        }
+        else{
+            QString err = reply->errorString();
+            _doodleRSSIList.clear();
+            emit doodleRSSIChanged();
+            qDebug() << "Error getting RSSI from Doodle radio step 2" << err;
+        }
+        reply->deleteLater();
+    });
 }
 
 void MultiVehicleManager::setToolbox(QGCToolbox *toolbox)

@@ -26,6 +26,18 @@ class JoystickManager;
 class QGCApplication;
 class MAVLinkProtocol;
 
+struct DoodleRSSIEntry_t {
+    Q_GADGET
+public:
+    QString     mac;
+    int         signal;
+    int         percentage;
+    Q_PROPERTY(QString qmac MEMBER mac)
+    Q_PROPERTY(int qsignal MEMBER signal)
+    Q_PROPERTY(int qpercentage MEMBER percentage)
+} ;
+
+Q_DECLARE_METATYPE(DoodleRSSIEntry_t);
 Q_DECLARE_LOGGING_CATEGORY(MultiVehicleManagerLog)
 
 class MultiVehicleManager : public QGCTool
@@ -45,6 +57,8 @@ public:
     Q_PROPERTY(bool                 gcsHeartBeatEnabled             READ gcsHeartbeatEnabled            WRITE setGcsHeartbeatEnabled    NOTIFY gcsHeartBeatEnabledChanged)
     Q_PROPERTY(Vehicle*             offlineEditingVehicle           READ offlineEditingVehicle                                          CONSTANT)
     Q_PROPERTY(QGeoCoordinate       lastKnownLocation               READ lastKnownLocation                                              NOTIFY lastKnownLocationChanged) //< Current vehicles last know location
+    Q_PROPERTY(QVariantList         doodleRSSI                      READ doodleRSSI                                                     NOTIFY doodleRSSIChanged)
+    Q_PROPERTY(int                  doodleRSSIMax                   READ doodleRSSIMax                                                  NOTIFY doodleRSSIChanged)
 
     // Methods
 
@@ -72,8 +86,13 @@ public:
     virtual void setToolbox(QGCToolbox *toolbox);
 
     QGeoCoordinate lastKnownLocation    () { return _lastKnownLocation; }
+    void _getDoodleRSSI                 ();
+    void _getDoodleRSSIstep2            (QString value, QString value2);
+    QVariantList doodleRSSI() const;
+    int doodleRSSIMax() const;
 
 signals:
+    void doodleRSSIChanged ();
     void vehicleAdded                   (Vehicle* vehicle);
     void vehicleRemoved                 (Vehicle* vehicle);
     void activeVehicleAvailableChanged  (bool activeVehicleAvailable);
@@ -84,6 +103,7 @@ signals:
 #ifndef DOXYGEN_SKIP
     void _deleteVehiclePhase2Signal     (void);
 #endif
+
 
 private slots:
     void _deleteVehiclePhase1           (Vehicle* vehicle);
@@ -110,6 +130,8 @@ private:
 
     QmlObjectListModel  _vehicles;
 
+    QList<DoodleRSSIEntry_t> _doodleRSSIList;
+
     FirmwarePluginManager*      _firmwarePluginManager;
     JoystickManager*            _joystickManager;
     MAVLinkProtocol*            _mavlinkProtocol;
@@ -117,6 +139,7 @@ private:
 
     QTimer              _gcsHeartbeatTimer;             ///< Timer to emit heartbeats
     bool                _gcsHeartbeatEnabled;           ///< Enabled/disable heartbeat emission
+    QTimer              _rssiTimer;
     static const int    _gcsHeartbeatRateMSecs = 1000;  ///< Heartbeat rate
     static const char*  _gcsHeartbeatEnabledKey;
 };

@@ -328,6 +328,20 @@
     "shortDesc":    "Multicast address 2 to bind to for telemetry. The app will automatically bind to all multicast-enabled interfaces.",
     "type":         "string",
     "default":      "225.10.10.10"
+},
+{
+    "name":             "enableDoodleRssi",
+    "shortDesc": "Enable getting RSSI from Doodle",
+    "longDesc":  "If this option is enabled, the Doodle radio will be queried every 5 seconds for associated station rssi.",
+    "type":             "bool",
+    "default":     false
+},
+{
+    "name":             "doodleIP",
+    "shortDesc": "Doodle GCS Radio IP Address",
+    "longDesc":  "IP Address of the Doodle radio connected to the GCS. The Doodle radio must be configured to allow JSON-RPC http access using username doodle and password doodle.",
+    "type":             "string",
+    "default":     "172.20.1.1"
 }
 ]
 }
