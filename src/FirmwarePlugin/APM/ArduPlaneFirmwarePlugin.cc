@@ -46,15 +46,15 @@ APMPlaneMode::APMPlaneMode(uint32_t mode, bool settable)
 ArduPlaneFirmwarePlugin::ArduPlaneFirmwarePlugin(void)
 {
     setSupportedModes({
-        APMPlaneMode(APMPlaneMode::MANUAL,          true),
-        APMPlaneMode(APMPlaneMode::CIRCLE,          true),
-        APMPlaneMode(APMPlaneMode::STABILIZE,       true),
-        APMPlaneMode(APMPlaneMode::TRAINING,        true),
-        APMPlaneMode(APMPlaneMode::ACRO,            true),
+        APMPlaneMode(APMPlaneMode::MANUAL,          false),
+        APMPlaneMode(APMPlaneMode::CIRCLE,          false),
+        APMPlaneMode(APMPlaneMode::STABILIZE,       false),
+        APMPlaneMode(APMPlaneMode::TRAINING,        false),
+        APMPlaneMode(APMPlaneMode::ACRO,            false),
         APMPlaneMode(APMPlaneMode::FLY_BY_WIRE_A,   true),
-        APMPlaneMode(APMPlaneMode::FLY_BY_WIRE_B,   true),
-        APMPlaneMode(APMPlaneMode::CRUISE,          true),
-        APMPlaneMode(APMPlaneMode::AUTOTUNE,        true),
+        APMPlaneMode(APMPlaneMode::FLY_BY_WIRE_B,   false),
+        APMPlaneMode(APMPlaneMode::CRUISE,          false),
+        APMPlaneMode(APMPlaneMode::AUTOTUNE,        false),
         APMPlaneMode(APMPlaneMode::AUTO,            true),
         APMPlaneMode(APMPlaneMode::RTL,             true),
         APMPlaneMode(APMPlaneMode::LOITER,          true),
@@ -63,13 +63,13 @@ ArduPlaneFirmwarePlugin::ArduPlaneFirmwarePlugin(void)
         APMPlaneMode(APMPlaneMode::GUIDED,          true),
         APMPlaneMode(APMPlaneMode::INITIALIZING,    false),
         APMPlaneMode(APMPlaneMode::QSTABILIZE,      true),
-        APMPlaneMode(APMPlaneMode::QHOVER,          true),
+        APMPlaneMode(APMPlaneMode::QHOVER,          false),
         APMPlaneMode(APMPlaneMode::QLOITER,         true),
         APMPlaneMode(APMPlaneMode::QLAND,           true),
-        APMPlaneMode(APMPlaneMode::QRTL,            true),
-        APMPlaneMode(APMPlaneMode::QAUTOTUNE,       true),
-        APMPlaneMode(APMPlaneMode::QACRO,           true),
-        APMPlaneMode(APMPlaneMode::THERMAL,         true),
+        APMPlaneMode(APMPlaneMode::QRTL,            false),
+        APMPlaneMode(APMPlaneMode::QAUTOTUNE,       false),
+        APMPlaneMode(APMPlaneMode::QACRO,           false),
+        APMPlaneMode(APMPlaneMode::THERMAL,         false),
     });
 
     if (!_remapParamNameIntialized) {

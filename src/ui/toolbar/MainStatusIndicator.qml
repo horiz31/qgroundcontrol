@@ -135,7 +135,7 @@ RowLayout {
         verticalAlignment:      Text.AlignVCenter
         text:                   _vtolInFWDFlight ? qsTr("FW(vtol)") : qsTr("MR(vtol)")
         font.pointSize:         ScreenTools.largeFontPointSize
-        visible:                _activeVehicle ? _activeVehicle.vtol && _vehicleInAir : false
+        visible:                false // _activeVehicle ? _activeVehicle.vtol && _vehicleInAir : false  //Super Volo FW does not support
 
         QGCMouseArea {
             anchors.fill:   parent

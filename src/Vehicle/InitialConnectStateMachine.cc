@@ -165,7 +165,7 @@ void InitialConnectStateMachine::_autopilotVersionRequestMessageHandler(void* re
         }
         if (vehicle->_toolbox->corePlugin()->options()->checkFirmwareVersion() && !vehicle->_checkLatestStableFWDone) {
             vehicle->_checkLatestStableFWDone = true;
-            vehicle->_firmwarePlugin->checkIfIsLatestStable(vehicle);
+            // vehicle->_firmwarePlugin->checkIfIsLatestStable(vehicle);  //don't do this for SuperVolo
         }
         emit vehicle->gitHashChanged(vehicle->_gitHash);
 

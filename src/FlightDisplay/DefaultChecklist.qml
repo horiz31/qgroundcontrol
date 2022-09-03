@@ -30,8 +30,8 @@ Item {
             }
 
             PreFlightBatteryCheck {
-                failurePercent:                 40
-                allowFailurePercentOverride:    false
+                failurePercent:                 60
+                allowFailurePercentOverride:    true
             }
 
             PreFlightSensorsHealthCheck {

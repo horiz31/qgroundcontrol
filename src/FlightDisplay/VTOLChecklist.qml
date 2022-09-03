@@ -22,7 +22,7 @@ Item {
     PreFlightCheckModel {
         id:     listModel
         PreFlightCheckGroup {
-            name: qsTr("VTOL Initial Checks")
+            name: qsTr("Super Volo Initial Checks")
 
             PreFlightCheckButton {
                 name:           qsTr("Hardware")
@@ -31,7 +31,7 @@ Item {
 
             PreFlightBatteryCheck {
                 failurePercent:                 40
-                allowFailurePercentOverride:    false
+                allowFailurePercentOverride:    true
             }
 
             PreFlightSensorsHealthCheck {
