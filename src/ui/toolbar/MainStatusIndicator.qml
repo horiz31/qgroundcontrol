@@ -50,9 +50,9 @@ RowLayout {
                 if (_activeVehicle.armed) {
                     _mainStatusBGColor = "green"
                     if (_activeVehicle.flying) {
-                        return mainStatusLabel._flyingText
+                        return "%1 (%2)".arg(mainStatusLabel._flyingText).arg("Armed")
                     } else if (_activeVehicle.landing) {
-                        return mainStatusLabel._landingText
+                        return "%1 (%2)".arg(mainStatusLabel._landingText).arg("Armed")
                     } else {
                         return mainStatusLabel._armedText
                     }
@@ -60,19 +60,19 @@ RowLayout {
                     if (_activeVehicle.readyToFlyAvailable) {
                         if (_activeVehicle.readyToFly) {
                             _mainStatusBGColor = "green"
-                            return mainStatusLabel._readyToFlyText
+                            return "%1 (%2)".arg(mainStatusLabel._readyToFlyText).arg("Disarmed")
                         } else {
                             _mainStatusBGColor = "yellow"
-                            return mainStatusLabel._notReadyToFlyText
+                            return "%1 (%2)".arg(mainStatusLabel._notReadyToFlyText).arg("Disarmed")
                         }
                     } else {
                         // Best we can do is determine readiness based on AutoPilot component setup and health indicators from SYS_STATUS
                         if (_activeVehicle.allSensorsHealthy && _activeVehicle.autopilot.setupComplete) {
                             _mainStatusBGColor = "green"
-                            return mainStatusLabel._readyToFlyText
+                            return "%1 (%2)".arg(mainStatusLabel._readyToFlyText).arg("Disarmed")
                         } else {
                             _mainStatusBGColor = "yellow"
-                            return mainStatusLabel._notReadyToFlyText
+                            return "%1 (%2)".arg(mainStatusLabel._notReadyToFlyText).arg("Disarmed")
                         }
                     }
                 }

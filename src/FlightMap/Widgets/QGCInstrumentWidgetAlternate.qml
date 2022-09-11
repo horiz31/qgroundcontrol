@@ -25,7 +25,7 @@ Rectangle {
     property real _outerRadius: width / 2
     property real _innerRadius: _outerRadius - _outerMargin
 
-    // Prevent all clicks from going through to lower layers
+    //Prevent all clicks from going through to lower layers
     DeadMouseArea {
         anchors.fill: parent
     }

@@ -28,7 +28,7 @@
             "id":                   16,
             "rawName":              "MAV_CMD_NAV_WAYPOINT",
             "friendlyName":         "Waypoint",
-            "description":          "Travel to a position in 3D space.",
+            "description":          "Travel to a position in 3D space brad.",
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",
@@ -66,18 +66,18 @@
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
-            "category":             "Loiter",
+            "category":             "Basic",
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          90.0,
                 "decimalPlaces":    2
             },
             "param4": {
                 "label":            "Yaw",
                 "units":            "deg",
                 "nanUnchanged":     true,
-                "default":          null,
+                "default":          0,
                 "decimalPlaces":    2
             }
         },
@@ -89,7 +89,7 @@
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
-            "category":             "Loiter",
+            "category":             "Advanced",
             "param1": {
                 "label":            "Turns",
                 "default":          1,
@@ -105,7 +105,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          150.0,
                 "decimalPlaces":    2
             },
             "param4": {
@@ -124,7 +124,7 @@
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
-            "category":             "Loiter",
+            "category":             "Advanced",
             "param1": {
                 "label":            "Loiter Time",
                 "units":            "secs",
@@ -141,7 +141,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          150.0,
                 "decimalPlaces":    2
             },
             "param4": {
@@ -159,48 +159,7 @@
             "description":  "Send the vehicle back to the launch position.",
             "friendlyEdit": true,
             "category":     "Basic"
-        },
-        {
-            "id":                   21,
-            "rawName":              "MAV_CMD_NAV_LAND",
-            "friendlyName":         "Land",
-            "description":          "Land vehicle at the specified location.",
-            "specifiesCoordinate":  true,
-            "isLandCommand":        true,
-            "friendlyEdit":         true,
-            "category":             "Basic",
-            "param1": {
-                "label":            "Abort Alt",
-                "units":            "m",
-                "default":          0,
-                "decimalPlaces":    2
-            },
-            "param2": {
-                "label":            "Precision Land",
-                "units":            "m",
-                "enumStrings":      "Disabled,Opportunistic,Required",
-                "enumValues":       "0,1,2",
-                "default":          0,
-                "decimalPlaces":    2
-            },
-            "param4": {
-                "label":            "Yaw",
-                "units":            "deg",
-                "nanUnchanged":     true,
-                "default":          null,
-                "decimalPlaces":    2
-            }
-        },
-        {
-            "id":                   22,
-            "rawName":              "MAV_CMD_NAV_TAKEOFF",
-            "friendlyName":         "Takeoff",
-            "description":          "Launch from the ground and travel towards the specified takeoff position.",
-            "specifiesCoordinate":  true,
-            "isTakeoffCommand":     true,
-            "friendlyEdit":         true,
-            "category":             "Basic"
-        },
+        },              
         { "id": 23, "rawName": "MAV_CMD_NAV_LAND_LOCAL", "friendlyName": "Land local" },
         { "id": 24, "rawName": "MAV_CMD_NAV_TAKEOFF_LOCAL", "friendlyName": "Takeoff local" },
         { "id": 25, "rawName": "MAV_CMD_NAV_FOLLOW", "friendlyName": "Nav follow" },
@@ -229,7 +188,7 @@
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
-            "category":             "Loiter",
+            "category":             "Basic",
             "param1": {
                 "label":            "Leave Loiter",
                 "enumStrings":      "Direction of next waypoint,Any direction",
@@ -240,7 +199,7 @@
             "param2": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          50.0,
+                "default":          150.0,
                 "decimalPlaces":    2
             },
             "param4": {

@@ -7,15 +7,15 @@
     "name":             "guidedMinimumAltitude",
     "shortDesc": "Minimum altitude for guided actions altitude slider.",
     "type":             "double",
-    "units":            "m",
-    "default":     2
+    "units":            "vertical m",
+    "default":     30
 },
 {
     "name":             "guidedMaximumAltitude",
     "shortDesc": "Maximum altitude for guided actions altitude slider.",
     "type":             "double",
-    "units":            "m",
-    "default":     121.92
+    "units":            "vertical m",
+    "default":     365
 },
 {
     "name":             "showLogReplayStatusBar",
@@ -27,13 +27,13 @@
     "name":             "alternateInstrumentPanel",
     "shortDesc": "Use Vertical Instrument Panel instead of the default one",
     "type":             "bool",
-    "default":     false
+    "default":     true
 },
 {
     "name":             "showAdditionalIndicatorsCompass",
     "shortDesc": "Show additional heading indicators on Compass",
     "type":             "bool",
-    "default":     false
+    "default":     true
 },
 {
     "name":             "lockNoseUpCompass",
@@ -51,7 +51,7 @@
     "name":         "showSimpleCameraControl",
     "shortDesc":    "Show controls for camera triggering using MAV_CMD_DO_DIGICAM_CONTROL.",
     "type":         "bool",
-    "default":      true
+    "default":      false
 },
 {
     "name":         "showObstacleDistanceOverlay",
@@ -64,7 +64,7 @@
     "shortDesc": "Maximum distance allowed for Go To Location.",
     "type":             "double",
     "units":            "m",
-    "default":     1000,
+    "default":     20000,
     "min":              1
 }
 ]

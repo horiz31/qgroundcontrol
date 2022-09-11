@@ -25,6 +25,10 @@ message(Qt version $$[QT_VERSION])
     }
 }
 
+*msvc* { # visual studio spec filter
+      QMAKE_CXXFLAGS += -MP
+}
+
 include(QGCCommon.pri)
 
 TARGET   = QGroundControl
@@ -57,11 +61,11 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "EchoMAV GCS"
-QGC_ORG_NAME        = "EchoMAV"
+QGC_APP_NAME        = "EchoMav GCS"
+QGC_ORG_NAME        = "EchoMav"
 QGC_ORG_DOMAIN      = "echomav.com"
 QGC_APP_DESCRIPTION = "Open source ground control app derived from QGroundControl"
-QGC_APP_COPYRIGHT   = "Copyright (C) 2022 EchoMAV. All Rights Reserved."
+QGC_APP_COPYRIGHT   = "Copyright (C) 2022 EchoMav. All Rights Reserved."
 
 WindowsBuild {
     QGC_INSTALLER_SCRIPT        = "$$SOURCE_DIR\\deploy\\windows\\nullsoft_installer.nsi"
@@ -732,6 +736,7 @@ HEADERS += \
     src/Vehicle/VehicleTemperatureFactGroup.h \
     src/Vehicle/VehicleVibrationFactGroup.h \
     src/Vehicle/VehicleWindFactGroup.h \
+    src/Vehicle/VehicleHCUFactGroup.h \
     src/Vehicle/VehicleHygrometerFactGroup.h \
     src/VehicleSetup/JoystickConfigController.h \
     src/comm/LinkConfiguration.h \
@@ -984,6 +989,7 @@ SOURCES += \
     src/Vehicle/VehicleVibrationFactGroup.cc \
     src/Vehicle/VehicleHygrometerFactGroup.cc \
     src/Vehicle/VehicleWindFactGroup.cc \
+    src/Vehicle/VehicleHCUFactGroup.cc \
     src/VehicleSetup/JoystickConfigController.cc \
     src/comm/LinkConfiguration.cc \
     src/comm/LinkInterface.cc \

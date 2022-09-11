@@ -8,9 +8,9 @@
     "shortDesc":        "Distance between landing and approach points.",
     "type":             "double",
     "units":            "m",
-    "min":              10,
-    "decimalPlaces":    1,
-    "default":          300.0
+    "min":              1,
+    "decimalPlaces":    0,
+    "default":          40.0
 },
 {
     "name":             "LandingHeading",
@@ -27,8 +27,9 @@
     "shortDesc":        "Altitude to begin landing approach from.",
     "type":             "double",
     "units":            "m",
+    "min":              30.0,
     "decimalPlaces":    1,
-    "default":          30.0
+    "default":          60.0
 },
 {
     "name":             "LoiterRadius",
@@ -37,7 +38,7 @@
     "decimalPlaces":    1,
     "min":              1,
     "units":            "m",
-    "default":          75.0
+    "default":          90.0
 },
 {
     "name":         "LoiterClockwise",

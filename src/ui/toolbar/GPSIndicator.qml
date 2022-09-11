@@ -60,6 +60,10 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     columns: 2
 
+                    QGCLabel { text: qsTr("Position (Lat,Lon):") }
+                    QGCLabel { text: _activeVehicle ? "%1, %2".arg(_activeVehicle.gps.lat.value.toFixed(7)).arg(_activeVehicle.gps.lon.value.toFixed(7)) : qsTr("N/A", "No data to display") }
+                    QGCLabel { text: qsTr("Position (MRGS):") }
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.gps.mgrs.valueString : qsTr("N/A", "No data to display") }
                     QGCLabel { text: qsTr("GPS Count:") }
                     QGCLabel { text: _activeVehicle ? _activeVehicle.gps.count.valueString : qsTr("N/A", "No data to display") }
                     QGCLabel { text: qsTr("GPS Lock:") }

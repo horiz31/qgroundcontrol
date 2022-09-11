@@ -24,8 +24,10 @@ Rectangle {
     radius:             ScreenTools.defaultFontPixelWidth / 2
 
     property bool       bottomMode: true
+    property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
 
     DeadMouseArea { anchors.fill: parent }
+
 
     ColumnLayout {
         id:                 telemetryLayout
@@ -34,7 +36,8 @@ Rectangle {
         anchors.left:       parent.left
 
          RowLayout {
-            visible: mouseArea.containsMouse || valueArea.settingsUnlocked
+            //visible: mouseArea.containsMouse || valueArea.settingsUnlocked
+             visible: false
 
             QGCColoredImage {
                 source:             "/res/layout-bottom.svg"
@@ -75,7 +78,7 @@ Rectangle {
                 height:             width
                 sourceSize.width:   width
                 color:              qgcPal.text
-                fillMode:           Image.PreserveAspectFit
+                fillMode:           Image.PreserveAspectFit               
 
                 QGCMouseArea {
                     anchors.fill: parent
@@ -96,10 +99,102 @@ Rectangle {
             propagateComposedEvents:    true
         }
 
+        //Super Volo Telemetry Value Panel
+
+        GridLayout {
+
+            id: superVoloTelemGrid
+            visible: true
+            columns: 3
+            rows: 1
+            rowSpacing:     ScreenTools.defaultFontPixelWidth
+            columnSpacing:  ScreenTools.defaultFontPixelWidth * 2
+
+            RowLayout {
+                    Image {
+                        source:             "/res/distance-to-wp.svg"
+                        mipmap:             true
+                        fillMode:           Image.PreserveAspectFit
+                        sourceSize.height:  ScreenTools.largeFontPointSize * 1.5
+                    }
+
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.missionItemIndex.value : qsTr("-", "No data to display")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: qsTr("|")
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.distanceToNextWP.value.toFixed(0) : qsTr("--", "No data to display")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.distanceToNextWP.units : qsTr("")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: qsTr("    ")
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+
+            }
+
+
+            RowLayout {
+                    Image {
+                        source:             "/res/distance-to-home.svg"  //todo make distance to wp icon
+                        mipmap:             true
+                        fillMode:           Image.PreserveAspectFit
+                        sourceSize.height:  ScreenTools.largeFontPointSize * 1.5
+                    }
+
+                    QGCLabel { text: _activeVehicle && !isNaN(_activeVehicle.distanceToHome.rawValue) ? _activeVehicle.distanceToHome.value.toFixed(0) : qsTr("--", "No data to display")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.distanceToHome.units : qsTr("")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: _activeVehicle && !isNaN(_activeVehicle.bearingFromHome.rawValue) ? "∠" + _activeVehicle.bearingFromHome.rawValue.toFixed(0) + "°" : qsTr("--", "No data to display")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.bearingFromHome.units : qsTr("")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+                    QGCLabel { text: qsTr("    ")
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+            }
+
+
+            RowLayout {
+                    Image {
+                        source:             "/res/flight_timer.svg"
+                        mipmap:             true
+                        fillMode:           Image.PreserveAspectFit
+                        sourceSize.height:  ScreenTools.largeFontPointSize * 1.5
+                    }
+
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.flightTime.valueString : qsTr("--:--:--", "No data to display")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.largeFontPointSize
+                    }
+
+            }
+
+
+
+        }
+        //Set to false, so we replace this with our own custom telemetry output above
         HorizontalFactValueGrid {
             id:                     valueArea
             userSettingsGroup:      telemetryBarUserSettingsGroup
             defaultSettingsGroup:   telemetryBarDefaultSettingsGroup
+            visible: false //true
         }
 
         GuidedActionConfirm {

@@ -265,10 +265,10 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         // This gives daily builds their own separate settings space. Allowing you to use daily and stable builds
         // side by side without daily screwing up your stable settings.
         //applicationName = QStringLiteral("%1 Daily").arg(QGC_APPLICATION_NAME);
-        applicationName = QStringLiteral("EchoMAV GCS");
+        applicationName = QStringLiteral("EchoMav GCS");
 #else
         //applicationName = QGC_APPLICATION_NAME;
-        applicationName = QStringLiteral("EchoMAV GCS");
+        applicationName = QStringLiteral("EchoMav GCS");
 #endif
     }
     setApplicationName(applicationName);
@@ -366,7 +366,7 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
    }
 #endif /* __mobile__ */
 
-    _checkForNewVersion();
+    //  _checkForNewVersion(); //don't do this for custom version!
 }
 
 void QGCApplication::_exitWithError(QString errorMessage)

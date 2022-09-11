@@ -224,7 +224,7 @@ void SimpleMissionItem::_setupMetaData(void)
 
     if (!_altitudeMetaData) {
         _altitudeMetaData = new FactMetaData(FactMetaData::valueTypeDouble);
-        _altitudeMetaData->setRawUnits("m");
+        _altitudeMetaData->setRawUnits("vertical m");  //this was m, but I believe it is a bug and should be vertical m to the proper conversions happen
         _altitudeMetaData->setRawIncrement(1);
         _altitudeMetaData->setDecimalPlaces(2);
 

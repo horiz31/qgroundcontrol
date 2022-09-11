@@ -10,7 +10,7 @@
     "units":            "m",
     "min":              10,
     "decimalPlaces":    1,
-    "default":          300.0
+    "default":          600.0
 },
 {
     "name":             "LandingHeading",
@@ -28,7 +28,7 @@
     "type":             "double",
     "units":            "m",
     "decimalPlaces":    1,
-    "default":          40.0
+    "default":          60.0
 },
 {
     "name":             "LoiterRadius",
@@ -37,7 +37,7 @@
     "decimalPlaces":    1,
     "min":              1,
     "units":            "m",
-    "default":          75.0
+    "default":          90.0
 },
 {
     "name":         "LoiterClockwise",

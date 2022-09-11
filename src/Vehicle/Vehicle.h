@@ -32,6 +32,7 @@
 #include "VehicleLocalPositionFactGroup.h"
 #include "VehicleLocalPositionSetpointFactGroup.h"
 #include "VehicleWindFactGroup.h"
+#include "VehicleHCUFactGroup.h"
 #include "VehicleGPSFactGroup.h"
 #include "VehicleGPS2FactGroup.h"
 #include "VehicleSetpointFactGroup.h"
@@ -298,14 +299,22 @@ public:
     Q_PROPERTY(Fact* distanceToHome     READ distanceToHome     CONSTANT)
     Q_PROPERTY(Fact* missionItemIndex   READ missionItemIndex   CONSTANT)
     Q_PROPERTY(Fact* headingToNextWP    READ headingToNextWP    CONSTANT)
+    Q_PROPERTY(Fact* distanceToNextWP   READ distanceToNextWP   CONSTANT)
     Q_PROPERTY(Fact* headingToHome      READ headingToHome      CONSTANT)
+    Q_PROPERTY(Fact* bearingFromHome    READ bearingFromHome    CONSTANT)
     Q_PROPERTY(Fact* distanceToGCS      READ distanceToGCS      CONSTANT)
     Q_PROPERTY(Fact* hobbs              READ hobbs              CONSTANT)
     Q_PROPERTY(Fact* throttlePct        READ throttlePct        CONSTANT)
+    Q_PROPERTY(Fact* svBattCurrent      READ svBattCurrent         CONSTANT)
+    Q_PROPERTY(Fact* flightTime         READ flightTime         CONSTANT)
+    Q_PROPERTY(Fact* svBattVoltage      READ svBattVoltage      CONSTANT)
+    Q_PROPERTY(Fact* svBattPercentRemaining READ svBattPercentRemaining CONSTANT)
+    Q_PROPERTY(Fact* targetAirSpeedSetPoint READ targetAirSpeedSetPoint CONSTANT)
 
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
     Q_PROPERTY(FactGroup*           gps2            READ gps2FactGroup              CONSTANT)
     Q_PROPERTY(FactGroup*           wind            READ windFactGroup              CONSTANT)
+    Q_PROPERTY(FactGroup*           hcu             READ hcuFactGroup              CONSTANT)
     Q_PROPERTY(FactGroup*           vibration       READ vibrationFactGroup         CONSTANT)
     Q_PROPERTY(FactGroup*           temperature     READ temperatureFactGroup       CONSTANT)
     Q_PROPERTY(FactGroup*           clock           READ clockFactGroup             CONSTANT)
@@ -345,6 +354,9 @@ public:
 
     /// Command vehicle to land at current location
     Q_INVOKABLE void guidedModeLand();
+
+    /// Command vehicle to changeto Guided Mode at current location
+    Q_INVOKABLE void setToGuidedMode();
 
     /// Command vehicle to takeoff from current location
     Q_INVOKABLE void guidedModeTakeoff(double altitudeRelative);
@@ -391,6 +403,9 @@ public:
 
     /// Clear Messages
     Q_INVOKABLE void clearMessages();
+
+    /// Set Air Speed for SuperVolo (and others)
+    Q_INVOKABLE void setAirSpeed(double speed);
 
     Q_INVOKABLE void sendPlan(QString planFile);
 
@@ -643,14 +658,22 @@ public:
     Fact* distanceToHome                    () { return &_distanceToHomeFact; }
     Fact* missionItemIndex                  () { return &_missionItemIndexFact; }
     Fact* headingToNextWP                   () { return &_headingToNextWPFact; }
+    Fact* distanceToNextWP                  () { return &_distanceToNextWPFact; }
     Fact* headingToHome                     () { return &_headingToHomeFact; }
+    Fact* bearingFromHome                   () { return &_bearingFromHomeFact; }
     Fact* distanceToGCS                     () { return &_distanceToGCSFact; }
     Fact* hobbs                             () { return &_hobbsFact; }
     Fact* throttlePct                       () { return &_throttlePctFact; }
+    Fact* svBattCurrent                     () { return &_svBattCurrentFact; }
+    Fact* flightTime                        () { return &_flightTimeFact; }
+    Fact* svBattVoltage                     () { return &_svBattVoltageFact; }
+    Fact* svBattPercentRemaining            () { return &_svBattPercentRemainingFact; }
+    Fact* targetAirSpeedSetPoint            () { return &_targetAirSpeedSetPointFact; }
 
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
     FactGroup* gps2FactGroup                () { return &_gps2FactGroup; }
     FactGroup* windFactGroup                () { return &_windFactGroup; }
+    FactGroup* hcuFactGroup                 () { return &_hcuFactGroup; }
     FactGroup* vibrationFactGroup           () { return &_vibrationFactGroup; }
     FactGroup* temperatureFactGroup         () { return &_temperatureFactGroup; }
     FactGroup* clockFactGroup               () { return &_clockFactGroup; }
@@ -962,6 +985,7 @@ private slots:
     void _sendMavCommandResponseTimeoutCheck();
     void _clearCameraTriggerPoints          ();
     void _updateDistanceHeadingToHome       ();
+    void _updateDistanceToNextWP            ();
     void _updateMissionItemIndex            ();
     void _updateHeadingToNextWP             ();
     void _updateDistanceToGCS               ();
@@ -1300,14 +1324,21 @@ private:
     Fact _distanceToHomeFact;
     Fact _missionItemIndexFact;
     Fact _headingToNextWPFact;
+    Fact _distanceToNextWPFact;
     Fact _headingToHomeFact;
+    Fact _bearingFromHomeFact;
     Fact _distanceToGCSFact;
     Fact _hobbsFact;
     Fact _throttlePctFact;
+    Fact _svBattCurrentFact;
+    Fact _svBattVoltageFact;
+    Fact _svBattPercentRemainingFact;
+    Fact _targetAirSpeedSetPointFact;
 
     VehicleGPSFactGroup             _gpsFactGroup;
     VehicleGPS2FactGroup            _gps2FactGroup;
     VehicleWindFactGroup            _windFactGroup;
+    VehicleHCUFactGroup             _hcuFactGroup;
     VehicleVibrationFactGroup       _vibrationFactGroup;
     VehicleTemperatureFactGroup     _temperatureFactGroup;
     VehicleClockFactGroup           _clockFactGroup;
@@ -1352,14 +1383,21 @@ private:
     static const char* _distanceToHomeFactName;
     static const char* _missionItemIndexFactName;
     static const char* _headingToNextWPFactName;
+    static const char* _distanceToNextWPFactName;
     static const char* _headingToHomeFactName;
+    static const char* _bearingFromHomeFactName;
     static const char* _distanceToGCSFactName;
     static const char* _hobbsFactName;
     static const char* _throttlePctFactName;
+    static const char* _svBattCurrentFactName;
+    static const char* _svBattVoltageFactName;
+    static const char* _svBattPercentRemainingFactName;
+    static const char* _targetAirSpeedSetPointFactName;
 
     static const char* _gpsFactGroupName;
     static const char* _gps2FactGroupName;
     static const char* _windFactGroupName;
+    static const char* _hcuFactGroupName;
     static const char* _vibrationFactGroupName;
     static const char* _temperatureFactGroupName;
     static const char* _clockFactGroupName;

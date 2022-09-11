@@ -216,7 +216,7 @@ Item {
 
         MapPolyline {
             z:          QGroundControl.zOrderMapItems - 1   // Under item indicators
-            line.color: "#be781c"
+            line.color: "#101fe8"//"#be781c"
             line.width: 2
             path:       _flightPath
         }

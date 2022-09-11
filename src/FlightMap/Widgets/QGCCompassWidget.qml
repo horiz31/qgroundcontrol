@@ -32,7 +32,7 @@ Item {
     property var  vehicle:  null
 
     property var  _activeVehicle:       QGroundControl.multiVehicleManager.activeVehicle
-    property real _defaultSize:         ScreenTools.defaultFontPixelHeight * (10)
+    property real _defaultSize:         ScreenTools.defaultFontPixelHeight * (8)
     property real _sizeRatio:           ScreenTools.isTinyScreen ? (size / _defaultSize) * 0.5 : size / _defaultSize
     property int  _fontSize:            ScreenTools.defaultFontPointSize * _sizeRatio
     property real _heading:             vehicle ? vehicle.heading.rawValue : 0

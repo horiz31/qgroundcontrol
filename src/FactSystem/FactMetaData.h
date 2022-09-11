@@ -69,6 +69,9 @@ public:
     /// Converts from user specified horizontal distance unit to meters
     static QVariant appSettingsHorizontalDistanceUnitsToMeters(const QVariant& distance);
 
+    /// Converts from user specified speed unit to meters per second
+    static QVariant appSettingsSpeedUnitsToMetersPerSecond(const QVariant& speed);
+
     /// Returns the string for horizontal distance units which has configued by user
     static QString appSettingsHorizontalDistanceUnitsString(void);
 
@@ -80,6 +83,10 @@ public:
 
     /// Returns the string for vertical distance units which has configued by user
     static QString appSettingsVerticalDistanceUnitsString(void);
+
+    /// Returns the string for speed units which has configued by user
+
+    static QVariant metersPerSecondToAppSettingsSpeedUnits(const QVariant& metersPerSecond);
 
     /// Converts from grams to the user specified weight unit
     static QVariant gramsToAppSettingsWeightUnits(const QVariant& grams);

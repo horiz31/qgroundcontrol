@@ -30,6 +30,7 @@ Item {
     property var missionController
     property var confirmDialog
     property var actionList
+    property var actionLandingList
     property var altitudeSlider
     property var orbitMapCircle
 
@@ -40,6 +41,8 @@ Item {
     readonly property string rtlTitle:                      qsTr("Return")
     readonly property string takeoffTitle:                  qsTr("Takeoff")
     readonly property string landTitle:                     qsTr("Land")
+    readonly property string landMissionTitle:              qsTr("Start Mission Land")
+    readonly property string landQLandTitle:                qsTr("Switch to QLAND")
     readonly property string startMissionTitle:             qsTr("Start Mission")
     readonly property string mvStartMissionTitle:           qsTr("Start Mission (MV)")
     readonly property string continueMissionTitle:          qsTr("Continue Mission")
@@ -64,8 +67,11 @@ Item {
     readonly property string continueMissionMessage:            qsTr("Continue the mission from the current waypoint.")
     readonly property string resumeMissionUploadFailMessage:    qsTr("Upload of resume mission failed. Confirm to retry upload")
     readonly property string landMessage:                       qsTr("Land the vehicle at the current position.")
+    readonly property string landQLandMessage:                  qsTr("Land the vehicle at the current position using QLand mode. Aircraft will descend as a quadrotor.")
+    readonly property string landMissionMessage:                qsTr("Start the landing sequence within the current mission.")
     readonly property string rtlMessage:                        qsTr("Return to the launch position of the vehicle.")
     readonly property string changeAltMessage:                  qsTr("Change the altitude of the vehicle up or down.")
+    readonly property string landOptMessage:                    qsTr("Select the desired landing method below.")
     readonly property string gotoMessage:                       qsTr("Move the vehicle to the specified location.")
              property string setWaypointMessage:                qsTr("Adjust current waypoint to %1.").arg(_actionData)
     readonly property string orbitMessage:                      qsTr("Orbit the vehicle around the specified location.")
@@ -100,6 +106,9 @@ Item {
     readonly property int actionROI:                        22
     readonly property int actionActionList:                 23
     readonly property int actionForceArm:                   24
+    readonly property int actionActionLandingList:          25
+    readonly property int actionLandQLand:                  26
+    readonly property int actionMissionLand:                27
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
@@ -115,6 +124,7 @@ Item {
     property bool showLand:             _guidedActionsEnabled && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
     property bool showStartMission:     _guidedActionsEnabled && _missionAvailable && !_missionActive && !_vehicleFlying && _canArm
     property bool showContinueMission:  _guidedActionsEnabled && _missionAvailable && !_missionActive && _vehicleArmed && _vehicleFlying && (_currentMissionIndex < _missionItemCount - 1)
+    property bool showLandInMission:    _guidedActionsEnabled && _missionAvailable && _vehicleArmed && _vehicleFlying && doesMissionContainDoLandStart()// figure out if mission contains do_start_land
     property bool showPause:            _guidedActionsEnabled && _vehicleArmed && _activeVehicle.pauseVehicleSupported && _vehicleFlying && !_vehiclePaused && !_fixedWingOnApproach
     property bool showChangeAlt:        _guidedActionsEnabled && _vehicleFlying && _activeVehicle.guidedModeSupported && _vehicleArmed && !_missionActive
     property bool showOrbit:            _guidedActionsEnabled && _vehicleFlying && __orbitSupported && !_missionActive
@@ -122,11 +132,12 @@ Item {
     property bool showLandAbort:        _guidedActionsEnabled && _vehicleFlying && _fixedWingOnApproach
     property bool showGotoLocation:     _guidedActionsEnabled && _vehicleFlying
     property bool showActionList:       _guidedActionsEnabled && (showStartMission || showResumeMission || showChangeAlt || showLandAbort)
+    property bool showActionLandingList: _guidedActionsEnabled && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
 
     // Note: The '_missionItemCount - 2' is a hack to not trigger resume mission when a mission ends with an RTL item
     property bool showResumeMission:    _activeVehicle && !_vehicleArmed && _vehicleWasFlying && _missionAvailable && _resumeMissionIndex > 0 && (_resumeMissionIndex < _missionItemCount - 2)
 
-    property bool guidedUIVisible:      confirmDialog.visible || actionList.visible
+    property bool guidedUIVisible:      confirmDialog.visible || actionList.visible || actionLandingList.visible
 
     property var    _corePlugin:            QGroundControl.corePlugin
     property var    _corePluginOptions:     QGroundControl.corePlugin.options
@@ -157,6 +168,19 @@ Item {
     property bool __roiSupported:           _activeVehicle ? !_hideROI && _activeVehicle.roiModeSupported : false
     property bool __orbitSupported:         _activeVehicle ? !_hideOrbit && _activeVehicle.orbitModeSupported : false
     property bool __flightMode:             _flightMode
+
+    function doesMissionContainDoLandStart() {
+        if (_activeVehicle.fixedWing || _activeVehicle.vtol)
+        {
+            for (var i = 1; i < _missionController.visualItems.count; i++) {
+                var missionItem = _missionController.visualItems.get(i)
+                if (missionItem.command === 189) {  //MAV_CMD_DO_LAND_START
+                   return true;
+                }
+            }
+        }
+        return false;
+    }
 
     function _outputState() {
         if (_corePlugin.guidedActionsControllerLogging()) {
@@ -308,6 +332,7 @@ Item {
     function closeAll() {
         confirmDialog.visible =     false
         actionList.visible =        false
+        actionLandingList.visible = false
         altitudeSlider.visible =    false
     }
 
@@ -449,8 +474,21 @@ Item {
             confirmDialog.message = roiMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showROI })
             break;
-        case actionActionList:
+        case actionLandQLand:
+            confirmDialog.title = "QLAND Mode"
+            confirmDialog.message = "Enable QLAND and land at current location?"
+            confirmDialog.hideTrigger = true
+            break;
+        case actionMissionLand:
+            confirmDialog.title = "Start Mission Landing"
+            confirmDialog.message = "Start the landing sequence defined in the active mission?"
+            confirmDialog.hideTrigger = true
+            break;
+        case actionActionList:          
             actionList.show()
+            return
+        case actionActionLandingList:
+            actionLandingList.show()
             return
         default:
             console.warn("Unknown actionCode", actionCode)
@@ -468,7 +506,19 @@ Item {
             _activeVehicle.guidedModeRTL(optionChecked)
             break
         case actionLand:
-            _activeVehicle.guidedModeLand()
+            _activeVehicle.guidedModeLand()  //guided land does not work for a vtol or FW on Ardupilot, two cases below handle it for SuperVolo
+            break
+        case actionMissionLand:
+            for (var j = 1; j < _missionController.visualItems.count; j++) {
+                var missionItem = _missionController.visualItems.get(j)
+                if (missionItem.command === 189) {  //MAV_CMD_DO_LAND_START
+                   _activeVehicle.setCurrentMissionSequence(missionItem.sequenceNumber);
+                   _activeVehicle.startMission()
+                }
+            }
+            break
+        case actionLandQLand:
+            _activeVehicle.flightMode = "QuadPlane Land"  //or QuadPlane Land
             break
         case actionTakeoff:
             _activeVehicle.guidedModeTakeoff(actionAltitudeChange)
@@ -478,6 +528,7 @@ Item {
             missionController.resumeMission(missionController.resumeMissionIndex)
             break
         case actionStartMission:
+            _activeVehicle.setCurrentMissionSequence(1)
         case actionContinueMission:
             _activeVehicle.startMission()
             break

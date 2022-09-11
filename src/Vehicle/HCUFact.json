@@ -1,0 +1,56 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "rpm",
+    "shortDesc": "RPM Motor",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            ""
+},
+{
+    "name":             "eThrust",
+    "shortDesc": "E-Thrust",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "%"
+},
+{
+    "name":             "carbPosition",
+    "shortDesc": "Carb Position",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "%"
+},
+{
+    "name":             "cylinderTemp",
+    "shortDesc": "Cylinder Temperature",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "F"
+},
+{
+    "name":             "generator",
+    "shortDesc": "Generator",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "%"
+},
+{
+    "name":             "chargeRate",
+    "shortDesc": "Charge Rate",
+    "type":             "double",
+    "decimalPlaces":    2,
+    "units":            "A"
+},
+{
+    "name":             "engineHealth",
+    "shortDesc": "Engine Health",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "%"
+}
+]
+}

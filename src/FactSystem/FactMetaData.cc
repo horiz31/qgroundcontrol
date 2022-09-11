@@ -1084,6 +1084,7 @@ const FactMetaData::AppSettingsTranslation_s* FactMetaData::_findAppSettingsUnit
 
 QVariant FactMetaData::metersToAppSettingsHorizontalDistanceUnits(const QVariant& meters)
 {
+    //qDebug() << "meters to horizontal distance";
     const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("m", UnitHorizontalDistance);
     if (pAppSettingsTranslation) {
         return pAppSettingsTranslation->rawTranslator(meters);
@@ -1094,11 +1095,23 @@ QVariant FactMetaData::metersToAppSettingsHorizontalDistanceUnits(const QVariant
 
 QVariant FactMetaData::metersToAppSettingsVerticalDistanceUnits(const QVariant& meters)
 {
+    //qDebug() << "meters to vertical distance";
     const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("vertical m", UnitVerticalDistance);
     if (pAppSettingsTranslation) {
         return pAppSettingsTranslation->rawTranslator(meters);
     } else {
+        qDebug() << "returning meters";
         return meters;
+    }
+}
+
+QVariant FactMetaData::metersPerSecondToAppSettingsSpeedUnits(const QVariant& metersPerSecond)
+{
+    const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("m/s", UnitSpeed);
+    if (pAppSettingsTranslation) {
+        return pAppSettingsTranslation->rawTranslator(metersPerSecond);
+    } else {
+        return metersPerSecond;
     }
 }
 
@@ -1111,6 +1124,17 @@ QVariant FactMetaData::appSettingsHorizontalDistanceUnitsToMeters(const QVariant
         return distance;
     }
 }
+
+QVariant FactMetaData::appSettingsSpeedUnitsToMetersPerSecond(const QVariant& speed)
+{
+    const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("m/s", UnitSpeed);
+    if (pAppSettingsTranslation) {
+        return pAppSettingsTranslation->cookedTranslator(speed);
+    } else {
+        return speed;
+    }
+}
+
 
 QVariant FactMetaData::appSettingsVerticalDistanceUnitsToMeters(const QVariant& distance)
 {

@@ -54,7 +54,7 @@ Item {
     property var    _planViewSettings:                  QGroundControl.settingsManager.planViewSettings
     property bool   _promptForPlanUsageShowing:         false
 
-    readonly property var       _layers:                [_layerMission, _layerGeoFence, _layerRallyPoints]
+    readonly property var       _layers:                [_layerMission, _layerRallyPoints] // removed _layerGeoFence, supervolo change because no geofence support
 
     readonly property int       _layerMission:              1
     readonly property int       _layerGeoFence:             2
@@ -109,7 +109,7 @@ Item {
             editorMap.zoomLevel = QGroundControl.flightMapZoom
             editorMap.center    = QGroundControl.flightMapPosition
             if (!_planMasterController.containsItems) {
-                toolStrip.simulateClick(toolStrip.fileButtonIndex)
+               // toolStrip.simulateClick(toolStrip.fileButtonIndex)  //this opens the file by default
             }
         }
     }
@@ -816,10 +816,12 @@ Item {
                     QGCTabButton {
                         text:       qsTr("Mission")
                     }
+                    /*
+                    //SuperVolo firmware version (ardupilot 4.1 does not support fences)
                     QGCTabButton {
                         text:       qsTr("Fence")
                         enabled:    _geoFenceController.supported
-                    }
+                    }*/
                     QGCTabButton {
                         text:       qsTr("Rally")
                         enabled:    _rallyPointController.supported

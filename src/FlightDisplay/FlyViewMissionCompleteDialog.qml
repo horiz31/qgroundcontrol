@@ -35,7 +35,7 @@ Item {
                                                         (missionController.containsItems || geoFenceController.containsItems || rallyPointController.containsItems ||
                                                         (_activeVehicle ? _activeVehicle.cameraTriggerPoints.count !== 0 : false))
 
-    on_VehicleArmedChanged: {
+    on_VehicleArmedChanged: {      
         if (_vehicleArmed) {
             _vehicleWasArmed = true
             _vehicleWasInMissionFlightMode = _vehicleInMissionFlightMode
@@ -84,9 +84,10 @@ Item {
 
                     QGCButton {
                         Layout.fillWidth:   true
-                        text:               qsTr("Remove plan from vehicle")
+                        text:               qsTr("Remove plan from vehicle\nChange mode to Guided")
                         visible:            !_activeVehicle.communicationLost// && !_activeVehicle.apmFirmware  // ArduPilot has a bug somewhere with mission clear
                         onClicked: {
+                            _activeVehicle.setToGuidedMode();  //mode needs to be changed out of auto before we can wipe the waypoints, so need to change to guided mode
                             _planController.removeAllFromVehicle()
                             hideDialog()
                         }
@@ -96,7 +97,13 @@ Item {
                         Layout.fillWidth:   true
                         Layout.alignment:   Qt.AlignHCenter
                         text:               qsTr("Leave plan on vehicle")
-                        onClicked:          hideDialog()
+                        onClicked:
+                        {
+                            //two items below added with supervolo integration, I found it strange that the mission item doesn't reset to 1 in this case, but maybe there is an edge case to worry about
+                            //set mission seq to 1
+                            globals.guidedControllerFlyView.executeAction(globals.guidedControllerFlyView.actionSetWaypoint, 1, null, null)
+                            hideDialog()
+                        }
                     }
 
                     Rectangle {
@@ -115,7 +122,7 @@ Item {
                             Layout.alignment:   Qt.AlignHCenter
                             text:               qsTr("Resume Mission From Waypoint %1").arg(globals.guidedControllerFlyView._resumeMissionIndex)
 
-                            onClicked: {
+                            onClicked: {                              
                                 globals.guidedControllerFlyView.executeAction(globals.guidedControllerFlyView.actionResumeMission, null, null)
                                 hideDialog()
                             }

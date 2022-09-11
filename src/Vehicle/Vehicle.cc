@@ -91,14 +91,21 @@ const char* Vehicle::_flightTimeFactName =          "flightTime";
 const char* Vehicle::_distanceToHomeFactName =      "distanceToHome";
 const char* Vehicle::_missionItemIndexFactName =    "missionItemIndex";
 const char* Vehicle::_headingToNextWPFactName =     "headingToNextWP";
+const char* Vehicle::_distanceToNextWPFactName =    "distanceToNextWP";
 const char* Vehicle::_headingToHomeFactName =       "headingToHome";
+const char* Vehicle::_bearingFromHomeFactName =     "bearingFromHome";
 const char* Vehicle::_distanceToGCSFactName =       "distanceToGCS";
 const char* Vehicle::_hobbsFactName =               "hobbs";
 const char* Vehicle::_throttlePctFactName =         "throttlePct";
+const char* Vehicle::_svBattCurrentFactName =          "svBattCurrent";
+const char* Vehicle::_svBattVoltageFactName =       "svBattVoltage";
+const char* Vehicle::_svBattPercentRemainingFactName =   "svBattPercentRemaining";
+const char* Vehicle::_targetAirSpeedSetPointFactName =   "targetAirSpeedSetPoint";
 
 const char* Vehicle::_gpsFactGroupName =                "gps";
 const char* Vehicle::_gps2FactGroupName =               "gps2";
 const char* Vehicle::_windFactGroupName =               "wind";
+const char* Vehicle::_hcuFactGroupName =                "hcu";
 const char* Vehicle::_vibrationFactGroupName =          "vibration";
 const char* Vehicle::_temperatureFactGroupName =        "temperature";
 const char* Vehicle::_clockFactGroupName =              "clock";
@@ -152,13 +159,21 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _distanceToHomeFact           (0, _distanceToHomeFactName,    FactMetaData::valueTypeDouble)
     , _missionItemIndexFact         (0, _missionItemIndexFactName,  FactMetaData::valueTypeUint16)
     , _headingToNextWPFact          (0, _headingToNextWPFactName,   FactMetaData::valueTypeDouble)
+    , _distanceToNextWPFact         (0, _distanceToNextWPFactName,  FactMetaData::valueTypeDouble)
     , _headingToHomeFact            (0, _headingToHomeFactName,     FactMetaData::valueTypeDouble)
+    , _bearingFromHomeFact          (0, _bearingFromHomeFactName,     FactMetaData::valueTypeDouble)
     , _distanceToGCSFact            (0, _distanceToGCSFactName,     FactMetaData::valueTypeDouble)
     , _hobbsFact                    (0, _hobbsFactName,             FactMetaData::valueTypeString)
     , _throttlePctFact              (0, _throttlePctFactName,       FactMetaData::valueTypeUint16)
+    , _svBattCurrentFact            (0, _svBattCurrentFactName,     FactMetaData::valueTypeDouble)
+    , _svBattVoltageFact            (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
+    , _svBattPercentRemainingFact   (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
+    , _targetAirSpeedSetPointFact         (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
+
     , _gpsFactGroup                 (this)
     , _gps2FactGroup                (this)
     , _windFactGroup                (this)
+    , _hcuFactGroup                 (this)
     , _vibrationFactGroup           (this)
     , _temperatureFactGroup         (this)
     , _clockFactGroup               (this)
@@ -262,6 +277,9 @@ Vehicle::Vehicle(LinkInterface*             link,
     // Start csv logger
     connect(&_csvLogTimer, &QTimer::timeout, this, &Vehicle::_writeCsvLine);
     _csvLogTimer.start(1000);
+
+    //init target AirSpeed // about 55mph
+    _targetAirSpeedSetPointFact.setRawValue(24.58);
 }
 
 // Disconnected Vehicle for offline editing
@@ -306,13 +324,20 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _distanceToHomeFact               (0, _distanceToHomeFactName,    FactMetaData::valueTypeDouble)
     , _missionItemIndexFact             (0, _missionItemIndexFactName,  FactMetaData::valueTypeUint16)
     , _headingToNextWPFact              (0, _headingToNextWPFactName,   FactMetaData::valueTypeDouble)
+    , _distanceToNextWPFact             (0, _distanceToNextWPFactName,   FactMetaData::valueTypeDouble)
     , _headingToHomeFact                (0, _headingToHomeFactName,     FactMetaData::valueTypeDouble)
+    , _bearingFromHomeFact              (0, _bearingFromHomeFactName,     FactMetaData::valueTypeDouble)
     , _distanceToGCSFact                (0, _distanceToGCSFactName,     FactMetaData::valueTypeDouble)
     , _hobbsFact                        (0, _hobbsFactName,             FactMetaData::valueTypeString)
     , _throttlePctFact                  (0, _throttlePctFactName,       FactMetaData::valueTypeUint16)
+    , _svBattCurrentFact                (0, _svBattCurrentFactName,  FactMetaData::valueTypeDouble)
+    , _svBattVoltageFact                (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
+    , _svBattPercentRemainingFact       (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
+    , _targetAirSpeedSetPointFact       (0, _targetAirSpeedSetPointFactName,           FactMetaData::valueTypeDouble)
     , _gpsFactGroup                     (this)
     , _gps2FactGroup                    (this)
     , _windFactGroup                    (this)
+    , _hcuFactGroup                     (this)
     , _vibrationFactGroup               (this)
     , _clockFactGroup                   (this)
     , _distanceSensorFactGroup          (this)
@@ -359,6 +384,7 @@ void Vehicle::_commonInit()
 
     connect(this, &Vehicle::coordinateChanged,      this, &Vehicle::_updateDistanceHeadingToHome);
     connect(this, &Vehicle::coordinateChanged,      this, &Vehicle::_updateDistanceToGCS);
+    connect(this, &Vehicle::coordinateChanged,      this, &Vehicle::_updateDistanceToNextWP);
     connect(this, &Vehicle::homePositionChanged,    this, &Vehicle::_updateDistanceHeadingToHome);
     connect(this, &Vehicle::hobbsMeterChanged,      this, &Vehicle::_updateHobbsMeter);
 
@@ -428,9 +454,15 @@ void Vehicle::_commonInit()
     _addFact(&_distanceToHomeFact,      _distanceToHomeFactName);
     _addFact(&_missionItemIndexFact,    _missionItemIndexFactName);
     _addFact(&_headingToNextWPFact,     _headingToNextWPFactName);
+    _addFact(&_distanceToNextWPFact,    _distanceToNextWPFactName);
     _addFact(&_headingToHomeFact,       _headingToHomeFactName);
+    _addFact(&_bearingFromHomeFact,       _bearingFromHomeFactName);
     _addFact(&_distanceToGCSFact,       _distanceToGCSFactName);
     _addFact(&_throttlePctFact,         _throttlePctFactName);
+    _addFact(&_svBattCurrentFact,          _svBattCurrentFactName);
+    _addFact(&_svBattVoltageFact,       _svBattVoltageFactName);
+    _addFact(&_svBattPercentRemainingFact,       _svBattPercentRemainingFactName);
+    _addFact(&_targetAirSpeedSetPointFact,       _targetAirSpeedSetPointFactName);
 
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
     _addFact(&_hobbsFact,               _hobbsFactName);
@@ -438,6 +470,7 @@ void Vehicle::_commonInit()
     _addFactGroup(&_gpsFactGroup,               _gpsFactGroupName);
     _addFactGroup(&_gps2FactGroup,              _gps2FactGroupName);
     _addFactGroup(&_windFactGroup,              _windFactGroupName);
+    _addFactGroup(&_hcuFactGroup,               _hcuFactGroupName);
     _addFactGroup(&_vibrationFactGroup,         _vibrationFactGroupName);
     _addFactGroup(&_temperatureFactGroup,       _temperatureFactGroupName);
     _addFactGroup(&_clockFactGroup,             _clockFactGroupName);
@@ -907,7 +940,7 @@ void Vehicle::_chunkedStatusTextCompleted(uint8_t compId)
         messageText.remove(0, 1);
         readAloud = true;
     }
-    else if (severity <= MAV_SEVERITY_NOTICE) {
+    else if (severity <= MAV_SEVERITY_WARNING) {  //was MAV_SEVERITY_NOTICE
         readAloud = true;
     }
 
@@ -1363,6 +1396,18 @@ void Vehicle::_handleSysStatus(mavlink_message_t& message)
     mavlink_msg_sys_status_decode(&message, &sysStatus);
 
     _sysStatusSensorInfo.update(sysStatus);
+
+    //Super Volo uses current_battery for current
+     _svBattCurrentFact.setRawValue(sysStatus.current_battery * 1E-2);
+
+     //the Super Volo reports it's primary battery voltage using sys_status
+     _svBattVoltageFact.setRawValue(sysStatus.voltage_battery * 1E-3);
+
+     //the Super Volo reports it's primary battery voltage using sys_status
+     if (sysStatus.battery_remaining == -1)
+        _svBattPercentRemainingFact.setRawValue(0);
+     else
+        _svBattPercentRemainingFact.setRawValue(sysStatus.battery_remaining);
 
     if (sysStatus.onboard_control_sensors_enabled & MAV_SYS_STATUS_PREARM_CHECK) {
         if (!_readyToFlyAvailable) {
@@ -2216,8 +2261,9 @@ void Vehicle::_flightTimerStop()
 }
 
 void Vehicle::_updateFlightTime()
-{
-    _flightTimeFact.setRawValue((double)_flightTimer.elapsed() / 1000.0);
+{    
+    _flightTimeFact.setRawValue((double)_flightTimer.elapsed() / 1000.0);    
+
 }
 
 void Vehicle::_gotProgressUpdate(float progressValue)
@@ -2534,6 +2580,15 @@ void Vehicle::guidedModeTakeoff(double altitudeRelative)
         return;
     }
     _firmwarePlugin->guidedModeTakeoff(this, altitudeRelative);
+}
+
+void Vehicle::setToGuidedMode()
+{
+    if (!guidedModeSupported()) {
+        qgcApp()->showAppMessage(guided_mode_not_supported_by_vehicle);
+        return;
+    }
+    _firmwarePlugin->setGuidedMode(this, true);
 }
 
 double Vehicle::minimumTakeoffAltitude()
@@ -3629,14 +3684,38 @@ void Vehicle::_updateDistanceHeadingToHome()
         _distanceToHomeFact.setRawValue(coordinate().distanceTo(homePosition()));
         if (_distanceToHomeFact.rawValue().toDouble() > 1.0) {
             _headingToHomeFact.setRawValue(coordinate().azimuthTo(homePosition()));
+            _bearingFromHomeFact.setRawValue(homePosition().azimuthTo((coordinate())));
         } else {
             _headingToHomeFact.setRawValue(qQNaN());
+            _bearingFromHomeFact.setRawValue(qQNaN());
         }
     } else {
         _distanceToHomeFact.setRawValue(qQNaN());
         _headingToHomeFact.setRawValue(qQNaN());
+        _bearingFromHomeFact.setRawValue(qQNaN());
     }
 }
+
+void Vehicle::_updateDistanceToNextWP()
+{
+    //this runs when coordinates of the vehicle change
+    //need to calculate the distance to the next WP if a mission is running
+
+    const int currentIndex = _missionManager->currentIndex();
+    QList<MissionItem*> llist = _missionManager->missionItems();
+
+    if(coordinate().isValid() && llist.size()>currentIndex && currentIndex!=-1
+            && llist[currentIndex]->coordinate().longitude()!=0.0){
+
+        //at this point we have the coordiantes of the wp, so we need distance between coordinate() and llist[currentIndex]->coordinate()
+        _distanceToNextWPFact.setRawValue(coordinate().distanceTo(llist[currentIndex]->coordinate()));
+    }
+    else{
+        _distanceToNextWPFact.setRawValue(0);
+    }
+
+}
+
 
 void Vehicle::_updateHeadingToNextWP()
 {
@@ -3652,6 +3731,8 @@ void Vehicle::_updateHeadingToNextWP()
     else{
         _headingToNextWPFact.setRawValue(qQNaN());
     }
+
+
 }
 
 void Vehicle::_updateMissionItemIndex()
@@ -3687,6 +3768,31 @@ void Vehicle::forceInitialPlanRequestComplete()
     emit initialPlanRequestCompleteChanged(true);
 }
 
+void Vehicle::setAirSpeed(double speed)
+{
+    //speed should be specified in m/s
+    //qDebug() << "got speed of" << speed;
+
+    //update fact
+    if (!qIsNaN(speed))
+         _targetAirSpeedSetPointFact.setRawValue(speed);
+    else
+         return;
+
+   //send do_change_speed
+   sendMavCommand(
+               _defaultComponentId,
+               MAV_CMD_DO_CHANGE_SPEED,
+               false,                               // show errors
+               0,                                   // speed type, I believe this is 0 for airspeed
+               static_cast<float>(speed),           // target speed in m/s
+               0,
+               0,
+               0,
+               0,
+               0);
+
+}
 void Vehicle::sendPlan(QString planFile)
 {
     PlanMasterController::sendPlanToVehicle(this, planFile);

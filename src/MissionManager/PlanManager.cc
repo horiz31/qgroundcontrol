@@ -890,6 +890,8 @@ void PlanManager::removeAll(void)
 
     qCDebug(PlanManagerLog) << QStringLiteral("removeAll %1").arg(_planTypeString());
 
+    qDebug() << QStringLiteral("removeAll %1").arg(_planTypeString());
+
     _clearAndDeleteMissionItems();
 
     if (_planType == MAV_MISSION_TYPE_MISSION) {

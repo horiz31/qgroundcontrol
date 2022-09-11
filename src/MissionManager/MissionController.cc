@@ -1268,8 +1268,8 @@ void MissionController::_recalcFlightPathSegments(void)
     bool                previousItemIsIncomplete =  false;
     bool                signalSplitSegmentChanged = false;
 
-    qCDebug(MissionControllerLog) << "_recalcFlightPathSegments homePositionValid" << homePositionValid;
-    qDebug() << "_recalcFlightPathSegments homePositionValid" << homePositionValid;
+    //qCDebug(MissionControllerLog) << "_recalcFlightPathSegments homePositionValid" << homePositionValid;
+    //qDebug() << "_recalcFlightPathSegments homePositionValid" << homePositionValid;
 
     FlightPathSegmentHashTable oldSegmentTable = _flightPathSegmentHashTable;
 
@@ -2368,7 +2368,7 @@ bool MissionController::_isROICancelItem(SimpleMissionItem* simpleItem)
 void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
 {
     if (_visualItems && (force || sequenceNumber != _currentPlanViewSeqNum)) {
-        qDebug() << "setCurrentPlanViewSeqNum";
+        //qDebug() << "setCurrentPlanViewSeqNum";
         bool    foundLand =             false;
         int     takeoffSeqNum =         -1;
         int     landSeqNum =            -1;

@@ -33,10 +33,16 @@ public:
     /// Converts from user specified distance unit to meters
     Q_INVOKABLE QVariant appSettingsHorizontalDistanceUnitsToMeters(const QVariant& distance) const { return FactMetaData::appSettingsHorizontalDistanceUnitsToMeters(distance); }
 
+    /// Converts from user specified speed unit to meters per second
+    Q_INVOKABLE QVariant appSettingsSpeedUnitsToMetersPerSecond(const QVariant& speed) const { return FactMetaData::appSettingsSpeedUnitsToMetersPerSecond(speed); }
+
     QString appSettingsHorizontalDistanceUnitsString(void) const { return FactMetaData::appSettingsHorizontalDistanceUnitsString(); }
 
     /// Converts from meters to the user specified distance unit
     Q_INVOKABLE QVariant metersToAppSettingsVerticalDistanceUnits(const QVariant& meters) const { return FactMetaData::metersToAppSettingsVerticalDistanceUnits(meters); }
+
+    /// Converts from metersPerSecond to the user specified speed unit
+    Q_INVOKABLE QVariant metersPerSecondToAppSettingsSpeedUnits(const QVariant& metersPerSecond) const { return FactMetaData::metersPerSecondToAppSettingsSpeedUnits(metersPerSecond); }
 
     /// Converts from user specified distance unit to meters
     Q_INVOKABLE QVariant appSettingsVerticalDistanceUnitsToMeters(const QVariant& distance) const { return FactMetaData::appSettingsVerticalDistanceUnitsToMeters(distance); }

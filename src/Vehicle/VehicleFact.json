@@ -121,6 +121,13 @@
     "units":            "deg"
 },
 {
+    "name":             "distanceToNextWP",
+    "shortDesc": "Distance to Next WP",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "m"
+},
+{
     "name":             "flightTime",
     "shortDesc": "Flight Time",
     "type":             "elapsedSeconds",
@@ -134,6 +141,24 @@
 {
     "name":             "throttlePct",
     "shortDesc": "Throttle %",
+    "type":             "uint16",
+    "units":            "%"
+},
+{
+    "name":             "svBattCurrent",
+    "shortDesc": "Battery Current",
+    "type":             "double",
+    "units":            "A"
+},
+{
+    "name":             "svBattVoltage",
+    "shortDesc": "Battery Voltage",
+    "type":             "double",
+    "units":            "V"
+},
+{
+    "name":             "svBattPercentRemaining",
+    "shortDesc": "Battery Percent Remaining",
     "type":             "uint16",
     "units":            "%"
 }

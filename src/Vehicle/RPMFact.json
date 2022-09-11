@@ -1,0 +1,21 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "rpm1",
+    "shortDesc": "RPM Motor 1",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            ""
+},
+{
+    "name":             "rpm2",
+    "shortDesc": "RPM Motor 2",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            ""
+}
+]
+}

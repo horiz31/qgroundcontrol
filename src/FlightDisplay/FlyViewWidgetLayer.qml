@@ -16,6 +16,7 @@ import QtLocation               5.3
 import QtPositioning            5.3
 import QtQuick.Window           2.2
 import QtQml.Models             2.1
+import QtGraphicalEffects       1.0
 
 import QGroundControl               1.0
 import QGroundControl.Controls      1.0
@@ -29,6 +30,8 @@ import QGroundControl.FlightMap     1.0
 import QGroundControl.Palette       1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Vehicle       1.0
+
+
 
 // This is the ui overlay layer for the widgets/tools for Fly View
 Item {
@@ -48,6 +51,9 @@ Item {
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
     property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 30
+
+    property real _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
+
 
     QGCToolInsets {
         id:                     _totalToolInsets
@@ -121,6 +127,7 @@ Item {
 
     PhotoVideoControl {
         id:                     photoVideoControl
+        visible:                false // Super Volo edit, as we expect to build our own control for gimbal
         anchors.margins:        _toolsMargin
         anchors.right:          parent.right
         width:                  _rightPanelWidth
@@ -146,6 +153,14 @@ Item {
 
         property bool _verticalCenter: !QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue
     }
+
+
+    //Wind Inidicator, Super Volo integration
+    WindIndicator {
+        visible:    !QGroundControl.videoManager.fullScreene
+        z:          QGroundControl.zOrderTopMost
+    }
+
 
     TelemetryValuesBar {
         id:                 telemetryPanel

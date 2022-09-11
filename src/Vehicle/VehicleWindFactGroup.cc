@@ -101,6 +101,7 @@ void VehicleWindFactGroup::_handleWind(mavlink_message_t& message)
         direction += 360;
     }
     this->direction()->setRawValue(direction);
+    //qDebug() << "setting wind speed to " << wind.speed;
     speed()->setRawValue(wind.speed);
     verticalSpeed()->setRawValue(wind.speed_z);
     _setTelemetryAvailable(true);

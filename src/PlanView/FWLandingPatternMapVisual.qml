@@ -256,7 +256,7 @@ Item {
 
         MapPolyline {
             z:          QGroundControl.zOrderMapItems - 1   // Under item indicators
-            line.color: "#be781c"
+            line.color: "#101fe8"//"#be781c"
             line.width: 2
             path:       _flightPath
         }
@@ -487,8 +487,8 @@ Item {
 
             sourceItem: HeightIndicator {
                 map:        _root.map
-                heightText: Math.floor(QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(_transitionAltitudeMeters)) +
-                            QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString + "<sup>*</sup>"
+                heightText: Math.floor(QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(_transitionAltitudeMeters)) +
+                            QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString + "<sup>*</sup>"
             }
 
             function recalc() {
@@ -519,8 +519,8 @@ Item {
 
             sourceItem: HeightIndicator {
                 map:        _root.map
-                heightText: Math.floor(QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(_midSlopeAltitudeMeters)) +
-                            QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString + "<sup>*</sup>"
+                heightText: Math.floor(QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(_midSlopeAltitudeMeters)) +
+                            QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString + "<sup>*</sup>"
             }
 
             function recalc() {
@@ -559,7 +559,7 @@ Item {
 
             sourceItem: HeightIndicator {
                 map:        _root.map
-                heightText: _missionItem.finalApproachAltitude.value.toFixed(1) + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
+                heightText: _missionItem.finalApproachAltitude.value.toFixed(1) + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString
             }
         }
     }

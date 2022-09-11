@@ -29,6 +29,7 @@ Item {
 
     property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
 
+
     Row {
         id:             batteryIndicatorRow
         anchors.top:    parent.top
@@ -119,7 +120,7 @@ Item {
             property bool currentAvailable:         !isNaN(battery.current.rawValue)
             property bool mahConsumedAvailable:     !isNaN(battery.mahConsumed.rawValue)
             property bool timeRemainingAvailable:   !isNaN(battery.timeRemaining.rawValue)
-            property bool chargeStateAvailable:     battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED
+            property bool chargeStateAvailable:     battery.chargeState.rawValue !== MAVLink.MAV_BATTERY_CHARGE_STATE_UNDEFINED            
         }
     }
 
