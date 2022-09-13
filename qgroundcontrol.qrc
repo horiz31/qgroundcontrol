@@ -290,6 +290,9 @@
         <file alias="QGroundControl/FlightDisplay/WindIndicator.qml">src/FlightDisplay/WindIndicator.qml</file>
         <file alias="QGroundControl/FlightDisplay/GuidedActionLandingList.qml">src/FlightDisplay/GuidedActionLandingList.qml</file>
         <file alias="QGroundControl/FlightDisplay/GuidedActionActionLandingList.qml">src/FlightDisplay/GuidedActionActionLandingList.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightAirSpeedHealthCheck.qml">src/FlightDisplay/PreFlightAirSpeedHealthCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightICEHealthCheck.qml">src/FlightDisplay/PreFlightICEHealthCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightIMUTempCheck.qml">src/FlightDisplay/PreFlightIMUTempCheck.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

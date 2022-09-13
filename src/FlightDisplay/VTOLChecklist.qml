@@ -19,18 +19,32 @@ import QGroundControl.Vehicle       1.0
 
 Item {
     property var model: listModel
+    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
+    property real   _heading:     _activeVehicle ? _activeVehicle.heading.rawValue.toFixed(0) : 0    
     PreFlightCheckModel {
         id:     listModel
         PreFlightCheckGroup {
-            name: qsTr("Super Volo Initial Checks")
+            name: qsTr("Super Volo Hardware Checks")
 
             PreFlightCheckButton {
-                name:           qsTr("Hardware")
-                manualText:     qsTr("Props mounted? Wings secured? Tail secured?")
+                name:           qsTr("Check Props")
+                manualText:     qsTr("Are all props securely mounted and free of damage?")
             }
+            PreFlightCheckButton {
+                name:           qsTr("Check Servo Linkages")
+                manualText:     qsTr("Do they move freely, are the linkages free of damage?")
+            }
+            PreFlightCheckButton {
+                name:           qsTr("Check Surfaces")
+                manualText:     qsTr("Check wings and control surfaces for damage, are they ok?")
+            }
+        }
+
+        PreFlightCheckGroup {
+            name: qsTr("Super Volo Servo and Sensor Checks")
 
             PreFlightBatteryCheck {
-                failurePercent:                 40
+                failurePercent:                 50
                 allowFailurePercentOverride:    true
             }
 
@@ -41,31 +55,36 @@ Item {
                 failureSatCount:        9
                 allowOverrideSatCount:  true
             }
-
-            PreFlightRCCheck {
+            PreFlightCheckButton {
+                name:            qsTr("Compass")
+                manualText:      qsTr("Is the aircraft heading (" + _heading + "°) correct?")
             }
+            PreFlightIMUTempCheck {
+            }
+
+            PreFlightAirSpeedHealthCheck {
+                allowTelemetryFailureOverride:    true
+            }
+
         }
 
         PreFlightCheckGroup {
-            name: qsTr("Please arm the vehicle here")
+            name: qsTr("Servos, Motors and Engine Test")
 
             PreFlightCheckButton {
                 name:            qsTr("Actuators")
-                manualText:      qsTr("Move all control surfaces. Did they work properly?")
+                manualText:      qsTr("Move the aircraft and ensure that control surfaces react. Did they work properly?")
+            }
+
+            PreFlightICEHealthCheck {
             }
 
             PreFlightCheckButton {
-                name:            qsTr("Motors")
-                manualText:      qsTr("Propellers free? Then throttle up gently. Working properly?")
+                name:            qsTr("Quadrotor Test")
+                manualText:      qsTr("Run-up the quads. Are they working properly and spinning in the correct direction?")
             }
 
-            PreFlightCheckButton {
-                name:        qsTr("Mission")
-                manualText:  qsTr("Please confirm mission is valid (waypoints valid, no terrain collision).")
-            }
 
-            PreFlightSoundCheck {
-            }
         }
 
         PreFlightCheckGroup {
@@ -73,18 +92,23 @@ Item {
 
             // Check list item group 2 - Final checks before launch
             PreFlightCheckButton {
-                name:        qsTr("Payload")
-                manualText:  qsTr("Configured and started? Payload lid closed?")
+                name:        qsTr("Mission")
+                manualText:  qsTr("Please confirm mission is valid, contains a VTOL landing and is uploaded.")
             }
 
             PreFlightCheckButton {
-                name:        "Wind & weather"
-                manualText:  qsTr("OK for your platform? Lauching into the wind?")
+                name:        qsTr("Payload")
+                manualText:  qsTr("Verify the payload is operations, e.g. you are receiving video?")
+            }
+
+            PreFlightCheckButton {
+                name:        "Wind and Weather"
+                manualText:  qsTr("Are the winds aloft too high to safely operate?")
             }
 
             PreFlightCheckButton {
                 name:        qsTr("Flight area")
-                manualText:  qsTr("Launch area and path free of obstacles/people?")
+                manualText:  qsTr("Is the launch area and path free of obstacles/people?")
             }
         }
     }

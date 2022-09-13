@@ -34,10 +34,12 @@ QGCButton {
     property bool   passed:                         _manualState === _statePassed && _telemetryState === _statePassed
     property bool   failed:                         _manualState === _stateFailed || _telemetryState === _stateFailed
 
+
     property int _manualState:          manualText === "" ? _statePassed : _statePending
     property int _telemetryState:       _statePassed
     property int _horizontalPadding:    ScreenTools.defaultFontPixelWidth
     property int _verticalPadding:      Math.round(ScreenTools.defaultFontPixelHeight / 2)
+    property int specifiedBottomPadding:    _verticalPadding
     property real _stateFlagWidth:      ScreenTools.defaultFontPixelWidth * 4
 
     readonly property int _statePending:    0   ///< Telemetry check is failing or manual check not yet verified, user can click to make it pass
@@ -60,9 +62,9 @@ QGCButton {
                                           _pendingColor :
                                           _failedColor))
 
-    width:          40 * ScreenTools.defaultFontPixelWidth
+    width:          60 * ScreenTools.defaultFontPixelWidth
     topPadding:     _verticalPadding
-    bottomPadding:  _verticalPadding
+    bottomPadding:  specifiedBottomPadding
     leftPadding:    (_horizontalPadding * 2) + _stateFlagWidth
     rightPadding:   _horizontalPadding
 
@@ -85,6 +87,7 @@ QGCButton {
         color:                  qgcPal.buttonText
         text:                   _text
     }
+
 
     function _updateTelemetryState() {
         if (telemetryFailure) {

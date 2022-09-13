@@ -310,6 +310,7 @@ public:
     Q_PROPERTY(Fact* svBattVoltage      READ svBattVoltage      CONSTANT)
     Q_PROPERTY(Fact* svBattPercentRemaining READ svBattPercentRemaining CONSTANT)
     Q_PROPERTY(Fact* targetAirSpeedSetPoint READ targetAirSpeedSetPoint CONSTANT)
+    Q_PROPERTY(Fact* imuTemperature     READ imuTemperature CONSTANT)
 
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
     Q_PROPERTY(FactGroup*           gps2            READ gps2FactGroup              CONSTANT)
@@ -435,6 +436,7 @@ public:
     Q_INVOKABLE void gimbalYawStep      (int direction);
     Q_INVOKABLE void centerGimbal       ();
     Q_INVOKABLE void forceArm           ();
+    Q_INVOKABLE void startAirSpeedCalibration   ();
 
     /// Sends PARAM_MAP_RC message to vehicle
     Q_INVOKABLE void sendParamMapRC(const QString& paramName, double scale, double centerValue, int tuningID, double minValue, double maxValue);
@@ -669,6 +671,7 @@ public:
     Fact* svBattVoltage                     () { return &_svBattVoltageFact; }
     Fact* svBattPercentRemaining            () { return &_svBattPercentRemainingFact; }
     Fact* targetAirSpeedSetPoint            () { return &_targetAirSpeedSetPointFact; }
+    Fact* imuTemperature                    () { return &_imuTemperatureFact; }
 
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
     FactGroup* gps2FactGroup                () { return &_gps2FactGroup; }
@@ -1013,6 +1016,7 @@ private:
     void _handleExtendedSysState        (mavlink_message_t& message);
     void _handleCommandAck              (mavlink_message_t& message);
     void _handleGpsRawInt               (mavlink_message_t& message);
+    void _handleRawImu               (mavlink_message_t& message);
     void _handleGlobalPositionInt       (mavlink_message_t& message);
     void _handleAltitude                (mavlink_message_t& message);
     void _handleVfrHud                  (mavlink_message_t& message);
@@ -1334,6 +1338,7 @@ private:
     Fact _svBattVoltageFact;
     Fact _svBattPercentRemainingFact;
     Fact _targetAirSpeedSetPointFact;
+    Fact _imuTemperatureFact;
 
     VehicleGPSFactGroup             _gpsFactGroup;
     VehicleGPS2FactGroup            _gps2FactGroup;
@@ -1393,6 +1398,7 @@ private:
     static const char* _svBattVoltageFactName;
     static const char* _svBattPercentRemainingFactName;
     static const char* _targetAirSpeedSetPointFactName;
+    static const char* _imuTemperatureFactName;
 
     static const char* _gpsFactGroupName;
     static const char* _gps2FactGroupName;

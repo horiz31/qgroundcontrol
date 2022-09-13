@@ -101,6 +101,7 @@ const char* Vehicle::_svBattCurrentFactName =          "svBattCurrent";
 const char* Vehicle::_svBattVoltageFactName =       "svBattVoltage";
 const char* Vehicle::_svBattPercentRemainingFactName =   "svBattPercentRemaining";
 const char* Vehicle::_targetAirSpeedSetPointFactName =   "targetAirSpeedSetPoint";
+const char* Vehicle::_imuTemperatureFactName =   "imuTemperature";
 
 const char* Vehicle::_gpsFactGroupName =                "gps";
 const char* Vehicle::_gps2FactGroupName =               "gps2";
@@ -169,6 +170,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _svBattVoltageFact            (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
     , _svBattPercentRemainingFact   (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
     , _targetAirSpeedSetPointFact         (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
+    , _imuTemperatureFact               (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
 
     , _gpsFactGroup                 (this)
     , _gps2FactGroup                (this)
@@ -334,6 +336,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _svBattVoltageFact                (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
     , _svBattPercentRemainingFact       (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
     , _targetAirSpeedSetPointFact       (0, _targetAirSpeedSetPointFactName,           FactMetaData::valueTypeDouble)
+    , _imuTemperatureFact               (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
     , _gpsFactGroup                     (this)
     , _gps2FactGroup                    (this)
     , _windFactGroup                    (this)
@@ -463,6 +466,7 @@ void Vehicle::_commonInit()
     _addFact(&_svBattVoltageFact,       _svBattVoltageFactName);
     _addFact(&_svBattPercentRemainingFact,       _svBattPercentRemainingFactName);
     _addFact(&_targetAirSpeedSetPointFact,       _targetAirSpeedSetPointFactName);
+    _addFact(&_imuTemperatureFact,       _imuTemperatureFactName);
 
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
     _addFact(&_hobbsFact,               _hobbsFactName);
@@ -716,6 +720,7 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         _handleSysStatus(message);
         break;
     case MAVLINK_MSG_ID_RAW_IMU:
+        _handleRawImu(message);
         emit mavlinkRawImu(message);
         break;
     case MAVLINK_MSG_ID_SCALED_IMU:
@@ -1144,6 +1149,15 @@ void Vehicle::_handleGpsRawInt(mavlink_message_t& message)
             }
         }
     }
+}
+
+void Vehicle::_handleRawImu(mavlink_message_t& message)
+{
+    mavlink_raw_imu_t rawImu;
+    mavlink_msg_raw_imu_decode(&message, &rawImu);
+
+    _imuTemperatureFact.setRawValue(rawImu.temperature / 100.0);
+
 }
 
 void Vehicle::_handleGlobalPositionInt(mavlink_message_t& message)
@@ -3315,6 +3329,11 @@ void Vehicle::_rebootCommandResultHandler(void* resultHandlerData, int /*compId*
 void Vehicle::rebootVehicle()
 {
     sendMavCommandWithHandler(_rebootCommandResultHandler, this, _defaultComponentId, MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN, 1);
+}
+
+void Vehicle::startAirSpeedCalibration()
+{
+    startCalibration(CalibrationType::CalibrationAPMPressureAirspeed);
 }
 
 void Vehicle::startCalibration(Vehicle::CalibrationType calType)
