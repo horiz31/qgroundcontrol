@@ -67,6 +67,9 @@ const char* Joystick::_buttonActionEmergencyStop =      QT_TR_NOOP("Emergency St
 const char* Joystick::_buttonActionCommLOS =            QT_TR_NOOP("Set Comm Mode To LOS");
 const char* Joystick::_buttonActionCommCell =           QT_TR_NOOP("Set Comm Mode To Cellular");
 const char* Joystick::_buttonActionToggleAudio =        QT_TR_NOOP("Toggle Audio Playback");
+const char* Joystick::_buttonActionPreArmWeapons =      QT_TR_NOOP("Arm Weapons");
+const char* Joystick::_buttonActionArmWeapons =         QT_TR_NOOP("Step 1 Weapon Fire");
+const char* Joystick::_buttonActionFireWeapon =         QT_TR_NOOP("Step 2 Weapon Fire");
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "RollAxis",
@@ -692,6 +695,9 @@ void Joystick::startPolling(Vehicle* vehicle)
             disconnect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             disconnect(this, &Joystick::emergencyStop,      _activeVehicle, &Vehicle::emergencyStop);
+            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
             disconnect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
         }
@@ -716,6 +722,9 @@ void Joystick::startPolling(Vehicle* vehicle)
             connect(this, &Joystick::centerGimbal,       _activeVehicle, &Vehicle::centerGimbal);
             connect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             connect(this, &Joystick::emergencyStop,      _activeVehicle, &Vehicle::emergencyStop);
+            connect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            connect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            connect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
             connect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
             connect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
         }
@@ -739,6 +748,9 @@ void Joystick::stopPolling(void)
             disconnect(this, &Joystick::gimbalControlValue, _activeVehicle, &Vehicle::gimbalControlValue);
             disconnect(this, &Joystick::toggleAudioPlayback,  qgcApp()->toolbox()->videoManager(), &VideoManager::toggleAudioPlayback);
             disconnect(this, &Joystick::setCommMode,         _activeVehicle, &Vehicle::setCommMode);
+            disconnect(this, &Joystick::setWeaponsPreArmed, _activeVehicle, &Vehicle::setWeaponsPreArmed);
+            disconnect(this, &Joystick::setWeaponsArmed,    _activeVehicle, &Vehicle::setWeaponsArmed);
+            disconnect(this, &Joystick::setWeaponFire,      _activeVehicle, &Vehicle::setWeaponFire);
         }
 
         _exitThread = true;
@@ -1035,7 +1047,22 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         if(buttonDown) emit setCommMode(2);
     } else if(action == _buttonActionToggleAudio) {
         if(buttonDown) emit toggleAudioPlayback();
-    } else {
+    }
+    else if(action == _buttonActionPreArmWeapons) {  //this sets pre-arm high.  to fire pre-arm and arm must be set
+            //if buttonDown
+           if (buttonDown) emit setWeaponsPreArmed(true);  //arm when button held down
+           else emit setWeaponsPreArmed(false);
+       }
+    else if(action == _buttonActionArmWeapons) {  //this sets pre-arm high.  to fire pre-arm and arm must be set
+            //if buttonDown
+           if (buttonDown) emit setWeaponsArmed(true);  //arm when button held down
+           else emit setWeaponsArmed(false);
+       }
+    else if(action == _buttonActionFireWeapon) {
+           if (buttonDown) emit setWeaponFire(true);  //fire when button held down
+           else emit setWeaponFire(false);
+       }
+    else {
         qCDebug(JoystickLog) << "_buttonAction unknown action:" << action;
     }
 }
@@ -1127,6 +1154,9 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleAudio));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionCommLOS));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionCommCell));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreArmWeapons));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArmWeapons));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionFireWeapon));
 
     for(int i = 0; i < _assignableButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableButtonActions[i]);

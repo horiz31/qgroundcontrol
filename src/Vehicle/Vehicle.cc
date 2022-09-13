@@ -3471,6 +3471,72 @@ void Vehicle::_handleADSBVehicle(const mavlink_message_t& message)
     }
 }
 
+void Vehicle::setWeaponsPreArmed(bool value)
+{
+    _weaponsPreArmed = value;
+    if (value)
+        _say(tr("%1 : Weapon System Armed").arg(_vehicleIdSpeech()));
+    else
+        _say(tr("%1 : Weapon System Disarmed").arg(_vehicleIdSpeech()));
+     emit weaponsPreArmedChanged(_weaponsPreArmed);
+}
+
+void Vehicle::setWeaponsArmed(bool value)
+{
+     _weaponsArmed = value;
+
+
+    emit weaponsArmedChanged(_weaponsArmed);
+}
+
+void Vehicle::setWeaponFire(bool value)
+{
+    int servoChannel = 4;
+    int servoHigh = 2000;
+    int servoLow = 900;
+
+    SharedLinkInterfacePtr  sharedLink = vehicleLinkManager()->primaryLink().lock();
+
+    if (!value)  //false, weapon not fire
+    {
+        sendMavCommand(defaultComponentId(),
+                       MAV_CMD_DO_SET_SERVO,
+                       false,
+                       servoChannel,
+                       servoLow,
+                       0,
+                       0,
+                       0,
+                       0,
+                       0);
+        return;
+    }
+    if (_weaponsPreArmed && _weaponsArmed && value)
+    {
+         //set servo high, sending this as a single message without retries to ensure it doesn't get resent over a bad link when it isn't expected
+        mavlink_message_t msg;
+        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                           defaultComponentId(),
+                                           sharedLink->mavlinkChannel(),
+                                           &msg,
+                                           _id,
+                                           defaultComponentId(),   // target component
+                                           MAV_CMD_DO_SET_SERVO,    // command id
+                                           0,                                // 0=first transmission of command
+                                           servoChannel,
+                                           servoHigh,
+                                           0,
+                                           0,
+                                           0,
+                                           0,
+                                           0);
+          sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+         _say(tr("%1 : Fire").arg(_vehicleIdSpeech()));
+    }
+
+
+}
+
 void Vehicle::_updateDistanceHeadingToHome()
 {
     if (coordinate().isValid() && homePosition().isValid()) {

@@ -219,6 +219,10 @@ signals:
     void toggleAudioPlayback        ();
     void setCommMode                (int mode);
 
+    void setWeaponsPreArmed         (bool value);
+    void setWeaponsArmed            (bool value);
+    void setWeaponFire              (bool value);
+
 protected:
     void    _setDefaultCalibration  ();
     void    _saveSettings           ();
@@ -308,6 +312,9 @@ protected:
 private:
     static const char*  _rgFunctionSettingsKey[maxFunction];
 
+    static const char* _buttonActionArmWeapons;
+    static const char* _buttonActionPreArmWeapons;
+    static const char* _buttonActionFireWeapon;
     static const char* _settingsGroup;
     static const char* _calibratedSettingsKey;
     static const char* _buttonActionNameKey;

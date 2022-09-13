@@ -141,6 +141,8 @@ public:
     Q_ENUM(CheckList)
 
     Q_PROPERTY(int                  id                          READ id                                                             CONSTANT)
+    Q_PROPERTY(bool                 weaponsPreArmed             READ weaponsPreArmed                                                NOTIFY weaponsPreArmedChanged)
+    Q_PROPERTY(bool                 weaponsArmed                READ weaponsArmed                                                   NOTIFY weaponsArmedChanged)
     Q_PROPERTY(AutoPilotPlugin*     autopilot                   MEMBER _autopilotPlugin                                             CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate                  READ coordinate                                                     NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition                READ homePosition                                                   NOTIFY homePositionChanged)
@@ -416,6 +418,9 @@ public:
     QGeoCoordinate armedPosition    () { return _armedPosition; }
 
     void updateFlightDistance(double distance);
+    void setWeaponsArmed(bool value);
+    void setWeaponsPreArmed(bool value);
+    void setWeaponFire(bool value);
 
     bool joystickEnabled            ();
     void setJoystickEnabled         (bool enabled);
@@ -449,6 +454,8 @@ public:
     QGeoCoordinate homePosition();
 
     bool armed              () { return _armed; }
+    bool weaponsArmed      () { return _weaponsArmed; }
+    bool weaponsPreArmed    () { return _weaponsPreArmed; }
     void setArmed           (bool armed, bool showError);
     void setArmedShowError  (bool armed) { setArmed(armed, true); }
 
@@ -803,6 +810,8 @@ signals:
     void newMessageCountChanged         ();
     void messageCountChanged            ();
     void formattedMessagesChanged       ();
+    void weaponsArmedChanged            (bool value);
+    void weaponsPreArmedChanged         (bool value);
     void newFormattedMessage            (QString formattedMessage);
     void latestErrorChanged             ();
     void longitudeChanged               ();
@@ -1052,6 +1061,8 @@ private:
 #endif
 
     bool    _armed = false;         ///< true: vehicle is armed
+    bool    _weaponsArmed = false;  ///true: weapon system is armed
+    bool    _weaponsPreArmed = false;  ///true: weapon system is pre armed
     uint8_t _base_mode = 0;     ///< base_mode from HEARTBEAT
     uint32_t _custom_mode = 0;  ///< custom_mode from HEARTBEAT
 
