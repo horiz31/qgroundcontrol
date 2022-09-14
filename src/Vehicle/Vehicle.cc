@@ -4116,6 +4116,40 @@ void Vehicle::clearAllParamMapRC(void)
     }
 }
 
+void Vehicle::sendJoystickThrottle(int throttle)
+{
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog)<< "sendJoystickThrottle: primary link gone!";
+        return;
+    }
+
+    if (sharedLink->linkConfiguration()->isHighLatency()) {
+        return;
+    }
+
+    mavlink_message_t message;
+
+
+
+    mavlink_msg_rc_channels_override_pack_chan(
+                static_cast<uint8_t>(_mavlink->getSystemId()),
+                static_cast<uint8_t>(_mavlink->getComponentId()),
+                sharedLink->mavlinkChannel(),
+                &message,
+                static_cast<uint8_t>(_id),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(throttle),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),0,0,0,0,0,0,0,0,0,0,0
+                );
+    sendMessageOnLinkThreadSafe(sharedLink.get(), message);
+}
+
 void Vehicle::sendJoystickDataThreadSafe(float roll, float pitch, float yaw, float thrust, quint16 buttons)
 {
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();

@@ -450,6 +450,9 @@ public:
     /// Trigger camera using MAV_CMD_DO_DIGICAM_CONTROL command
     Q_INVOKABLE void triggerSimpleCamera(void);
 
+    /// Set Throttle used during Super Volo pre-flight
+    Q_INVOKABLE void sendJoystickThrottle (int throttle);
+
 #if !defined(NO_ARDUPILOT_DIALECT)
     Q_INVOKABLE void flashBootloader();
 #endif

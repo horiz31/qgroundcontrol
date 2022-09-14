@@ -28,6 +28,11 @@ PreFlightCheckButton {
     property string   _buttonLabel:   qsTr("Engine Run Up Test")
     readonly property int _sliderWidth:        25
 
+    property bool   _joyStickInitialState: false
+    property string _modeInitialState: ""
+    property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
+    property real _joyValue: -1
+
 
     Button {
         id: engineTestButton
@@ -144,11 +149,39 @@ PreFlightCheckButton {
                             onActivated: {
                                 console.log("Button Pressed and held");
                                 // remember current mode
+                                _modeInitialState = globals.activeVehicle.flightMode
+                                 console.log("mode is currently " + _modeInitialState)
                                 //remember joystick state
+                                if(globals.activeVehicle && joystickManager.activeJoystick) {
+                                    if(globals.activeVehicle.joystickEnabled) {
+                                        _joyStickInitialState = true
+                                    }
+                                    _joyStickInitialState = false
+                                }
+
+                                console.log("joystick is currently " + _joyStickInitialState)
                                 //if enabled, disable joysticks
+                                if (_joyStickInitialState && globals.activeVehicle)
+                                {
+                                    console.log("disabling the joystick")
+                                    globals.activeVehicle.joystickEnabled = false
+                                }
+
+                                //also need to handle virtual joystick
+
+        //property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
+
                                 //set mode to manual
+                                 console.log("changing mode to manual")
+                                globals.activeVehicle.flightMode = "Manual"
+                                globals.activeVehicle.armed = true
                                 //set throttle level (or servo3)
                                 //possible we want to verify servo3 function is throttle
+                                _joyValue = ((iceMotorThrottle.value - 50) * 2) / 100
+                                 console.log("sending joystick throttle value of " + _joyValue)
+                                globals.activeVehicle.sendJoystickThrottle(1610)  //scaled -1 to 1, sending joystick throttle only works if armed, so probably have to send this as a rc_override
+                                //rc_override = RC_CHANNELS_OVERRIDE
+                                //channel 3, value between 1000 and 2000
 
                                 text= qsTr("Release to Stop")
                                 progress = 0.0
@@ -158,7 +191,14 @@ PreFlightCheckButton {
                                 //set throttle level 0
                                 //set mode back to previous mode
                                 //if joysticks were enabled, re-enable
-                                console.log("Button released");
+                                globals.activeVehicle.armed = false
+                                console.log("Button released, changing mode back to what it was");
+                                 globals.activeVehicle.flightMode = _modeInitialState
+                                if (_joyStickInitialState && globals.activeVehicle)
+                                {
+                                    console.log("re-enabling the joystick")
+                                    globals.activeVehicle.joystickEnabled = true
+                                }
                             }
                         }
                         Item {
