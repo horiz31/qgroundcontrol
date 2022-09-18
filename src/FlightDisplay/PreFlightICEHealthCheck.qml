@@ -156,7 +156,10 @@ PreFlightCheckButton {
                                     if(globals.activeVehicle.joystickEnabled) {
                                         _joyStickInitialState = true
                                     }
-                                    _joyStickInitialState = false
+                                    else
+                                    {
+                                        _joyStickInitialState = false
+                                    }
                                 }
 
                                 console.log("joystick is currently " + _joyStickInitialState)
@@ -174,7 +177,7 @@ PreFlightCheckButton {
                                 //set mode to manual
                                  console.log("changing mode to manual")
                                 globals.activeVehicle.flightMode = "Manual"
-                                globals.activeVehicle.armed = true
+                                //globals.activeVehicle.armed = true
                                 //set throttle level (or servo3)
                                 //possible we want to verify servo3 function is throttle
                                 _joyValue = ((iceMotorThrottle.value - 50) * 2) / 100
@@ -191,7 +194,7 @@ PreFlightCheckButton {
                                 //set throttle level 0
                                 //set mode back to previous mode
                                 //if joysticks were enabled, re-enable
-                                globals.activeVehicle.armed = false
+                               // globals.activeVehicle.armed = false
                                 console.log("Button released, changing mode back to what it was");
                                  globals.activeVehicle.flightMode = _modeInitialState
                                 if (_joyStickInitialState && globals.activeVehicle)

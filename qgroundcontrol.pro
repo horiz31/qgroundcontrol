@@ -61,11 +61,11 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "EchoMav GCS"
-QGC_ORG_NAME        = "EchoMav"
-QGC_ORG_DOMAIN      = "echomav.com"
+QGC_APP_NAME        = "ORNL SuperVolo GCS"
+QGC_ORG_NAME        = "ORNL"
+QGC_ORG_DOMAIN      = "ornl.gov"
 QGC_APP_DESCRIPTION = "Open source ground control app derived from QGroundControl"
-QGC_APP_COPYRIGHT   = "Copyright (C) 2022 EchoMav. All Rights Reserved."
+QGC_APP_COPYRIGHT   = "Copyright (C) 2022 ORNL. All Rights Reserved."
 
 WindowsBuild {
     QGC_INSTALLER_SCRIPT        = "$$SOURCE_DIR\\deploy\\windows\\nullsoft_installer.nsi"

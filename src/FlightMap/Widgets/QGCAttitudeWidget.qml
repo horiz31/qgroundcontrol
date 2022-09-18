@@ -130,6 +130,7 @@ Item {
         }
         QGCLabel {
             id: hudAltitudeUnits
+            anchors.topMargin:             Math.round(ScreenTools.defaultFontPixelHeight * .2)
             anchors.top:                altBackground.bottom
             anchors.right:               parent.right
             anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 3)
@@ -140,6 +141,7 @@ Item {
         }
         QGCLabel {
             id: hudAirspeedUnits
+            anchors.bottomMargin:             Math.round(ScreenTools.defaultFontPixelHeight * .2)
             anchors.top:                asBackground.bottom
             anchors.left:               parent.left
             anchors.leftMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 3)

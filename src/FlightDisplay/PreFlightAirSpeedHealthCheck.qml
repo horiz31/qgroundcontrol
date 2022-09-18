@@ -25,7 +25,7 @@ PreFlightCheckButton {
     specifiedBottomPadding: _telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
     property real   _airSpeed:        globals.activeVehicle ? globals.activeVehicle.airSpeed.rawValue : 0
     property real   _offSetError:     150.0
-    property real   _airSpeedLimit:   3.0
+    property real   _airSpeedLimit:   2.0
     property string   _buttonLabel:   qsTr("Calibrate Air Speed")
     property string   _buttonActionLabel:   qsTr("Calibrating...")
 
