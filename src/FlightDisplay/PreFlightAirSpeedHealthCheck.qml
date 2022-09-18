@@ -22,10 +22,10 @@ PreFlightCheckButton {
     name:               qsTr("Air Speed Sensor")
     telemetryFailure:   (_airSpeed > _airSpeedLimit) || (Math.abs(_windOffsetfact) > _offSetError) //this causes the button to go yellow/red
     allowTelemetryFailureOverride: false
-    specifiedBottomPadding: _telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
+    specifiedBottomPadding: Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2) //_telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
     property real   _airSpeed:        globals.activeVehicle ? globals.activeVehicle.airSpeed.rawValue : 0
     property real   _offSetError:     150.0
-    property real   _airSpeedLimit:   3.0
+    property real   _airSpeedLimit:   2.0
     property string   _buttonLabel:   qsTr("Calibrate Air Speed")
     property string   _buttonActionLabel:   qsTr("Calibrating...")
 
@@ -37,7 +37,7 @@ PreFlightCheckButton {
     Button {
         id: calibrateButton
         text:           _buttonLabel
-        visible:        _telemetryState != _statePassed
+        visible:        true  //_telemetryState != _statePassed
         enabled:        true
         onClicked:      calibrateAirSpeed()
         anchors.horizontalCenter: parent.horizontalCenter
@@ -89,35 +89,7 @@ PreFlightCheckButton {
 
     }
 
-
-    //below example of a button with a confirmation, to be useful in motor startups
-    /*
-    QGCButton {
-        text:           qsTr("Clear Saved Answers")
-        enabled:        _enableAirMapFact.rawValue
-        onClicked:      clearDialog.open()
-        anchors.verticalCenter: parent.verticalCenter
-        MessageDialog {
-            id:                 clearDialog
-            visible:            false
-            icon:               StandardIcon.Warning
-            standardButtons:    StandardButton.Yes | StandardButton.No
-            title:              qsTr("Clear Saved Answers")
-            text:               qsTr("All saved ruleset answers will be cleared. Is this really what you want?")
-            onYes: {
-                QGroundControl.airspaceManager.ruleSets.clearAllFeatures()
-                clearDialog.close()
-            }
-            onNo: {
-                clearDialog.close()
-            }
-        }
-    }*/
-
     on_AirSpeedChanged: updateTelemetryTextFailure()
-
-    //on_TelemetryStateChanged: console.log("telem state changed to " + _telemetryState)
-
 
     Component.onCompleted: updateTelemetryTextFailure()
 

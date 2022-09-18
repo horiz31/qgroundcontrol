@@ -26,9 +26,9 @@
     "name":             "FinalApproachAltitude",
     "shortDesc":        "Altitude to begin landing approach from.",
     "type":             "double",
-    "units":            "m",
+    "units":            "vertical m",
     "decimalPlaces":    1,
-    "default":          60.0
+    "default":          60.96
 },
 {
     "name":             "LoiterRadius",
@@ -49,7 +49,7 @@
     "name":             "LandingAltitude",
     "shortDesc":        "Altitude for landing point.",
     "type":             "double",
-    "units":            "m",
+    "units":            "vertical m",
     "decimalPlaces":    1,
     "default":          0.0
 },

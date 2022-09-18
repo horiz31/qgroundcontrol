@@ -70,7 +70,7 @@ Item {
                     QGCLabel { text: qsTr("Carb Servo:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.carbPosition.value) ? "-- %" : _activeVehicle.hcu.carbPosition.value.toFixed(0) + " %") : "-- %" }
                     QGCLabel { text: qsTr("Cylinder Temp:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.cylinderTemp.value) ? "---.- F" : _activeVehicle.hcu.cyclinderTemp.value.toFixed(1) + " F") : "---.- F" }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.cylinderTemp.value) ? "---.- °F" : _activeVehicle.hcu.cylinder.value.toFixed(1) + " F") : "---.- °F" }
                     QGCLabel { text: qsTr("Generator:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.generator.value) ? "-- %" : _activeVehicle.hcu.generator.value.toFixed(0) + "%") : "-- %" }
                     QGCLabel { text: qsTr("Charge Rate:") }

@@ -146,6 +146,7 @@ private:
     int                     _normalCount;
     QString                 _latestError;
     bool                    _showErrorsInToolbar;
+    bool                    _preventPopUp;
     MultiVehicleManager*    _multiVehicleManager;
 };
 

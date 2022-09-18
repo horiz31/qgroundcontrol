@@ -8,14 +8,14 @@
     "shortDesc": "Minimum altitude for guided actions altitude slider.",
     "type":             "double",
     "units":            "vertical m",
-    "default":     30
+    "default":     30.48
 },
 {
     "name":             "guidedMaximumAltitude",
     "shortDesc": "Maximum altitude for guided actions altitude slider.",
     "type":             "double",
     "units":            "vertical m",
-    "default":     365
+    "default":     1500
 },
 {
     "name":             "showLogReplayStatusBar",

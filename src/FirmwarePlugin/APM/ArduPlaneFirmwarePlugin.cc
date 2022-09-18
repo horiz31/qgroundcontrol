@@ -46,7 +46,7 @@ APMPlaneMode::APMPlaneMode(uint32_t mode, bool settable)
 ArduPlaneFirmwarePlugin::ArduPlaneFirmwarePlugin(void)
 {
     setSupportedModes({
-        APMPlaneMode(APMPlaneMode::MANUAL,          true),
+        APMPlaneMode(APMPlaneMode::MANUAL,          false),
         APMPlaneMode(APMPlaneMode::CIRCLE,          false),
         APMPlaneMode(APMPlaneMode::STABILIZE,       false),
         APMPlaneMode(APMPlaneMode::TRAINING,        false),

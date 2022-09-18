@@ -42,6 +42,7 @@ Item {
     readonly property string takeoffTitle:                  qsTr("Takeoff")
     readonly property string landTitle:                     qsTr("Land")
     readonly property string landMissionTitle:              qsTr("Start Mission Land")
+    readonly property string landQRTLTitle:                 qsTr("QRTL Landing")
     readonly property string landQLandTitle:                qsTr("Switch to QLAND")
     readonly property string startMissionTitle:             qsTr("Start Mission")
     readonly property string mvStartMissionTitle:           qsTr("Start Mission (MV)")
@@ -68,6 +69,7 @@ Item {
     readonly property string resumeMissionUploadFailMessage:    qsTr("Upload of resume mission failed. Confirm to retry upload")
     readonly property string landMessage:                       qsTr("Land the vehicle at the current position.")
     readonly property string landQLandMessage:                  qsTr("Land the vehicle at the current position using QLand mode. Aircraft will descend as a quadrotor.")
+    readonly property string landQRTLMessage:                   qsTr("Switch to quadrotors, return to launch position and land.")
     readonly property string landMissionMessage:                qsTr("Start the landing sequence within the current mission.")
     readonly property string rtlMessage:                        qsTr("Return to the launch position of the vehicle.")
     readonly property string changeAltMessage:                  qsTr("Change the altitude of the vehicle up or down.")
@@ -109,6 +111,7 @@ Item {
     readonly property int actionActionLandingList:          25
     readonly property int actionLandQLand:                  26
     readonly property int actionMissionLand:                27
+    readonly property int actionQRTLLand:                   28
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
@@ -484,6 +487,11 @@ Item {
             confirmDialog.message = "Start the landing sequence defined in the active mission?"
             confirmDialog.hideTrigger = true
             break;
+        case actionQRTLLand:
+            confirmDialog.title = "QRTL Mode"
+            confirmDialog.message = "Switch to quadrotors, return to launch position and land?"
+            confirmDialog.hideTrigger = true
+            break;
         case actionActionList:          
             actionList.show()
             return
@@ -522,6 +530,9 @@ Item {
             break
         case actionTakeoff:
             _activeVehicle.guidedModeTakeoff(actionAltitudeChange)
+            break
+        case actionQRTLLand:
+            _activeVehicle.flightMode = "QuadPlane RTL"
             break
         case actionResumeMission:
         case actionResumeMissionUploadFail:

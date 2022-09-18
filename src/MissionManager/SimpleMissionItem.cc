@@ -781,7 +781,18 @@ void SimpleMissionItem::_setDefaultsForCommand(void)
     _altitudeMode = QGroundControlQmlGlobal::AltitudeModeRelative;
     emit altitudeModeChanged();
     _amslAltAboveTerrainFact.setRawValue(qQNaN());
-    if (specifiesAltitude()) {
+
+    //SuperVolo edit (and useful for all VTOL really, use the new setting for defaultTransitionAltitude for VTOL_TAKEOFF and LANDING
+    if (isTakeoffItem())
+    {
+        double defaultAlt = qgcApp()->toolbox()->settingsManager()->appSettings()->defaultTransitionAltitude()->rawValue().toDouble();
+        _altitudeFact.setRawValue(defaultAlt);
+        _missionItem._param7Fact.setRawValue(defaultAlt);
+        // Note that setAltitudeMode will also set MAV_FRAME correctly through signalling
+        // Takeoff items always use relative alt since that is the highest quality data to base altitude from
+        setAltitudeMode(QGroundControlQmlGlobal::AltitudeModeRelative);
+    }
+    else if (specifiesAltitude()) {
         double defaultAlt = qgcApp()->toolbox()->settingsManager()->appSettings()->defaultMissionItemAltitude()->rawValue().toDouble();
         _altitudeFact.setRawValue(defaultAlt);
         _missionItem._param7Fact.setRawValue(defaultAlt);

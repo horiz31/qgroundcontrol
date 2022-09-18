@@ -79,9 +79,7 @@ Item {
             PreFlightICEHealthCheck {
             }
 
-            PreFlightCheckButton {
-                name:            qsTr("Quadrotor Test")
-                manualText:      qsTr("Run-up the quads. Are they working properly and spinning in the correct direction?")
+            PreFlightMultiRotorHealthCheck {
             }
 
 
@@ -91,9 +89,8 @@ Item {
             name: qsTr("Last preparations before launch")
 
             // Check list item group 2 - Final checks before launch
-            PreFlightCheckButton {
-                name:        qsTr("Mission")
-                manualText:  qsTr("Please confirm mission is valid, contains a VTOL landing and is uploaded.")
+            PreFlightMissionCheck {
+                allowTelemetryFailureOverride:    true
             }
 
             PreFlightCheckButton {

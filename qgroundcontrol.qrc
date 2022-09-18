@@ -293,6 +293,8 @@
         <file alias="QGroundControl/FlightDisplay/PreFlightAirSpeedHealthCheck.qml">src/FlightDisplay/PreFlightAirSpeedHealthCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightICEHealthCheck.qml">src/FlightDisplay/PreFlightICEHealthCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightIMUTempCheck.qml">src/FlightDisplay/PreFlightIMUTempCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightMultiRotorHealthCheck.qml">src/FlightDisplay/PreFlightMultiRotorHealthCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightMissionCheck.qml">src/FlightDisplay/PreFlightMissionCheck.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

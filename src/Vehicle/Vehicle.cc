@@ -102,6 +102,7 @@ const char* Vehicle::_svBattVoltageFactName =       "svBattVoltage";
 const char* Vehicle::_svBattPercentRemainingFactName =   "svBattPercentRemaining";
 const char* Vehicle::_targetAirSpeedSetPointFactName =   "targetAirSpeedSetPoint";
 const char* Vehicle::_imuTemperatureFactName =   "imuTemperature";
+const char* Vehicle::_engineRunUpFactName =   "engineRunUp";
 
 const char* Vehicle::_gpsFactGroupName =                "gps";
 const char* Vehicle::_gps2FactGroupName =               "gps2";
@@ -169,8 +170,9 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _svBattCurrentFact            (0, _svBattCurrentFactName,     FactMetaData::valueTypeDouble)
     , _svBattVoltageFact            (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
     , _svBattPercentRemainingFact   (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
-    , _targetAirSpeedSetPointFact         (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
-    , _imuTemperatureFact               (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
+    , _targetAirSpeedSetPointFact   (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
+    , _imuTemperatureFact           (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
+    , _engineRunUpFact              (0, _engineRunUpFactName,           FactMetaData::valueTypeBool)
 
     , _gpsFactGroup                 (this)
     , _gps2FactGroup                (this)
@@ -282,6 +284,9 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     //init target AirSpeed // about 55mph
     _targetAirSpeedSetPointFact.setRawValue(24.58);
+
+    //init engine runup to false
+    _engineRunUpFact.setRawValue(false);
 }
 
 // Disconnected Vehicle for offline editing
@@ -326,17 +331,18 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _distanceToHomeFact               (0, _distanceToHomeFactName,    FactMetaData::valueTypeDouble)
     , _missionItemIndexFact             (0, _missionItemIndexFactName,  FactMetaData::valueTypeUint16)
     , _headingToNextWPFact              (0, _headingToNextWPFactName,   FactMetaData::valueTypeDouble)
-    , _distanceToNextWPFact             (0, _distanceToNextWPFactName,   FactMetaData::valueTypeDouble)
+    , _distanceToNextWPFact             (0, _distanceToNextWPFactName,  FactMetaData::valueTypeDouble)
     , _headingToHomeFact                (0, _headingToHomeFactName,     FactMetaData::valueTypeDouble)
-    , _bearingFromHomeFact              (0, _bearingFromHomeFactName,     FactMetaData::valueTypeDouble)
+    , _bearingFromHomeFact              (0, _bearingFromHomeFactName,   FactMetaData::valueTypeDouble)
     , _distanceToGCSFact                (0, _distanceToGCSFactName,     FactMetaData::valueTypeDouble)
     , _hobbsFact                        (0, _hobbsFactName,             FactMetaData::valueTypeString)
     , _throttlePctFact                  (0, _throttlePctFactName,       FactMetaData::valueTypeUint16)
-    , _svBattCurrentFact                (0, _svBattCurrentFactName,  FactMetaData::valueTypeDouble)
+    , _svBattCurrentFact                (0, _svBattCurrentFactName,     FactMetaData::valueTypeDouble)
     , _svBattVoltageFact                (0, _svBattVoltageFactName,     FactMetaData::valueTypeDouble)
     , _svBattPercentRemainingFact       (0, _svBattPercentRemainingFactName,     FactMetaData::valueTypeUint16)
-    , _targetAirSpeedSetPointFact       (0, _targetAirSpeedSetPointFactName,           FactMetaData::valueTypeDouble)
-    , _imuTemperatureFact               (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
+    , _targetAirSpeedSetPointFact       (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
+    , _imuTemperatureFact               (0, _imuTemperatureFactName,             FactMetaData::valueTypeDouble)
+    , _engineRunUpFact                  (0, _engineRunUpFactName,                FactMetaData::valueTypeBool)
     , _gpsFactGroup                     (this)
     , _gps2FactGroup                    (this)
     , _windFactGroup                    (this)
@@ -467,6 +473,7 @@ void Vehicle::_commonInit()
     _addFact(&_svBattPercentRemainingFact,       _svBattPercentRemainingFactName);
     _addFact(&_targetAirSpeedSetPointFact,       _targetAirSpeedSetPointFactName);
     _addFact(&_imuTemperatureFact,       _imuTemperatureFactName);
+    _addFact(&_engineRunUpFact,       _engineRunUpFactName);
 
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
     _addFact(&_hobbsFact,               _hobbsFactName);
@@ -3450,6 +3457,11 @@ void Vehicle::setSoloFirmware(bool soloFirmware)
     }
 }
 
+void Vehicle::setEngineRunUp(bool value)
+{
+    _engineRunUpFact.setRawValue(value);
+}
+
 void Vehicle::motorTest(int motor, int percent, int timeoutSecs, bool showError)
 {
     sendMavCommand(_defaultComponentId, MAV_CMD_DO_MOTOR_TEST, showError, motor, MOTOR_TEST_THROTTLE_PERCENT, percent, timeoutSecs, 0, MOTOR_TEST_ORDER_BOARD);
@@ -4116,8 +4128,11 @@ void Vehicle::clearAllParamMapRC(void)
     }
 }
 
-void Vehicle::sendJoystickThrottle(int throttle)
+void Vehicle::sendRcOverrideThrottle(int throttle)
 {
+    //on SuperVolo, the throttle is channel 1
+    //this is used only in preflight engine runup
+    //make sure you know what you are doing, the Supervolo in manual mode plus > 1000 on RC channel 1 will start the engine
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
     if (!sharedLink) {
         qCDebug(VehicleLog)<< "sendJoystickThrottle: primary link gone!";
@@ -4130,8 +4145,6 @@ void Vehicle::sendJoystickThrottle(int throttle)
 
     mavlink_message_t message;
 
-
-
     mavlink_msg_rc_channels_override_pack_chan(
                 static_cast<uint8_t>(_mavlink->getSystemId()),
                 static_cast<uint8_t>(_mavlink->getComponentId()),
@@ -4139,9 +4152,9 @@ void Vehicle::sendJoystickThrottle(int throttle)
                 &message,
                 static_cast<uint8_t>(_id),
                 static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
                 static_cast<int16_t>(throttle),
+                static_cast<int16_t>(0),
+                static_cast<int16_t>(0),
                 static_cast<int16_t>(0),
                 static_cast<int16_t>(0),
                 static_cast<int16_t>(0),

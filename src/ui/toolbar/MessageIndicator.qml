@@ -29,7 +29,7 @@ Item {
     property bool showIndicator: true
 
     property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
-    property bool   _isMessageImportant:    _activeVehicle ? !_activeVehicle.messageTypeNormal && !_activeVehicle.messageTypeNone : false
+    property bool   _isMessageImportant:    _activeVehicle ? !_activeVehicle.messageTypeNormal && !_activeVehicle.messageTypeNone && !_activeVehicle.messageTypeWarning : false
 
     function getMessageColor() {
         if (_activeVehicle) {

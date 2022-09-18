@@ -111,7 +111,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             width:          Math.round(ScreenTools.defaultFontPixelWidth * 10)
-            height:         Math.round(ScreenTools.largeFontPointSize * 3.5)
+            height:         Math.round(ScreenTools.largeFontPointSize * 3.7)
             color:          "black"
             opacity:        0.5
             radius:         5
@@ -122,7 +122,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
             width:          Math.round(ScreenTools.defaultFontPixelWidth * 10)
-            height:         Math.round(ScreenTools.largeFontPointSize * 3.5)
+            height:         Math.round(ScreenTools.largeFontPointSize * 3.7)
             color:          "black"
             opacity:        0.5
             radius:         5

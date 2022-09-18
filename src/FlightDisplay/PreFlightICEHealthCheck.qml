@@ -29,6 +29,7 @@ PreFlightCheckButton {
     readonly property int _sliderWidth:        25
 
     property bool   _joyStickInitialState: false
+    property bool   _virtualJoyStickInitialState: false
     property string _modeInitialState: ""
     property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
     property real _joyValue: -1
@@ -51,32 +52,6 @@ PreFlightCheckButton {
 
     }
 
-
-    //below example of a button with a confirmation, to be useful in motor startups
-    /*
-    QGCButton {
-        text:           qsTr("Clear Saved Answers")
-        enabled:        _enableAirMapFact.rawValue
-        onClicked:      clearDialog.open()
-        anchors.verticalCenter: parent.verticalCenter
-        MessageDialog {
-            id:                 clearDialog
-            visible:            false
-            icon:               StandardIcon.Warning
-            standardButtons:    StandardButton.Yes | StandardButton.No
-            title:              qsTr("Clear Saved Answers")
-            text:               qsTr("All saved ruleset answers will be cleared. Is this really what you want?")
-            onYes: {
-                QGroundControl.airspaceManager.ruleSets.clearAllFeatures()
-                clearDialog.close()
-            }
-            onNo: {
-                clearDialog.close()
-            }
-        }
-    }*/
-
-
     Component {
         id: iceMotorTestComponent
         QGCPopupDialog {
@@ -93,10 +68,7 @@ PreFlightCheckButton {
                     spacing: ScreenTools.defaultFontPixelWidth * 4
                     Column
                     {
-                        //Layout.fillWidth:           true
-                        //Layout.alignment:           Qt.AlignHCenter
                         width: ScreenTools.defaultFontPixelWidth * 60
-
                         QGCLabel {
                             anchors.horizontalCenter: parent.horizontalCenter
                             width:          ScreenTools.defaultFontPixelWidth * 60
@@ -116,13 +88,11 @@ PreFlightCheckButton {
                             }
                             QGCSlider {
                                 id:                         iceMotorThrottle
-                                //Layout.fillWidth:           true
-
                                 width:                      ScreenTools.defaultFontPixelWidth * _sliderWidth
                                 maximumValue:               100
-                                minimumValue:               10
+                                minimumValue:               30
                                 stepSize:                   10
-                                value:                      50
+                                value:                      70
                                 updateValueWhileDragging:   true
                                 visible:                    true
                                 onValueChanged:             {
@@ -148,15 +118,27 @@ PreFlightCheckButton {
                             delay: 1500
                             onActivated: {
                                 console.log("Button Pressed and held");
+
+                                if(globals.activeVehicle)
+                                    globals.activeVehicle.setEngineRunUp(true)  //indicator that this is running, used to prevent system level activity which could interfere
+
                                 // remember current mode
-                                _modeInitialState = globals.activeVehicle.flightMode
+                                 _modeInitialState = globals.activeVehicle.flightMode
                                  console.log("mode is currently " + _modeInitialState)
                                 //remember joystick state
                                 if(globals.activeVehicle && joystickManager.activeJoystick) {
                                     if(globals.activeVehicle.joystickEnabled) {
                                         _joyStickInitialState = true
                                     }
-                                    _joyStickInitialState = false
+                                    else {
+                                        _joyStickInitialState = false
+                                    }
+                                }
+
+                                if (_virtualJoystickEnabled)
+                                {
+                                    _virtualJoyStickInitialState = true
+                                    QGroundControl.settingsManager.appSettings.virtualJoystick.value = false;
                                 }
 
                                 console.log("joystick is currently " + _joyStickInitialState)
@@ -167,31 +149,25 @@ PreFlightCheckButton {
                                     globals.activeVehicle.joystickEnabled = false
                                 }
 
-                                //also need to handle virtual joystick
-
-        //property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
-
-                                //set mode to manual
-                                 console.log("changing mode to manual")
+                                console.log("changing mode to manual")
                                 globals.activeVehicle.flightMode = "Manual"
-                                globals.activeVehicle.armed = true
-                                //set throttle level (or servo3)
-                                //possible we want to verify servo3 function is throttle
-                                _joyValue = ((iceMotorThrottle.value - 50) * 2) / 100
-                                 console.log("sending joystick throttle value of " + _joyValue)
-                                globals.activeVehicle.sendJoystickThrottle(1610)  //scaled -1 to 1, sending joystick throttle only works if armed, so probably have to send this as a rc_override
-                                //rc_override = RC_CHANNELS_OVERRIDE
-                                //channel 3, value between 1000 and 2000
 
+                                _joyValue = (iceMotorThrottle.value * 10) + 1000  //scale slider to 1000-2000
+                                console.log("sending joystick throttle value of " + _joyValue)
+                                globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 1000 to 2000
+                                iceRunUpTimer.start()
                                 text= qsTr("Release to Stop")
                                 progress = 0.0
                             }
                             onReleased: {
+                                iceRunUpTimer.stop()
+                                globals.activeVehicle.sendRcOverrideThrottle(900)  //turn off                                
+                                globals.activeVehicle.setEngineRunUp(false)
+
                                 text= qsTr("Push and Hold To Start Engine")
                                 //set throttle level 0
                                 //set mode back to previous mode
                                 //if joysticks were enabled, re-enable
-                                globals.activeVehicle.armed = false
                                 console.log("Button released, changing mode back to what it was");
                                  globals.activeVehicle.flightMode = _modeInitialState
                                 if (_joyStickInitialState && globals.activeVehicle)
@@ -199,6 +175,24 @@ PreFlightCheckButton {
                                     console.log("re-enabling the joystick")
                                     globals.activeVehicle.joystickEnabled = true
                                 }
+                                //set virtual joystick back if it was used
+                                if (_virtualJoyStickInitialState)
+                                    QGroundControl.settingsManager.appSettings.virtualJoystick.value = true;
+                                //mark the state as passed
+                                _manualState = _statePassed
+                            }
+
+                            Timer {
+                                id:             iceRunUpTimer
+                                interval:       500
+                                repeat:         true
+
+                                onTriggered: {
+                                    _joyValue = (iceMotorThrottle.value * 10) + 1000  //scale slider to 1000-2000
+                                    console.log("timer: sending joystick throttle value of " + _joyValue)
+                                    globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 1000 to 2000
+                                }
+
                             }
                         }
                         Item {
@@ -223,6 +217,9 @@ PreFlightCheckButton {
                     }
 
                 }
+            }
+            function reject() {
+                hideDialog()
             }
         }
     }

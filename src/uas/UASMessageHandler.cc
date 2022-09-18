@@ -201,8 +201,17 @@ void UASMessageHandler::handleTextMessage(int, int compId, int severity, QString
     int count = _messages.count();
     emit textMessageCountChanged(count);
 
-    if (_showErrorsInToolbar && message->severityIsError()) {
-        _app->showCriticalVehicleMessage(message->getText());
+    if (_activeVehicle)
+    {
+        if (_showErrorsInToolbar && message->severityIsError() && !_activeVehicle->engineRunUp()) {
+            _app->showCriticalVehicleMessage(message->getText());
+        }
+    }
+    else
+    {
+        if (_showErrorsInToolbar && message->severityIsError()) {
+            _app->showCriticalVehicleMessage(message->getText());
+        }
     }
 }
 

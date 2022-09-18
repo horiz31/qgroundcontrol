@@ -80,6 +80,16 @@
     "decimalPlaces":    2
 },
 {
+    "name":             "defaultTransitionAltitude",
+    "shortDesc": "Default value for VTOL takeoff and land transitions",
+    "longDesc":  "This value specifies the default altitude for takeoff and landing transitions in missions.",
+    "type":             "double",
+    "default":     76.20,
+    "min":              30.0,
+    "units":            "vertical m",
+    "decimalPlaces":    2
+},
+{
     "name":             "telemetrySave",
     "shortDesc": "Save telemetry Log after each flight",
     "longDesc":  "If this option is enabled a telemetry will be saved after each flight completes.",

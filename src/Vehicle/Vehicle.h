@@ -311,6 +311,7 @@ public:
     Q_PROPERTY(Fact* svBattPercentRemaining READ svBattPercentRemaining CONSTANT)
     Q_PROPERTY(Fact* targetAirSpeedSetPoint READ targetAirSpeedSetPoint CONSTANT)
     Q_PROPERTY(Fact* imuTemperature     READ imuTemperature CONSTANT)
+    Q_PROPERTY(Fact* engineRunUp        READ engineRunUp CONSTANT)
 
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
     Q_PROPERTY(FactGroup*           gps2            READ gps2FactGroup              CONSTANT)
@@ -451,7 +452,7 @@ public:
     Q_INVOKABLE void triggerSimpleCamera(void);
 
     /// Set Throttle used during Super Volo pre-flight
-    Q_INVOKABLE void sendJoystickThrottle (int throttle);
+    Q_INVOKABLE void sendRcOverrideThrottle (int throttle);
 
 #if !defined(NO_ARDUPILOT_DIALECT)
     Q_INVOKABLE void flashBootloader();
@@ -675,6 +676,7 @@ public:
     Fact* svBattPercentRemaining            () { return &_svBattPercentRemainingFact; }
     Fact* targetAirSpeedSetPoint            () { return &_targetAirSpeedSetPointFact; }
     Fact* imuTemperature                    () { return &_imuTemperatureFact; }
+    Fact* engineRunUp                       () { return &_engineRunUpFact; }
 
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
     FactGroup* gps2FactGroup                () { return &_gps2FactGroup; }
@@ -791,6 +793,8 @@ public:
 
     bool soloFirmware() const { return _soloFirmware; }
     void setSoloFirmware(bool soloFirmware);
+
+    Q_INVOKABLE void setEngineRunUp(bool enabled);
 
     int defaultComponentId() const{ return _defaultComponentId; }
 
@@ -1075,6 +1079,7 @@ private:
     AutoPilotPlugin*    _autopilotPlugin = nullptr;
     MAVLinkProtocol*    _mavlink = nullptr;
     bool                _soloFirmware = false;
+    bool                _engineRunUp = false;
     QGCToolbox*         _toolbox = nullptr;
     SettingsManager*    _settingsManager = nullptr;
 
@@ -1342,6 +1347,7 @@ private:
     Fact _svBattPercentRemainingFact;
     Fact _targetAirSpeedSetPointFact;
     Fact _imuTemperatureFact;
+    Fact _engineRunUpFact;
 
     VehicleGPSFactGroup             _gpsFactGroup;
     VehicleGPS2FactGroup            _gps2FactGroup;
@@ -1402,6 +1408,7 @@ private:
     static const char* _svBattPercentRemainingFactName;
     static const char* _targetAirSpeedSetPointFactName;
     static const char* _imuTemperatureFactName;
+    static const char* _engineRunUpFactName;
 
     static const char* _gpsFactGroupName;
     static const char* _gps2FactGroupName;

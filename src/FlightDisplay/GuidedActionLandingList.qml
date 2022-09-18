@@ -45,6 +45,12 @@ Rectangle {
             visible:    guidedController.showLandInMission
         },
         {
+            title:      guidedController.landQRTLTitle,
+            text:       guidedController.landQRTLMessage,
+            action:     guidedController.actionQRTLLand,
+            visible:    guidedController.showLand
+        },
+        {
             title:      guidedController.landQLandTitle,
             text:       guidedController.landQLandMessage,
             action:     guidedController.actionLandQLand,
