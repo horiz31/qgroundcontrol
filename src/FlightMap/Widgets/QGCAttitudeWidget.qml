@@ -110,8 +110,8 @@ Item {
             id:             asBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            width:          Math.round(ScreenTools.defaultFontPixelWidth * 10)
-            height:         Math.round(ScreenTools.largeFontPointSize * 3.7)
+            width:          Math.round(ScreenTools.defaultFontPixelWidth * 12)
+            height:         Math.round(ScreenTools.largeFontPointSize * 4)
             color:          "black"
             opacity:        0.5
             radius:         5
@@ -121,8 +121,8 @@ Item {
             id:             altBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            width:          Math.round(ScreenTools.defaultFontPixelWidth * 10)
-            height:         Math.round(ScreenTools.largeFontPointSize * 3.7)
+            width:          Math.round(ScreenTools.defaultFontPixelWidth * 12)
+            height:         Math.round(ScreenTools.largeFontPointSize * 4)
             color:          "black"
             opacity:        0.5
             radius:         5
