@@ -61,7 +61,7 @@
         {
             "id":                   17,
             "rawName":              "MAV_CMD_NAV_LOITER_UNLIM",
-            "friendlyName":         "Loiter",
+            "friendlyName":         "Loiter (unlimited)",
             "description":          "Travel to a position and Loiter around the specified position indefinitely.",
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
@@ -71,7 +71,7 @@
                 "label":            "Radius",
                 "units":            "m",
                 "default":          90.0,
-                "decimalPlaces":    2
+                "decimalPlaces":    0
             },
             "param4": {
                 "label":            "Yaw",
@@ -105,8 +105,8 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          150.0,
-                "decimalPlaces":    2
+                "default":          90.0,
+                "decimalPlaces":    0
             },
             "param4": {
                 "label":            "Exit loiter from",
@@ -141,8 +141,8 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          150.0,
-                "decimalPlaces":    2
+                "default":          90.0,
+                "decimalPlaces":    0
             },
             "param4": {
                 "label":            "Exit loiter from",

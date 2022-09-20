@@ -110,8 +110,8 @@ Item {
             id:             asBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            width:          Math.round(ScreenTools.defaultFontPixelWidth * 12)
-            height:         Math.round(ScreenTools.largeFontPointSize * 4)
+            width:          root.width * .4
+            height:         root.height * .3
             color:          "black"
             opacity:        0.5
             radius:         5
@@ -121,8 +121,8 @@ Item {
             id:             altBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            width:          Math.round(ScreenTools.defaultFontPixelWidth * 12)
-            height:         Math.round(ScreenTools.largeFontPointSize * 4)
+            width:          root.width * .4
+            height:         root.height * .3
             color:          "black"
             opacity:        0.5
             radius:         5
@@ -203,7 +203,7 @@ Item {
             id:                 airSpeed
             text:               vehicle ? QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(vehicle.airSpeed.value).toFixed(1) : "--.-" //vehicle.airSpeed.value.toFixed(1) : "--.-"  //need to do unit conversion, as this will always be m/s  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
             color:              "white"
-            font.family:        ScreenTools.normalFontFamily
+            //font.family:        ScreenTools.normalFontFamily
             font.pointSize:     ScreenTools.largeFontPointSize
         }
         QGCLabel {
