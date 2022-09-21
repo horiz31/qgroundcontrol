@@ -258,7 +258,7 @@ FlightMap {
             vehicle:        object
             coordinate:     object.coordinate
             map:            _root
-            size:           pipMode ? ScreenTools.defaultFontPixelHeight : ScreenTools.defaultFontPixelHeight * 3
+            size:           pipMode ? ScreenTools.defaultFontPixelHeight * 2 : ScreenTools.defaultFontPixelHeight * 5
             z:              QGroundControl.zOrderVehicles
         }
     }

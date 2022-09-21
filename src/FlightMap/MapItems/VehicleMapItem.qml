@@ -24,7 +24,7 @@ MapQuickItem {
     property double altitude:       Number.NaN                                      ///< NAN to not show
     property string callsign:       ""                                              ///< Vehicle callsign
     property double heading:        vehicle ? vehicle.heading.value : Number.NaN    ///< Vehicle heading, NAN for none
-    property real   size:           _adsbVehicle ? _adsbSize : _uavSize             /// Size for icon
+    property real   size:           _adsbVehicle ? _adsbSize : _uavSize             /// Size for icon, typically specified by the parent
     property bool   alert:          false                                           /// Collision alert
 
     anchorPoint.x:  vehicleItem.width  / 2
@@ -37,6 +37,12 @@ MapQuickItem {
     property real   _adsbSize:      ScreenTools.defaultFontPixelHeight * 2.5
     property var    _map:           map
     property bool   _multiVehicle:  QGroundControl.multiVehicleManager.vehicles.count > 1
+
+    function getSize()
+    {
+        console.log("is this an adsb vehicle? "+ _adsbVehicle)
+        return _adsbVehicle ? _adsbSize : _uavSize
+    }
 
     sourceItem: Item {
         id:         vehicleItem
@@ -67,7 +73,7 @@ MapQuickItem {
             mipmap:             true
             width:              size
             sourceSize.width:   size
-            fillMode:           Image.PreserveAspectFit
+            fillMode:           Image.PreserveAspectCrop
             transform: Rotation {
                 origin.x:       vehicleIcon.width  / 2
                 origin.y:       vehicleIcon.height / 2
