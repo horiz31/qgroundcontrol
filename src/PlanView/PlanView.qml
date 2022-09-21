@@ -562,7 +562,7 @@ Item {
                     vehicle:        object
                     coordinate:     object.coordinate
                     map:            editorMap
-                    size:           ScreenTools.defaultFontPixelHeight * 3
+                    size:           ScreenTools.defaultFontPixelHeight * 5
                     z:              QGroundControl.zOrderMapItems - 1
                 }
             }
