@@ -123,6 +123,7 @@ public:
     Q_PROPERTY(bool     isLandCommand           READ isLandCommand          CONSTANT)
     Q_PROPERTY(bool     isTakeoffCommand        READ isTakeoffCommand       CONSTANT)
     Q_PROPERTY(bool     isLoiterCommand         READ isLoiterCommand        CONSTANT)
+
     Q_PROPERTY(int      command                 READ intCommand             CONSTANT)
 
     MAV_CMD command(void) const { return _command; }

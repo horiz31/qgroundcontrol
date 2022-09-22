@@ -161,13 +161,13 @@
         <field name="Range">0 32767</field>
         <field name="Increment">1</field>
       </param>
-      <param humanName="Waypoint Loiter Radius" name="ArduPlane:WP_LOITER_RAD" documentation="Defines the distance from the waypoint center, the plane will maintain during a loiter. If you set this value to a negative number then the default loiter direction will be counter-clockwise instead of clockwise." user="Standard">
+      <param humanName="Waypoint Loiter Radius" name="ArduPlane:WP_LOITER_RAD" documentation="Defines the distance from the waypoint center, the plane will maintain during a loiter. If you set this value to a negative number then the default loiter direction will be counter-clockwise instead of clockwise." user="Loiter">
         <field name="Units">m</field>
         <field name="UnitText">meters</field>
         <field name="Range">-32767 32767</field>
         <field name="Increment">1</field>
       </param>
-      <param humanName="RTL loiter radius" name="ArduPlane:RTL_RADIUS" documentation="Defines the radius of the loiter circle when in RTL mode. If this is zero then WP_LOITER_RAD is used. If the radius is negative then a counter-clockwise is used. If positive then a clockwise loiter is used." user="Standard">
+      <param humanName="RTL loiter radius" name="ArduPlane:RTL_RADIUS" documentation="Defines the radius of the loiter circle when in RTL mode. If this is zero then WP_LOITER_RAD is used. If the radius is negative then a counter-clockwise is used. If positive then a clockwise loiter is used." user="Loiter">
         <field name="Units">m</field>
         <field name="UnitText">meters</field>
         <field name="Range">-32767 32767</field>

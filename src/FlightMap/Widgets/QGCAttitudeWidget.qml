@@ -248,9 +248,9 @@ Item {
         {
             if (vehicle)
             {
-                if (vehicle.climbRate.value >= 0)
+                if (vehicle.climbRate.value > 0)
                     return "/InstrumentValueIcons/arrow-thick-up.svg"
-                else if (vehicle.climbRate.value < 0)
+                else
                     return "/InstrumentValueIcons/arrow-thick-down.svg"
             }
             return ""
@@ -259,7 +259,7 @@ Item {
         {
             if (vehicle)
             {
-                if (vehicle.climbRate.value > 1 || vehicle.climbRate.value < -1)
+                if (vehicle.climbRate.value > 1.5 || vehicle.climbRate.value < -1.5)
                     return true
                 else
                     return false

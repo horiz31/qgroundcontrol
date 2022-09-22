@@ -189,6 +189,7 @@ private:
     QGroundControlQmlGlobal::AltMode    _altitudeMode = QGroundControlQmlGlobal::AltitudeModeRelative;
     Fact                                _altitudeFact;
     Fact                                _amslAltAboveTerrainFact;
+    Fact*                               _wpLoiterRadfact;
 
     QmlObjectListModel  _textFieldFacts;
     QmlObjectListModel  _nanFacts;

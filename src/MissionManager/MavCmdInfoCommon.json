@@ -62,7 +62,7 @@
             "id":                   17,
             "rawName":              "MAV_CMD_NAV_LOITER_UNLIM",
             "friendlyName":         "Loiter (unlimited)",
-            "description":          "Travel to a position and Loiter around the specified position indefinitely.",
+            "description":          "Travel to a position and Loiter around the specified position indefinitely. Radius is determined by the WP_LOITER_RAD parameter.",
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
@@ -90,6 +90,7 @@
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
             "category":             "Advanced",
+            "paramRemove":          "3",
             "param1": {
                 "label":            "Turns",
                 "default":          1,
@@ -105,7 +106,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          90.0,
+                "default":          1.0,
                 "decimalPlaces":    0
             },
             "param4": {
@@ -120,11 +121,12 @@
             "id":                   19,
             "rawName":              "MAV_CMD_NAV_LOITER_TIME",
             "friendlyName":         "Loiter (time)",
-            "description":          "Travel to a position and Loiter around the specified position for an amount of time.",
+            "description":          "Travel to a position and Loiter around the specified position for an amount of time. Radius is determined by the WP_LOITER_RAD parameter.",
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
             "category":             "Advanced",
+            "paramRemove":          "3",
             "param1": {
                 "label":            "Loiter Time",
                 "units":            "secs",
@@ -141,7 +143,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          90.0,
+                "default":          1.0,
                 "decimalPlaces":    0
             },
             "param4": {

@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QDebug>
 
+#include "ParameterManager.h"
 #include "SimpleMissionItem.h"
 #include "FirmwarePluginManager.h"
 #include "QGCApplication.h"
@@ -215,6 +216,11 @@ void SimpleMissionItem::_connectSignals(void)
 
     connect(_missionController,                 &MissionController::plannedHomePositionChanged, this, &SimpleMissionItem::_amslEntryAltChanged);
     connect(_missionController,                 &MissionController::plannedHomePositionChanged, this, &SimpleMissionItem::_amslExitAltChanged);
+
+    // we need to know if WP_LOITER_RAD is changed
+     _wpLoiterRadfact = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->parameterManager()->getParameter(FactSystem::defaultComponentId, "WP_LOITER_RAD");
+     connect(_wpLoiterRadfact,         &Fact::rawValueChanged,                        this, &SimpleMissionItem::_possibleRadiusChanged);
+
 }
 
 void SimpleMissionItem::_setupMetaData(void)
@@ -553,16 +559,27 @@ bool SimpleMissionItem::isLoiterItem() const
     }
 }
 
-bool SimpleMissionItem::showLoiterRadius() const
+
+bool SimpleMissionItem::showLoiterRadius() const  //this is is if the map shows the loiter radius
 {
     return specifiesCoordinate() && (_controllerVehicle->fixedWing() || _controllerVehicle->vtol()) && isLoiterItem();
 }
 
 double SimpleMissionItem::loiterRadius() const
 {
-    if (isLoiterItem()) {
+    if (isLoiterItem())
+    {
+        if (command() == MAV_CMD_NAV_LOITER_TIME || command() == MAV_CMD_NAV_LOITER_TURNS)
+        {
+            //use WP_LOITER_RAD for these two
+            if (!qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->parameterManager()->parameterExists(FactSystem::defaultComponentId, "WP_LOITER_RAD")) {
+               return 1;
+            }
+            return qgcApp()->toolbox()->multiVehicleManager()->activeVehicle()->parameterManager()->getParameter(FactSystem::defaultComponentId, "WP_LOITER_RAD")->rawValue().toFloat();
+        }
         return command() == MAV_CMD_NAV_LOITER_TO_ALT ? missionItem().param2() : missionItem().param3();
-    } else {
+    }
+    else {
         return qQNaN();
     }
 }
