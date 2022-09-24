@@ -104,6 +104,7 @@ void TerrainAirMapQuery::requestCarpetHeights(const QGeoCoordinate& swCoord, con
 void TerrainAirMapQuery::_sendQuery(const QString& path, const QUrlQuery& urlQuery)
 {
     QUrl url(QStringLiteral("https://api.airmap.com/elevation/v1/ele") + path);
+    qDebug() << "sending query to airmap";
     qCDebug(TerrainQueryLog) << "_sendQuery" << url;
     url.setQuery(urlQuery);
 

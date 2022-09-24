@@ -657,6 +657,7 @@ HEADERS += \
     src/QGCToolbox.h \
     src/QmlControls/AppMessages.h \
     src/QmlControls/EditPositionDialogController.h \
+    src/QmlControls/GPSUnitsController.h \
     src/QmlControls/FlightPathSegment.h \
     src/QmlControls/HorizontalFactValueGrid.h \
     src/QmlControls/InstrumentValueData.h \
@@ -909,6 +910,7 @@ SOURCES += \
     src/QGCToolbox.cc \
     src/QmlControls/AppMessages.cc \
     src/QmlControls/EditPositionDialogController.cc \
+    src/QmlControls/GPSUnitsController.cc \
     src/QmlControls/FlightPathSegment.cc \
     src/QmlControls/HorizontalFactValueGrid.cc \
     src/QmlControls/InstrumentValueData.cc \

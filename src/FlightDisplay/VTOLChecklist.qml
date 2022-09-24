@@ -95,17 +95,17 @@ Item {
 
             PreFlightCheckButton {
                 name:        qsTr("Payload")
-                manualText:  qsTr("Verify the payload is operations, e.g. you are receiving video?")
+                manualText:  qsTr("Verify the payload is operational, e.g. you are receiving video?")
             }
 
             PreFlightCheckButton {
                 name:        "Wind and Weather"
-                manualText:  qsTr("Are the winds aloft too high to safely operate?")
+                manualText:  qsTr("Ensure the aloft wind speeds are below the threshold for safe operation.")
             }
 
             PreFlightCheckButton {
                 name:        qsTr("Flight area")
-                manualText:  qsTr("Is the launch area and path free of obstacles/people?")
+                manualText:  qsTr("Ensure the launch area and takeoff path free of obstacles and people.")
             }
         }
     }

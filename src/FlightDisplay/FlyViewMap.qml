@@ -80,6 +80,9 @@ FlightMap {
         _saveZoomLevelSetting = true
     }
 
+   GPSUnitsController {
+        id: gpsUnitsController
+    }
     onPipModeChanged: _adjustMapZoomForPipMode()
 
     onVisibleChanged: {
@@ -545,6 +548,33 @@ FlightMap {
                     globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionROI, clickMenu.coord, roiLocationItem)
                 }
             }
+            QGCMenuItem {
+                text:           "Copy Coordinates to Clipboard"
+                enabled:        true
+                visible:        clickMenu.coord ? true : false
+                onTriggered: {
+                    textEdit.text = clickMenu.coord.latitude.toFixed(7) + ", " + clickMenu.coord.longitude.toFixed(7)
+                    textEdit.selectAll()
+                    textEdit.copy()
+                }
+
+            }
+            QGCMenuItem {
+                id:             mapCoordinatePopup
+                text:           clickMenu.coord ? qsTr("Lat,Lon: ") + clickMenu.coord.latitude.toFixed(7) + ", " + clickMenu.coord.longitude.toFixed(7) : ""
+                enabled:        false
+                visible:        clickMenu.coord ? true : false
+            }
+            QGCMenuItem {
+                text:           clickMenu.coord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(clickMenu.coord)  : ""
+                enabled:        false
+                visible:        clickMenu.coord ? true : false
+            }
+
+            TextEdit{
+                   id: textEdit
+                   visible: false
+               }
         }
 
         onClicked: {

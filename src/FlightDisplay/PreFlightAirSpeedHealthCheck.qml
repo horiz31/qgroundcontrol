@@ -22,13 +22,13 @@ PreFlightCheckButton {
     name:               qsTr("Air Speed Sensor")
     telemetryFailure:   (_airSpeed > _airSpeedLimit) || (Math.abs(_windOffsetfact) > _offSetError) //this causes the button to go yellow/red
     allowTelemetryFailureOverride: false
-    specifiedBottomPadding: Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2) //_telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
+    specifiedBottomPadding: Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + indicatedWindSpeedRow.height + spacer.height + Math.round(ScreenTools.defaultFontPixelHeight / 2) //_telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
     property real   _airSpeed:        globals.activeVehicle ? globals.activeVehicle.airSpeed.rawValue : 0
     property real   _offSetError:     150.0
     property real   _airSpeedLimit:   2.0
     property string   _buttonLabel:   qsTr("Calibrate Air Speed")
     property string   _buttonActionLabel:   qsTr("Calibrating...")
-
+    readonly property int _sliderWidth:        25
 
     FactPanelController { id: factController; }
     property bool   _windOffsetFailure:      Math.abs(_windOffsetfact) > _offSetError ? true : false
@@ -84,10 +84,39 @@ PreFlightCheckButton {
                 calibrateButton.opacity = 1.0;
                 calibrateButton.text = _buttonLabel
             }
-
         }
-
     }
+    Row{
+        id: indicatedWindSpeedRow
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom:  spacer.top
+        spacing: ScreenTools.defaultFontPixelWidth
+
+        QGCLabel {
+            text:           qsTr("Indicated Speed:")
+        }
+        ProgressBar {
+            id:             currentWindSpeed
+            anchors.verticalCenter: parent.verticalCenter
+            width: ScreenTools.defaultFontPixelWidth * _sliderWidth
+            value: _airSpeed / 30
+            palette.dark: "blue"
+        }
+        QGCLabel {
+            id:   currentWindSpeedLabel
+            text:           _airSpeed.toFixed(1) + " m/s"
+        }
+    }
+    Row{
+        id: spacer
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom:  calibrateButton.top
+        Item {
+            width:  1
+            height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
+        }
+    }
+
 
     on_AirSpeedChanged: updateTelemetryTextFailure()
 
