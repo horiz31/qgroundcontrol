@@ -198,5 +198,6 @@
         <file alias="ZoomPlus.svg">src/FlightMap/Images/ZoomPlus.svg</file>
         <file alias="APM/EchomavImage">src/FirmwarePlugin/APM/echomav.png</file>
         <file alias="supervolo.svg">src/FlightMap/Images/supervolo.svg</file>
+        <file alias="APM/EchomavOutdoorImage">src/FirmwarePlugin/APM/echomav_outdoor.png</file>
     </qresource>
 </RCC>
