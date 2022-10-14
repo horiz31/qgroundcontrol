@@ -12,6 +12,7 @@ import QtQuick.Controls             2.4
 import QtLocation                   5.3
 import QtPositioning                5.3
 import QtQuick.Dialogs              1.2
+import QtQuick.Layouts              1.11
 
 import QGroundControl               1.0
 import QGroundControl.Airspace      1.0
@@ -82,6 +83,9 @@ FlightMap {
 
    GPSUnitsController {
         id: gpsUnitsController
+    }
+    ATAKController {
+        id: atakController
     }
     onPipModeChanged: _adjustMapZoomForPipMode()
 
@@ -570,6 +574,16 @@ FlightMap {
                 enabled:        false
                 visible:        clickMenu.coord ? true : false
             }
+            QGCMenuItem {
+                text:           qsTr("Create ATAK Marker")
+                visible:        clickMenu.coord ? true : false
+
+                onTriggered: {
+                    //Open ATAK marker creation popup
+                    //atakDialogComponent.show(clickMenu.coord)
+                    mainWindow.showPopupDialogFromComponent(atakDialogComponent)
+                  }
+            }
 
             TextEdit{
                    id: textEdit
@@ -620,6 +634,54 @@ FlightMap {
         visible:            !ScreenTools.isTinyScreen && QGroundControl.corePlugin.options.flyView.showMapScale && mapControl.pipState.state === mapControl.pipState.windowState
 
         property real centerInset: visible ? parent.height - y : 0
+    }
+
+    Component {
+        id: atakDialogComponent
+
+        QGCPopupDialog {
+            title:      qsTr("Create ATAK Marker")
+            buttons:    StandardButton.Close
+            ColumnLayout {
+                id: atakCol
+                Layout.fillWidth:   true
+                QGCLabel {
+                    text:           qsTr("Location: " + clickMenu.coord.latitude.toFixed(7) + ", " + clickMenu.coord.longitude.toFixed(7))
+                }
+                GridLayout {
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 2
+                    columns: 2
+
+
+                    QGCLabel {
+                        text:           qsTr("Marker Type:")
+                    }
+                    QGCComboBox {
+                        id:             atakCombo
+                        model:          atakController.cotTypes
+                        currentIndex:   atakController.cotType
+                        sizeToContents: true
+                        onActivated: {
+                            atakController.cotType = index;
+                        }
+                    }
+                    QGCButton {
+                        text:       qsTr("Cancel")
+                        onClicked: {
+                          hideDialog();
+                        }
+                    }
+                    QGCButton {
+                        text:       qsTr("Send to ATAK")
+                        onClicked: {
+                           atakController.send(clickMenu.coord)
+                           hideDialog();
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
 }

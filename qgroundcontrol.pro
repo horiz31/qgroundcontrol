@@ -446,6 +446,7 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 }
 
 SOURCES += \
+    src/QmlControls/ATAKController.cc \
     src/Vehicle/VehicleEscStatusFactGroup.cc \
     src/api/QGCCorePlugin.cc \
     src/api/QGCOptions.cc \
@@ -658,6 +659,7 @@ HEADERS += \
     src/QmlControls/AppMessages.h \
     src/QmlControls/EditPositionDialogController.h \
     src/QmlControls/GPSUnitsController.h \
+    src/QmlControls/ATAKController.h \
     src/QmlControls/FlightPathSegment.h \
     src/QmlControls/HorizontalFactValueGrid.h \
     src/QmlControls/InstrumentValueData.h \
@@ -911,6 +913,7 @@ SOURCES += \
     src/QmlControls/AppMessages.cc \
     src/QmlControls/EditPositionDialogController.cc \
     src/QmlControls/GPSUnitsController.cc \
+    src/QmlControls/ATAKController.cc \
     src/QmlControls/FlightPathSegment.cc \
     src/QmlControls/HorizontalFactValueGrid.cc \
     src/QmlControls/InstrumentValueData.cc \
