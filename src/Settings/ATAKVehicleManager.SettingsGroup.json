@@ -1,0 +1,21 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":                 "atakServerHostAddress",
+    "shortDesc":     "Host address",
+    "type":                 "string",
+    "default":         "239.2.3.1",
+    "qgcRebootRequired":    false
+},
+{
+    "name":                 "atakServerPort",
+    "shortDesc":     "Host Port",
+    "type":                 "string",
+    "default":         6969,
+    "qgcRebootRequired":    false
+}
+]
+}

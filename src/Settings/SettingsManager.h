@@ -27,6 +27,7 @@
 #include "APMMavlinkStreamRateSettings.h"
 #include "FirmwareUpgradeSettings.h"
 #include "ADSBVehicleManagerSettings.h"
+#include "ATAKVehicleManagerSettings.h"
 #if defined(QGC_AIRMAP_ENABLED)
 #include "AirMapSettings.h"
 #endif
@@ -55,6 +56,7 @@ public:
     Q_PROPERTY(QObject* offlineMapsSettings             READ offlineMapsSettings            CONSTANT)
     Q_PROPERTY(QObject* firmwareUpgradeSettings         READ firmwareUpgradeSettings        CONSTANT)
     Q_PROPERTY(QObject* adsbVehicleManagerSettings      READ adsbVehicleManagerSettings     CONSTANT)
+    Q_PROPERTY(QObject* atakVehicleManagerSettings      READ atakVehicleManagerSettings     CONSTANT)
 #if !defined(NO_ARDUPILOT_DIALECT)
     Q_PROPERTY(QObject* apmMavlinkStreamRateSettings    READ apmMavlinkStreamRateSettings   CONSTANT)
 #endif
@@ -75,7 +77,8 @@ public:
     BrandImageSettings*             brandImageSettings          (void) { return _brandImageSettings; }
     OfflineMapsSettings*            offlineMapsSettings         (void) { return _offlineMapsSettings; }
     FirmwareUpgradeSettings*        firmwareUpgradeSettings     (void) { return _firmwareUpgradeSettings; }
-    ADSBVehicleManagerSettings*     adsbVehicleManagerSettings  (void) { return _adsbVehicleManagerSettings; }
+    ADSBVehicleManagerSettings*     adsbVehicleManagerSettings  (void) { return _adsbVehicleManagerSettings; }   
+    ATAKVehicleManagerSettings*     atakVehicleManagerSettings  (void) { return _atakVehicleManagerSettings; }
 #if !defined(NO_ARDUPILOT_DIALECT)
     APMMavlinkStreamRateSettings*   apmMavlinkStreamRateSettings(void) { return _apmMavlinkStreamRateSettings; }
 #endif
@@ -95,6 +98,7 @@ private:
     OfflineMapsSettings*            _offlineMapsSettings;
     FirmwareUpgradeSettings*        _firmwareUpgradeSettings;
     ADSBVehicleManagerSettings*     _adsbVehicleManagerSettings;
+    ATAKVehicleManagerSettings*     _atakVehicleManagerSettings;
 #if !defined(NO_ARDUPILOT_DIALECT)
     APMMavlinkStreamRateSettings*   _apmMavlinkStreamRateSettings;
 #endif

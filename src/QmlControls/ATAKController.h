@@ -11,6 +11,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QtNetwork>
 #include <QGeoCoordinate>
 #include "FactPanelController.h"
 
@@ -22,27 +23,44 @@ class ATAKController : public FactPanelController
 public:
     ATAKController();
 
-    Q_PROPERTY(int              cotType       READ cotType          WRITE setCotType            NOTIFY cotTypeChanged)
-    Q_PROPERTY(QStringList      cotTypes      READ cotTypes                                     CONSTANT)
+    Q_PROPERTY(int              cotType         READ cotType            WRITE setCotType            NOTIFY cotTypeChanged)
+    Q_PROPERTY(int              staleMinutes    READ staleMinutes       WRITE setStaleMinutes       NOTIFY staleMinutesChanged)
+    Q_PROPERTY(QString          uid             READ uid                WRITE setUid                NOTIFY uidChanged)
+    Q_PROPERTY(QStringList      cotTypes        READ cotTypes                                       CONSTANT)
+    Q_PROPERTY(QStringList      staleMinuteList READ staleMinuteList                                CONSTANT)
 
-    Q_INVOKABLE void send(QGeoCoordinate);
+    Q_INVOKABLE void send(QGeoCoordinate, QString);
 
     QStringList     cotTypes      () { return _cotTypes; }
+    QStringList     staleMinuteList (){ return _staleMinuteList; }
 
     void        setCotType        (int idx);
-    int         cotType            ();
-
+    void        setStaleMinutes   (int mins);
+    void        setUid            (QString uid);
+    int         cotType           ();
+    int         staleMinutes      ();
+    QString     uid               ();
+    QString     GetRandomString ();
 
 signals:
     void        cotTypeChanged        ();
+    void        staleMinutesChanged        ();
+    void        uidChanged        ();
 
 private slots:
 
 
 private:
+    QMap<QString, QString> _cotMap;
     QStringList _cotTypes;
+    QStringList _staleMinuteList;
+    QMap<QString, int> _minuteMap;
     int _cotType = 0;
-
+    int _staleMinutes = 0;
+    QString _uid;
+    QUdpSocket udpSocket4;
+    QHostAddress _atakMcastAddress;
+    int _atakMcastPort;
 
 signals:
 private:

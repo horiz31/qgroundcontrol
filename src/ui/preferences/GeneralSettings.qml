@@ -1044,81 +1044,65 @@ Rectangle {
                         }
                     }
 
-                    Item { width: 1; height: _margins; visible: brandImageSectionLabel.visible }
+                    Item { width: 1; height: _margins; visible: adsbSectionLabel.visible }
                     QGCLabel {
-                        id:         brandImageSectionLabel
-                        text:       qsTr("Brand Image")
-                        visible:    QGroundControl.settingsManager.brandImageSettings.visible && !ScreenTools.isMobile
+                        id:         atakSectionLabel
+                        text:       qsTr("ATAK CoT Settings")
+                        visible:    QGroundControl.settingsManager.atakVehicleManagerSettings.visible
                     }
                     Rectangle {
-                        Layout.preferredWidth:  brandImageGrid.width + (_margins * 2)
-                        Layout.preferredHeight: brandImageGrid.height + (_margins * 2)
-                        Layout.fillWidth:       true
+                        Layout.preferredHeight: atakGrid.y + atakGrid.height + _margins
+                        Layout.preferredWidth:  atakGrid.width + (_margins * 2)
                         color:                  qgcPal.windowShade
-                        visible:                brandImageSectionLabel.visible
+                        visible:                atakSectionLabel.visible
+                        Layout.fillWidth:       true
 
-                        GridLayout {
-                            id:                 brandImageGrid
+                        QGCLabel {
+                            id:                 atakWarningLabel
                             anchors.margins:    _margins
                             anchors.top:        parent.top
                             anchors.left:       parent.left
                             anchors.right:      parent.right
-                            columns:            3
+                            font.pointSize:     ScreenTools.smallFontPointSize
+                            wrapMode:           Text.WordWrap
+                            text:               qsTr("Note: Adjust the destination host:port for sending ATAK CoT messages.")
+                        }
+
+
+
+                        GridLayout {
+                            id:                         atakGrid
+                            anchors.topMargin:          _margins
+                            anchors.top:                atakWarningLabel.bottom
+                            Layout.fillWidth:           true
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            columns:                    2
+
+                            property var  atakSettings:    QGroundControl.settingsManager.atakVehicleManagerSettings
+
 
                             QGCLabel {
-                                text:           qsTr("Indoor Image")
-                                visible:        _userBrandImageIndoor.visible
+                                text:               atakGrid.atakSettings.atakServerHostAddress.shortDescription
+                                visible:            atakGrid.atakSettings.atakServerHostAddress.visible
                             }
-                            QGCTextField {
-                                readOnly:           true
-                                Layout.fillWidth:   true
-                                text:               _userBrandImageIndoor.valueString.replace("file:///","")
-                            }
-                            QGCButton {
-                                text:       qsTr("Browse")
-                                onClicked:  userBrandImageIndoorBrowseDialog.openForLoad()
-                                QGCFileDialog {
-                                    id:                 userBrandImageIndoorBrowseDialog
-                                    title:              qsTr("Choose custom brand image file")
-                                    folder:             _userBrandImageIndoor.rawValue.replace("file:///","")
-                                    selectExisting:     true
-                                    selectFolder:       false
-                                    onAcceptedForLoad:  _userBrandImageIndoor.rawValue = "file:///" + file
-                                }
+                            FactTextField {
+                                fact:                  atakGrid.atakSettings.atakServerHostAddress
+                                visible:               atakGrid.atakSettings.atakServerHostAddress.visible
+                                Layout.preferredWidth:  _valueFieldWidth
                             }
 
                             QGCLabel {
-                                text:       qsTr("Outdoor Image")
-                                visible:    _userBrandImageOutdoor.visible
+                                text:               atakGrid.atakSettings.atakServerPort.shortDescription
+                                visible:            atakGrid.atakSettings.atakServerPort.visible
                             }
-                            QGCTextField {
-                                readOnly:           true
-                                Layout.fillWidth:   true
-                                text:                _userBrandImageOutdoor.valueString.replace("file:///","")
-                            }
-                            QGCButton {
-                                text:       qsTr("Browse")
-                                onClicked:  userBrandImageOutdoorBrowseDialog.openForLoad()
-                                QGCFileDialog {
-                                    id:                 userBrandImageOutdoorBrowseDialog
-                                    title:              qsTr("Choose custom brand image file")
-                                    folder:             _userBrandImageOutdoor.rawValue.replace("file:///","")
-                                    selectExisting:     true
-                                    selectFolder:       false
-                                    onAcceptedForLoad:  _userBrandImageOutdoor.rawValue = "file:///" + file
-                                }
-                            }
-                            QGCButton {
-                                text:               qsTr("Reset Default Brand Image")
-                                Layout.columnSpan:  3
-                                Layout.alignment:   Qt.AlignHCenter
-                                onClicked:  {
-                                    _userBrandImageIndoor.rawValue = ""
-                                    _userBrandImageOutdoor.rawValue = ""
-                                }
+                            FactTextField {
+                                fact:                   atakGrid.atakSettings.atakServerPort
+                                visible:                atakGrid.atakSettings.atakServerPort.visible
+                                Layout.preferredWidth:  _valueFieldWidth
                             }
                         }
                     }
+
 
                     Item { width: 1; height: _margins }
                     QGCLabel {

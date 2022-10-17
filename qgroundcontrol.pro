@@ -678,6 +678,7 @@ HEADERS += \
     src/QmlControls/ToolStripActionList.h \
     src/QtLocationPlugin/QMLControl/QGCMapEngineManager.h \
     src/Settings/ADSBVehicleManagerSettings.h \
+    src/Settings/ATAKVehicleManagerSettings.h \
     src/Settings/AppSettings.h \
     src/Settings/AutoConnectSettings.h \
     src/Settings/BrandImageSettings.h \
@@ -932,6 +933,7 @@ SOURCES += \
     src/QmlControls/ToolStripActionList.cc \
     src/QtLocationPlugin/QMLControl/QGCMapEngineManager.cc \
     src/Settings/ADSBVehicleManagerSettings.cc \
+    src/Settings/ATAKVehicleManagerSettings.cc \
     src/Settings/AppSettings.cc \
     src/Settings/AutoConnectSettings.cc \
     src/Settings/BrandImageSettings.cc \

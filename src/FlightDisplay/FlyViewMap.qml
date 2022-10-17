@@ -59,6 +59,7 @@ FlightMap {
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
+
     function updateAirspace(reset) {
         if(_airspaceEnabled) {
             var coordinateNW = _root.toCoordinate(Qt.point(0,0), false /* clipToViewPort */)
@@ -575,12 +576,10 @@ FlightMap {
                 visible:        clickMenu.coord ? true : false
             }
             QGCMenuItem {
-                text:           qsTr("Create ATAK Marker")
+                text:           qsTr("Create ATAK Target")
                 visible:        clickMenu.coord ? true : false
 
                 onTriggered: {
-                    //Open ATAK marker creation popup
-                    //atakDialogComponent.show(clickMenu.coord)
                     mainWindow.showPopupDialogFromComponent(atakDialogComponent)
                   }
             }
@@ -639,8 +638,9 @@ FlightMap {
     Component {
         id: atakDialogComponent
 
+
         QGCPopupDialog {
-            title:      qsTr("Create ATAK Marker")
+            title:      qsTr("Create ATAK Target")
             buttons:    StandardButton.Close
             ColumnLayout {
                 id: atakCol
@@ -654,7 +654,7 @@ FlightMap {
 
 
                     QGCLabel {
-                        text:           qsTr("Marker Type:")
+                        text:           qsTr("Target Type:")
                     }
                     QGCComboBox {
                         id:             atakCombo
@@ -663,6 +663,24 @@ FlightMap {
                         sizeToContents: true
                         onActivated: {
                             atakController.cotType = index;
+                        }
+                    }
+                    QGCLabel {
+                        text:           qsTr("Target Name (UID):")
+                    }
+                    QGCTextField {  //probably needs to be a factbox
+                        id:    atakUid
+                        placeholderText:    qsTr("Optional")
+                    }
+                    QGCLabel {
+                        text:           qsTr("Time Until Invalid:")
+                    }
+                    QGCComboBox {
+                        model:         atakController.staleMinuteList
+                        currentIndex:  atakController.staleMinutes
+                        sizeToContents: true
+                        onActivated: {
+                            atakController.staleMinutes = index;
                         }
                     }
                     QGCButton {
@@ -674,7 +692,7 @@ FlightMap {
                     QGCButton {
                         text:       qsTr("Send to ATAK")
                         onClicked: {
-                           atakController.send(clickMenu.coord)
+                           atakController.send(clickMenu.coord, atakUid.text)
                            hideDialog();
                         }
                     }
