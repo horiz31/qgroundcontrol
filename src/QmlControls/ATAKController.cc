@@ -16,9 +16,6 @@
 ATAKController::ATAKController(void)
 {
 
-
-    //qgcApp()->toolbox()->settingsManager()->appSettings()->->enableTelemetry()->rawValue().toBool()) {
-        //-- TODO: This will s
     //hostile targets
     _cotMap.insert(QStringLiteral("SAM"), "a-h-A-W-M-S-A");
     _cotMap.insert(QStringLiteral("Radar"), "a-h-G-E-S-R");
@@ -40,7 +37,9 @@ ATAKController::ATAKController(void)
     _cotMap.insert(QStringLiteral("Residence"), "a-n-G-I-c-rah");
     _cotMap.insert(QStringLiteral("Electric Power Facility"), "a-n-G-I-U-E");
 
-    //now for each key in map, appen to list
+    //now for each key in map, append to QStringList I can find to the model
+    //note this method will automatically sort by key name, that is ok for this use case but if I don't want
+    //to do that I could use a QList<QPair<key, value>> like I did below for times
     QMap<QString, QString>::const_iterator i = _cotMap.constBegin();
     while (i != _cotMap.constEnd()) {
         _cotTypes.append(i.key());
@@ -48,34 +47,30 @@ ATAKController::ATAKController(void)
     }
 
     //stale times, save in seconds
-    _minuteMap.insert(QStringLiteral("10 minutes"), 10 * 60);
-    _minuteMap.insert(QStringLiteral("30 minutes"), 30 * 60);
-    _minuteMap.insert(QStringLiteral("1 hour"), 60 * 60);
-    _minuteMap.insert(QStringLiteral("2 hours"), 120 * 60);
-    _minuteMap.insert(QStringLiteral("4 hours"), 240 * 60);
-    _minuteMap.insert(QStringLiteral("8 hours"), 480 * 60);
-    _minuteMap.insert(QStringLiteral("24 hours"), 24 * 60 * 60);
-    _minuteMap.insert(QStringLiteral("1 week"), 24 * 60 * 60 * 7);
-    _minuteMap.insert(QStringLiteral("1 month"), 24 * 60 * 60 * 30); //30 days
+    _minuteMap.append(QPair(QStringLiteral("10 minutes"), 10 * 60));
+    _minuteMap.append(QPair(QStringLiteral("30 minutes"), 30 * 60));
+    _minuteMap.append(QPair(QStringLiteral("1 hour"), 60 * 60));
+    _minuteMap.append(QPair(QStringLiteral("2 hours"), 120 * 60));
+    _minuteMap.append(QPair(QStringLiteral("4 hours"), 240 * 60));
+    _minuteMap.append(QPair(QStringLiteral("8 hours"), 480 * 60));
+    _minuteMap.append(QPair(QStringLiteral("24 hours"), 24 * 60 * 60));
+    _minuteMap.append(QPair(QStringLiteral("1 week"), 24 * 60 * 60 * 7));
 
-    //now for each key in map, appen to list
-    QMap<QString, int>::const_iterator j = _minuteMap.constBegin();
-    while (j != _minuteMap.constEnd()) {
-        _staleMinuteList.append(j.key());
-        ++j;
+    //now for each key in list, append to a QStringList I can bind to the model
+    for( int j=0; j<_minuteMap.count(); ++j )
+    {
+        _staleMinuteList.append(_minuteMap[j].first);
     }
 
     //bind the socket
     udpSocket4.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
 
-
 }
 
 void ATAKController::send(QGeoCoordinate coordinate, QString uid)
 {
-
+    //retrieve atak address from settings
     ATAKVehicleManagerSettings* settings = qgcApp()->toolbox()->settingsManager()->atakVehicleManagerSettings();
-
     _atakMcastAddress = QHostAddress(settings->atakServerHostAddress()->rawValue().toString());
     _atakMcastPort = settings->atakServerPort()->rawValue().toInt();
 
@@ -104,7 +99,7 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
         writer.writeAttribute("how", "m-g"); //position derived from machine - gps
         writer.writeAttribute("time", currentTimeStamp);
         writer.writeAttribute("start", startTimeStamp);
-        writer.writeAttribute("stale", QDateTime::currentDateTime().toTimeSpec(Qt::UTC).addSecs(_minuteMap.value(_staleMinuteList[_staleMinutes])).toString(Qt::DateFormat::ISODate));
+        writer.writeAttribute("stale", QDateTime::currentDateTime().toTimeSpec(Qt::UTC).addSecs(_minuteMap[_staleMinutes].second).toString(Qt::DateFormat::ISODate));
 
         writer.writeStartElement("point");
             writer.writeAttribute("lat", QString::number(coordinate.latitude()));
@@ -164,7 +159,7 @@ QString
 ATAKController::GetRandomString()
 {
    const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
-   const int randomStringLength = 5; // assuming you want random strings of 12 characters
+   const int randomStringLength = 5; // set to how long I want the string to be
 
    QString randomString;
    for(int i=0; i<randomStringLength; ++i)

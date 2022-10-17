@@ -52,9 +52,9 @@ private slots:
 
 private:
     QMap<QString, QString> _cotMap;
+    QList<QPair<QString, int>> _minuteMap;
     QStringList _cotTypes;
-    QStringList _staleMinuteList;
-    QMap<QString, int> _minuteMap;
+    QStringList _staleMinuteList;    
     int _cotType = 0;
     int _staleMinutes = 0;
     QString _uid;
