@@ -8,9 +8,9 @@
     "shortDesc":        "Distance between landing and approach points.",
     "type":             "double",
     "units":            "m",
-    "min":              200,
+    "min":              200.0,
     "decimalPlaces":    0,
-    "default":          200.0
+    "default":          400.0
 },
 {
     "name":             "LandingHeading",

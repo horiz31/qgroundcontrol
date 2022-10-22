@@ -70,7 +70,7 @@ Item {
                     QGCLabel { text: qsTr("Carb Servo:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.carbPosition.value) ? "-- %" : _activeVehicle.hcu.carbPosition.value.toFixed(0) + " %") : "-- %" }
                     QGCLabel { text: qsTr("Cylinder Temp:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.cylinderTemp.value) ? "---.- °F" : _activeVehicle.hcu.cylinder.value.toFixed(1) + " F") : "---.- °F" }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.cylinderTemp.value) ? "---.- °F" : _activeVehicle.hcu.cylinderTemp.value.toFixed(1) + " F") : "---.- °F" }
                     QGCLabel { text: qsTr("Generator:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.generator.value) ? "-- %" : _activeVehicle.hcu.generator.value.toFixed(0) + "%") : "-- %" }
                     QGCLabel { text: qsTr("Charge Rate:") }
@@ -104,23 +104,21 @@ Item {
                 if (!_activeVehicle)
                      return qgcPal.text
 
-                if (_activeVehicle.hcu.rpm.value > 8500)
+                if (_activeVehicle.hcu.cylinderTemp.value > 275)
                     return qgcPal.colorRed
-                else if (_activeVehicle.hcu.rpm.value > 8000)
+                else if (_activeVehicle.hcu.cylinderTemp.value > 260)
                     return qgcPal.colorOrange
-                else if (_activeVehicle.hcu.rpm.value > 3500)
+                else if (_activeVehicle.hcu.cylinderTemp.value > 250)
+                    return qgcPal.colorYellow
+                else if (_activeVehicle.hcu.cylinderTemp.value > 150)
                     return qgcPal.colorGreen
-                else if (_activeVehicle.hcu.rpm.value > 1500)
-                    return qgcPal.colorOrange
-                else if (_activeVehicle.hcu.rpm.value > 100)
-                    return qgcPal.colorRed
                 else
-                    return qgcPal.text
+                    return qgcPal.colorBlue
             }
         }
 
          QGCLabel {             
-             text: _activeVehicle ? (isNaN(_activeVehicle.hcu.rpm.value) ? "----" : _activeVehicle.hcu.rpm.value.toFixed(0) + "----") : qsTr("----")
+             text: _activeVehicle ? (isNaN(_activeVehicle.hcu.rpm.value) ? "----" : _activeVehicle.hcu.rpm.value.toFixed(0)) : qsTr("----")
              font.pointSize:     ScreenTools.mediumFontPointSize
              anchors.verticalCenter: parent.verticalCenter
 

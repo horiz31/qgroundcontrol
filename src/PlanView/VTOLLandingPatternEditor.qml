@@ -139,7 +139,7 @@ Rectangle {
                     fact:               missionItem.landingHeading
                 }
 
-                QGCLabel { text: qsTr("Altitude") }
+                QGCLabel { text: qsTr("Ground Altitude") }
 
                 AltitudeFactTextField {
                     Layout.fillWidth:   true

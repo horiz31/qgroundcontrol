@@ -201,13 +201,13 @@ Item {
 
         QGCLabel {
             id:                 airSpeed
-            text:               vehicle ? QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(vehicle.airSpeed.value).toFixed(1) : "--.-" //vehicle.airSpeed.value.toFixed(1) : "--.-"  //need to do unit conversion, as this will always be m/s  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
+            text:               vehicle ? vehicle.airSpeed.value.toFixed(1) : "--.-"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
             font.pointSize:     ScreenTools.largeFontPointSize
         }
         QGCLabel {
-            text:               vehicle ?  QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(vehicle.groundSpeed.value).toFixed(1) : "--.-"
+            text:               vehicle ?  vehicle.groundSpeed.value.toFixed(1) : "--.-"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
             font.pointSize:     ScreenTools.largeFontPointSize

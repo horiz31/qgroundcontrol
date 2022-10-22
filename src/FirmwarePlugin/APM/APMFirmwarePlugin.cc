@@ -844,6 +844,8 @@ bool APMFirmwarePlugin::_guidedModeTakeoff(Vehicle* vehicle, double altitudeRel)
         return false;
     }
 
+    //The SV current firmware does not do a VTOL takeoff with this command, but rather a fixed-wing style takeoff (the rear motor is activation)
+    //therefore we are not going to allow guided mode takeoff, this will be done by hiding the takeoff button, or changing the logic to only show it when a mission is loaded (like the play button)
     vehicle->sendMavCommand(vehicle->defaultComponentId(),
                             MAV_CMD_NAV_TAKEOFF,
                             true, // show error
@@ -865,10 +867,25 @@ void APMFirmwarePlugin::startMission(Vehicle* vehicle)
 
     if (!vehicle->armed()) {
         // First switch to flight mode we can arm from
+        // for sv, we do not want to switch to guided, but rather it seems fine to switch to auto and arm
+        /*
         if (!_setFlightModeAndValidate(vehicle, "Guided")) {
             qgcApp()->showAppMessage(tr("Unable to start mission: Vehicle failed to change to Guided mode."));
             return;
         }
+        */
+         if (vehicle->vtol()) {
+            if (!_setFlightModeAndValidate(vehicle, "Auto")) {
+                qgcApp()->showAppMessage(tr("Unable to start mission: Vehicle failed to change to Auto mode."));
+                return;
+             }
+         }
+         else {
+             if (!_setFlightModeAndValidate(vehicle, "Guided")) {
+                 qgcApp()->showAppMessage(tr("Unable to start mission: Vehicle failed to change to Guided mode."));
+                 return;
+             }
+         }
 
         if (!_armVehicleAndValidate(vehicle)) {
             qgcApp()->showAppMessage(tr("Unable to start mission: Vehicle failed to arm."));

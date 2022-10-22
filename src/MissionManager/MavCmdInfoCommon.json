@@ -62,7 +62,7 @@
             "id":                   17,
             "rawName":              "MAV_CMD_NAV_LOITER_UNLIM",
             "friendlyName":         "Loiter (unlimited)",
-            "description":          "Travel to a position and Loiter around the specified position indefinitely. Radius is determined by the WP_LOITER_RAD parameter.",
+            "description":          "Travel to a position and Loiter around the specified position indefinitely.",
             "specifiesCoordinate":  true,
             "isLoiterCommand":      true,
             "friendlyEdit":         true,
@@ -70,7 +70,7 @@
             "param3": {
                 "label":            "Radius",
                 "units":            "m",
-                "default":          90.0,
+                "default":          150.0,
                 "decimalPlaces":    0
             },
             "param4": {
@@ -285,13 +285,6 @@
             "isLandCommand":        true,
             "friendlyEdit":         true,
             "category":             "Basic",
-            "param3": {
-                "label":            "Approach Alt",
-                "units":            "vertical m",
-                "nanUnchanged":     true,
-                "default":          null,
-                "decimalPlaces":    2
-            },
             "param4": {
                 "label":            "Yaw",
                 "units":            "deg",

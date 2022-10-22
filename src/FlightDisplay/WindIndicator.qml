@@ -45,7 +45,7 @@ Item {
                 transform: Rotation {
                     origin.x: svgRect.width / 2
                     origin.y: svgRect.height / 2
-                    angle:  _windDirection
+                    angle:  -_windDirection
                 }
             }
         }

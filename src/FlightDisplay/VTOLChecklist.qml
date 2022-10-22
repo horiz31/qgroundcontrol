@@ -24,24 +24,21 @@ Item {
     PreFlightCheckModel {
         id:     listModel
         PreFlightCheckGroup {
-            name: qsTr("Super Volo Hardware Checks")
+            name: qsTr("Mission and Payload Checks")
+
+            PreFlightMissionCheck {
+                allowTelemetryFailureOverride:    true
+            }
 
             PreFlightCheckButton {
-                name:           qsTr("Check Props")
-                manualText:     qsTr("Are all props securely mounted and free of damage?")
+                name:        qsTr("Payload")
+                manualText:  qsTr("Verify the payload is operational, e.g. you are receiving video?")
             }
-            PreFlightCheckButton {
-                name:           qsTr("Check Servo Linkages")
-                manualText:     qsTr("Do they move freely, are the linkages free of damage?")
-            }
-            PreFlightCheckButton {
-                name:           qsTr("Check Surfaces")
-                manualText:     qsTr("Check wings and control surfaces for damage, are they ok?")
-            }
+
         }
 
         PreFlightCheckGroup {
-            name: qsTr("Super Volo Servo and Sensor Checks")
+            name: qsTr("Sensor Checks")
 
             PreFlightBatteryCheck {
                 failurePercent:                 50
@@ -71,32 +68,34 @@ Item {
         PreFlightCheckGroup {
             name: qsTr("Servos, Motors and Engine Test")
 
-            PreFlightCheckButton {
-                name:            qsTr("Actuators")
-                manualText:      qsTr("Move the aircraft and ensure that control surfaces react. Did they work properly?")
-            }
-
             PreFlightICEHealthCheck {
             }
 
             PreFlightMultiRotorHealthCheck {
             }
 
+            PreFlightCheckButton {
+                name:           qsTr("Check Props")
+                manualText:     qsTr("Are all props securely mounted and free of damage?")
+            }
+            PreFlightCheckButton {
+                name:           qsTr("Check Servo Linkages")
+                manualText:     qsTr("Do they move freely, are the linkages free of damage?")
+            }
+            PreFlightCheckButton {
+                name:           qsTr("Check Surfaces")
+                manualText:     qsTr("Check wings and control surfaces for damage, are they ok?")
+            }
+            PreFlightCheckButton {
+                name:            qsTr("Actuators")
+                manualText:      qsTr("Move the aircraft and ensure that control surfaces react. Did they work properly?")
+            }
+
 
         }
 
         PreFlightCheckGroup {
-            name: qsTr("Last preparations before launch")
-
-            // Check list item group 2 - Final checks before launch
-            PreFlightMissionCheck {
-                allowTelemetryFailureOverride:    true
-            }
-
-            PreFlightCheckButton {
-                name:        qsTr("Payload")
-                manualText:  qsTr("Verify the payload is operational, e.g. you are receiving video?")
-            }
+            name: qsTr("Weather and launch safety")
 
             PreFlightCheckButton {
                 name:        "Wind and Weather"

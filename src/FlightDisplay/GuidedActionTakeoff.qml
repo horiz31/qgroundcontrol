@@ -12,7 +12,9 @@ import QGroundControl.FlightDisplay 1.0
 GuidedToolStripAction {
     text:       _guidedController.takeoffTitle
     iconSource: "/res/takeoff.svg"
-    visible:    _guidedController.showTakeoff || !_guidedController.showLand
-    enabled:    _guidedController.showTakeoff
-    actionID:   _guidedController.actionTakeoff
+    visible:    (_guidedController.showTakeoff || !_guidedController.showLand) && _guidedController.showActionList
+    enabled:    true //_guidedController.showTakeoff
+    actionID:   _guidedController.actionStartMission //_guidedController.actionTakeoff //sv modification, sv does not support NAV_CMD_TAKEOFF, so I have modified this to start the mission and ensure it is only visible when a mission is loaded
 }
+
+

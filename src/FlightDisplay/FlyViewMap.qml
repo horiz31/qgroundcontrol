@@ -522,13 +522,13 @@ FlightMap {
     // Handle guided mode clicks
     MouseArea {
         anchors.fill: parent
-
+        property var clickCoord
         QGCMenu {
             id: clickMenu
             property var coord
             QGCMenuItem {
                 text:           qsTr("Go to location")
-                visible:        globals.guidedControllerFlyView.showGotoLocation
+                visible:        true //globals.guidedControllerFlyView.showGotoLocation  //debug, fix when done
 
                 onTriggered: {
                     gotoLocationItem.show(clickMenu.coord)
@@ -588,19 +588,71 @@ FlightMap {
                    id: textEdit
                    visible: false
                }
+
         }
 
         onClicked: {
-            if (!globals.guidedControllerFlyView.guidedUIVisible && (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit || globals.guidedControllerFlyView.showROI)) {
+            //debug below, however I may want to allow this popup even when not in a guided capable mode due to atak, etc
+            //if (!globals.guidedControllerFlyView.guidedUIVisible && (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit || globals.guidedControllerFlyView.showROI)) {
+                console.log("map clicked")
                 orbitMapCircle.hide()
                 gotoLocationItem.hide()
-                var clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
-                clickMenu.coord = clickCoord
-                clickMenu.popup()
+                //var clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
+                clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
+                //mapClickActionDialogComponent.coord = clickCoord
+               // clickMenu.popup()
+                //try to open side menu instead
+                mainWindow.showComponentDialog(
+                mapClickActionDialogComponent,
+                qsTr("Map Click Action"),
+                mainWindow.showDialogDefaultWidth,
+                StandardButton.Close)
+
+
+           // }
+        }
+        Component {
+            id: mapClickActionDialogComponent
+
+            QGCViewDialog {
+                property var activeVehicleCopy: _activeVehicle
+                onActiveVehicleCopyChanged:
+                    if (!activeVehicleCopy) {
+                        hideDialog()
+                    }
+
+                QGCFlickable {
+                    anchors.fill:   parent
+                    contentHeight:  column.height
+
+                    ColumnLayout {
+                        id:                 column
+                        anchors.margins:    _margins
+                        anchors.left:       parent.left
+                        anchors.right:      parent.right
+                        spacing:            ScreenTools.defaultFontPixelHeight
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            text:               qsTr("Go to location")
+                            visible:            true
+                            onClicked: {
+                                gotoLocationItem.show(parent.clickCoord)
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, parent.clickCoord, gotoLocationItem)
+                                hideDialog()
+                            }
+                        }
+
+                    }
+                }
             }
         }
     }
 
+    MapClickActionDialog {
+        id: mapClickActionDialog
+        missionController:      _missionController
+    }
     // Airspace overlap support
     MapItemView {
         model:              _airspaceEnabled && QGroundControl.settingsManager.airMapSettings.enableAirspace && QGroundControl.airspaceManager.airspaceVisible ? QGroundControl.airspaceManager.airspaces.circles : []

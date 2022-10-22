@@ -84,10 +84,10 @@ Item {
 
                     QGCButton {
                         Layout.fillWidth:   true
-                        text:               qsTr("Remove plan from vehicle\nChange mode to Guided")
+                        text:               _activeVehicle.vtol ? qsTr("Remove plan from vehicle\nChange mode to QHover") : qsTr("Remove plan from vehicle\nChange mode to Guided")
                         visible:            !_activeVehicle.communicationLost// && !_activeVehicle.apmFirmware  // ArduPilot has a bug somewhere with mission clear
                         onClicked: {
-                            _activeVehicle.setToGuidedMode();  //mode needs to be changed out of auto before we can wipe the waypoints, so need to change to guided mode
+                            _activeVehicle.vtol ? _activeVehicle.flightMode = "QuadPlane Hover" : _activeVehicle.setToGuidedMode();  //mode needs to be changed out of auto before we can wipe the waypoints, so need to change to qhover mode
                             _planController.removeAllFromVehicle()
                             hideDialog()
                         }

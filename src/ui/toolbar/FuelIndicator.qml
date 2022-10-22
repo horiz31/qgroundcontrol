@@ -27,18 +27,7 @@ Item {
 
     property bool showIndicator: true
     property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-    property var battery: _activeVehicle ? getBatteryID1() : undefined  //the fuel is the one with battery id = 1. I'm unsure if this is a zero index thing
-
-    function getBatteryID1()
-    {
-        for( var i = 0; i < _activeVehicle.batteries.rowCount(); i++ ) {
-            if (_activeVehicle.batteries.get(i).id.value === 1)
-            {
-                return _activeVehicle.batteries.get(i);
-            }
-        }
-        return undefined;
-    }
+    property var battery: _activeVehicle && _activeVehicle.batteries.count > 0  ? _activeVehicle.batteries.get(1) : undefined  //the fuel is the one with battery id = 1. I'm unsure if this is a zero index thing
 
     Row {
         id:             batteryIndicatorRow
@@ -76,7 +65,7 @@ Item {
 
 
             QGCLabel {
-                text:                   battery ? battery.percentRemaining.value.toFixed(0) + "%" : "--%"
+                text:                   battery? battery.percentRemaining.valueString + "%" : "--%"
                 font.pointSize:         ScreenTools.mediumFontPointSize
                 color:                  qgcPal.text
                 anchors.verticalCenter: parent.verticalCenter

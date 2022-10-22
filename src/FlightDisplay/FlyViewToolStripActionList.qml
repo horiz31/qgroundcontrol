@@ -16,6 +16,7 @@ ToolStripActionList {
     id: _root
 
     signal displayPreFlightChecklist
+    signal clearFlightPath
 
     model: [
         ToolStripAction {
@@ -24,6 +25,7 @@ ToolStripActionList {
             onTriggered:    mainWindow.showPlanView()
         },
         PreFlightCheckListShowAction { onTriggered: displayPreFlightChecklist() },
+        ClearFlightTrail {  onTriggered:  clearFlightPath()  },
         GuidedActionTakeoff { },
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },

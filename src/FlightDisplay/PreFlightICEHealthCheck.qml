@@ -90,7 +90,7 @@ PreFlightCheckButton {
                                 id:                         iceMotorThrottle
                                 width:                      ScreenTools.defaultFontPixelWidth * _sliderWidth
                                 maximumValue:               100
-                                minimumValue:               30
+                                minimumValue:               55
                                 stepSize:                   10
                                 value:                      70
                                 updateValueWhileDragging:   true

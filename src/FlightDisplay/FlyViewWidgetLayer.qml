@@ -259,6 +259,7 @@ Item {
         visible:                !QGroundControl.videoManager.fullScreen
 
         onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
+        onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
         property real leftInset: x + width
     }

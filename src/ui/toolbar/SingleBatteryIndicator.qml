@@ -79,7 +79,7 @@ Item {
                     QGCLabel { text: qsTr("Current:") }
                     QGCLabel { text: _activeVehicle ? (_activeVehicle.svBattCurrent.value.toFixed(1) + " A") : "--.- A" }
                     QGCLabel { text: qsTr("Used Capacity:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(battery.mahConsumed.value) ? "---- mA" : battery.mahConsumed.value.toFixed(0) + " mA") : "---- mA" }
+                    QGCLabel { text: _activeVehicle ? battery.mahConsumed ? "---- mA" : battery.mahConsumed.value.toFixed(0) + " mA" : "---- mA" }
 
                 }
             }

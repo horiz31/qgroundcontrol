@@ -37,9 +37,9 @@
     "name":         "vtolTransitionDistance",
     "shortDesc":    "Amount of distance required for vehicle to complete a transition",
     "type":         "double",
-    "default":      200.0,
+    "default":      400.0,
     "units":        "m",
-    "min":          0.0
+    "min":          200.0
 }
 ]
 }

@@ -281,8 +281,8 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(&_csvLogTimer, &QTimer::timeout, this, &Vehicle::_writeCsvLine);
     _csvLogTimer.start(1000);
 
-    //init target AirSpeed // about 55mph
-    _targetAirSpeedSetPointFact.setRawValue(24.58);
+    //init target AirSpeed // about 60mph
+    _targetAirSpeedSetPointFact.setRawValue(26.82);
 
     //init engine runup to false
     _engineRunUpFact.setRawValue(false);

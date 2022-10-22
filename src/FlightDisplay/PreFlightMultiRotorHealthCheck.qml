@@ -27,8 +27,10 @@ PreFlightCheckButton {
     property bool   allowFailurePercentOverride:    false
     property string   _buttonLabel:   qsTr("Quad Motor Run Up")
     property int    _motorTestThrottle: 20  //percent throttle to use for motor runup
-    property int    _motorTestDurationSec: 3  //seconds for the motor test to last
-    property int    _testDelayDurationSec: 5  //seconds to delay between each motor test message
+    property int    _motorTestDurationSec: 2  //seconds for the motor test to last
+    property int    _testDelayDurationSec: 4  //seconds to delay between each motor test message
+
+    property bool  cancelTest: false  //flag to keep track of the user requesting a test cancel
 
     Button {
         id:             motorTestButton
@@ -44,7 +46,6 @@ PreFlightCheckButton {
         {          
             mainWindow.showPopupDialogFromComponent(motorTestComponent)
         }
-
     }
 
     Component {
@@ -75,6 +76,81 @@ PreFlightCheckButton {
                             width:  1
                             height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
                         }
+                        Timer {
+                            id: timer1
+                            function setTimeout(cb, delayTime) {
+                                timer1.interval = delayTime;
+                                timer1.repeat = false;
+                                timer1.triggered.connect(cb);
+                                timer1.triggered.connect(function release () {
+                                    timer1.triggered.disconnect(cb);
+                                    timer1.triggered.disconnect(release);
+                                    //if not cancelled
+                                    if (!cancelTest)
+                                    {
+                                        multiDelayButton.startMotorTest(2);
+                                        timer2.setTimeout(function(){}, _testDelayDurationSec * 1000);
+                                    }
+
+                                });
+                                timer1.start();
+                            }
+                        }
+                        Timer {
+                            id: timer2
+                            function setTimeout(cb, delayTime) {
+                                timer2.interval = delayTime;
+                                timer2.repeat = false;
+                                timer2.triggered.connect(cb);
+                                timer2.triggered.connect(function release () {
+                                    timer2.triggered.disconnect(cb);
+                                    timer2.triggered.disconnect(release);
+                                    //if not cancelled
+                                    if (!cancelTest)
+                                    {
+                                        multiDelayButton.startMotorTest(3);
+                                        timer3.setTimeout(function(){}, _testDelayDurationSec * 1000);
+                                    }
+                                });
+                                timer2.start();
+                            }
+                        }
+                        Timer {
+                            id: timer3
+                            function setTimeout(cb, delayTime) {
+                                timer3.interval = delayTime;
+                                timer3.repeat = false;
+                                timer3.triggered.connect(cb);
+                                timer3.triggered.connect(function release () {
+                                    timer3.triggered.disconnect(cb);
+                                    timer3.triggered.disconnect(release);
+
+                                    //if not cancelled
+                                    if (!cancelTest)
+                                    {
+                                        multiDelayButton.startMotorTest(4);
+                                        timer4.setTimeout(function(){}, _testDelayDurationSec * 1000);
+                                    }
+
+                                });
+                                timer3.start();
+                            }
+                        }
+                        Timer {
+                            id: timer4
+                            function setTimeout(cb, delayTime) {
+                                timer4.interval = delayTime;
+                                timer4.repeat = false;
+                                timer4.triggered.connect(cb);
+                                timer4.triggered.connect(function release () {
+                                    timer4.triggered.disconnect(cb);
+                                    timer4.triggered.disconnect(release);
+                                    multiDelayButton.finishMotorTest();
+                                   });
+                                timer4.start();
+                            }
+                        }
+
                         DelayButton {
                             id: multiDelayButton
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -85,48 +161,35 @@ PreFlightCheckButton {
                             delay: 1500
                             onActivated: {
                                 visible = false
-                                setTimeout(startMotorTest, 0, 1)
-                                setTimeout(startMotorTest, _testDelayDurationSec * 1000, 2)
-                                setTimeout(startMotorTest, (_testDelayDurationSec * 1000) * 2, 3)
-                                setTimeout(startMotorTest, (_testDelayDurationSec * 1000) * 3, 4)
-                                setTimeout(finishMotorTest, (_testDelayDurationSec * 1000) * 4, null)
+                                cancelTest = false
+                                startMotorTest(1)
+                                timer1.setTimeout(function(){}, _testDelayDurationSec * 1000);
                             }
 
-                            function setTimeout(func, interval, ...params) {
-                                    return setTimeoutComponent.createObject(null, { func, interval, params} );
-                                }
-
-                                function clearTimeout(timerObj) {
-                                    timerObj.stop();
-                                    timerObj.destroy();
-                                }
-
-                                Component {
-                                    id: setTimeoutComponent
-                                    Timer {
-                                        property var func
-                                        property var params
-                                        running: true
-                                        repeat: false
-                                        onTriggered: {
-                                            func(...params);
-                                            destroy();
-                                        }
-                                    }
-                                }
                             function startMotorTest(motor)
                             {
-                                motorTestStatus.text= qsTr("Test Running! (Motor "+ motor +")")
+                                motorTestStatus.text= qsTr("Test Running! (Motor "+ motor + ")")
 
                                 console.log("Starting motor test for motor " + motor);
                                 globals.activeVehicle.motorTest(motor, _motorTestThrottle, _motorTestDurationSec, true)
                             }
                             function finishMotorTest()
                             {
+                                cancelTest = false
                                 motorTestStatus.text =""
                                 visible = true
                                 _manualState = _statePassed  //mark check as passed
                             }
+                        }
+                        QGCButton {
+                            text:               qsTr("Cancel the test")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: !multiDelayButton.visible
+                            onClicked: {
+                                cancelTest = true;
+                                motorTestStatus.text =""
+                                multiDelayButton.visible = true
+                               }
                         }
                         Item {
                             width:  1
@@ -135,9 +198,9 @@ PreFlightCheckButton {
                         QGCLabel {
                             id: motorTestStatus
                             anchors.horizontalCenter: parent.horizontalCenter
+                            font.pointSize:     ScreenTools.largeFontPointSize
                             text:           qsTr("")
                         }
-
                     }
                 }
                 Item {
@@ -154,7 +217,6 @@ PreFlightCheckButton {
                             hideDialog()
                         }
                     }
-
                 }
             }
             function reject() {
