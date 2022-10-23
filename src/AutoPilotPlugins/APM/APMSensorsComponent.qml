@@ -693,6 +693,60 @@ SetupPage {
             } // Component - levelHorizonDialogComponent
 
             Component {
+                id: idleAutotuneDialogComponent
+
+                QGCViewDialog {
+                    id: idleAutotuneDialog
+
+                    function accept() {
+                        controller.idleAutoTune()
+                        idleAutotuneDialog.hideDialog()
+                    }
+
+                    QGCFlickable {
+                        anchors.fill:   parent
+                        contentHeight:  columnLayout.height
+                        clip:           true
+
+                        Column {
+                            id:                 columnLayout
+                            anchors.margins:    ScreenTools.defaultFontPixelWidth
+                            anchors.left:       parent.left
+                            anchors.right:      parent.right
+                            anchors.top:        parent.top
+                            spacing:            ScreenTools.defaultFontPixelHeight
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("This calibration is only to be used on the SuperVolo platform, and is used to set the engine idle position. ") +
+                                                qsTr("Perform this calibration after throttle servo repair or carb/engine service. ") +
+                                                qsTr("This is an advanced procedure, please proceed with caution...")
+                            }
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("WARNING: During this procedure, the vehicle will be put in manual mode and the engine will start! ") +
+                                                qsTr("The throttle will be raised to 60% for 5 seconds, then held at 8% until the test is stopped.")
+                            }
+
+
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("Click Ok to start Idle Autotune process\.")
+                            }
+                        } // Column
+                    } // QGCFlickable
+                } // QGCViewDialog
+            } // Component - compassMotDialogComponent
+
+            Component {
                 id: calibratePressureDialogComponent
 
                 QGCViewDialog {
@@ -818,6 +872,12 @@ SetupPage {
                         width:      _buttonWidth
                         text:       qsTr("Sensor Settings")
                         onClicked:  showOrientationsDialog(_calTypeSet)
+                    }
+                    QGCButton {
+                        width:      _buttonWidth
+                        text:       qsTr("Idle Autotune")
+                        visible:    globals.activeVehicle ? globals.activeVehicle.vtol : false
+                        onClicked:  mainWindow.showComponentDialog(idleAutotuneDialogComponent, qsTr("Idle Position Autotune"), mainWindow.showDialogDefaultWidth, StandardButton.Cancel | StandardButton.Ok)
                     }
                 } // Column - Cal Buttons
 

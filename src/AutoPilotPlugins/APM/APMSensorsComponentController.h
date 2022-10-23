@@ -89,6 +89,7 @@ public:
     Q_INVOKABLE void cancelCalibration          (void);
     Q_INVOKABLE void nextClicked                (void);
     Q_INVOKABLE bool usingUDPLink               (void);
+    Q_INVOKABLE void idleAutoTune               (void);
 
     bool compassSetupNeeded (void) const;
     bool accelSetupNeeded   (void) const;
@@ -102,6 +103,7 @@ public:
         CalTypeCompassMot,
         CalTypePressure,
         CalTypeAccelFast,
+        CallTypeIdleMotor,
         CalTypeNone
     } CalType_t;
     Q_ENUM(CalType_t)
@@ -137,6 +139,7 @@ private slots:
     void _handleUASTextMessage  (int uasId, int compId, int severity, QString text);
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
     void _mavCommandResult      (int vehicleId, int component, int command, int result, bool noReponseFromVehicle);
+    void _rcOverrideTimerTick   ();
 
 private:
     void _startLogCalibration               (void);
@@ -149,7 +152,7 @@ private:
     void _handleMagCalProgress              (mavlink_message_t& message);
     void _handleMagCalReport                (mavlink_message_t& message);
     void _handleCommandLong                 (mavlink_message_t& message);
-    void _restorePreviousCompassCalFitness  (void);
+    void _restorePreviousCompassCalFitness  (void); 
 
     enum StopCalibrationCode {
         StopCalibrationSuccess,
@@ -214,4 +217,10 @@ private:
     static const char* _compassCalFitnessParam;
     
     static const int _supportedFirmwareCalVersion = 2;
+
+    QString _initialFlightMode;
+    bool    _initialJoystickMode;
+    QTimer  _rcOverrideTimer;
+    bool    _initialVirtualJoystickMode;
+    int     _tickCount;
 };

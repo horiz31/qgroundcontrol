@@ -236,7 +236,12 @@ Item {
         }
         _outputState()
         if (showContinueMission) {
-            confirmAction(actionContinueMission)
+            if (_activeVehicle.flightMode !== _activeVehicle.gotoFlightMode)
+            {
+                //prompting to continue the mission when the vehicle is in guided mode introduces a bug into the goto icon display
+                //I feel this is an ok workaround because the user can simply use the action button to restart the mission
+                confirmAction(actionContinueMission)
+            }
         }
     }
     onShowRTLChanged: {

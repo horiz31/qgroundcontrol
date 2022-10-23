@@ -14,6 +14,7 @@
 #include "QGCApplication.h"
 #include "APMAutoPilotPlugin.h"
 #include "ParameterManager.h"
+#include "SettingsManager.h"
 
 #include <QVariant>
 #include <QQmlProperty>
@@ -60,6 +61,7 @@ APMSensorsComponentController::APMSensorsComponentController(void)
 {
     _compassCal.setVehicle(_vehicle);
     connect(&_compassCal, &APMCompassCal::vehicleTextMessage, this, &APMSensorsComponentController::_handleUASTextMessage);
+    connect(&_rcOverrideTimer, &QTimer::timeout, this, &APMSensorsComponentController::_rcOverrideTimerTick);
 
     APMAutoPilotPlugin * apmPlugin = qobject_cast<APMAutoPilotPlugin*>(_vehicle->autopilotPlugin());
 
@@ -84,6 +86,44 @@ APMSensorsComponentController::~APMSensorsComponentController()
     _restorePreviousCompassCalFitness();
 }
 
+void APMSensorsComponentController::_rcOverrideTimerTick()
+{
+
+    if (_tickCount < 10 )
+    {
+        _vehicle->sendRcOverrideThrottle((60 * 10) + 1000);  //60% throttle for ~5 seconds
+        if (_tickCount == 0)
+            _vehicle->say(tr("Setting throttle to 60%..."));
+    }
+    else
+    {
+        _vehicle->sendRcOverrideThrottle((8 * 10) + 1000);
+
+        if (_tickCount == 5 * 2) //5 seconds, tick is at 500ms
+        {
+             _vehicle->say("setting throttle to 8%");
+            _appendStatusLog(tr("Setting throttle to 8%..."));
+            _appendStatusLog(tr("It is recommended to let the engine run for at least one minute. Press Cancel when you wish to end the autotune process."));
+        }
+
+        if (((_tickCount-10) >= 20) && (((_tickCount-10) % 20) == 0) && (_tickCount < 130))
+           _appendStatusLog(tr("Autotune has been running for %1 seconds...").arg((_tickCount - 10) / 2));
+    }
+    if (_tickCount < 130)
+        _progressBar->setProperty("value", (qreal)_tickCount/130.0);  //100% would be 60 seconds after 8% or 130
+    else
+    {
+        _progressBar->setProperty("value", 1);
+        if (_tickCount == 130)
+        {
+            _vehicle->say(tr("Idle autotune complete"));
+            _appendStatusLog(tr("Autotune is complete, but you may continue to let the engine idle. Press Cancel when ready to stop the tune."));
+            _appendStatusLog(tr("The engine will continue to idle at 8% until Cancel is pressed..."));
+        }
+    }
+
+    _tickCount++;
+}
 /// Appends the specified text to the status log area in the ui
 void APMSensorsComponentController::_appendStatusLog(const QString& text)
 {
@@ -381,6 +421,17 @@ void APMSensorsComponentController::levelHorizon(void)
     _vehicle->startCalibration(Vehicle::CalibrationLevel);
 }
 
+void APMSensorsComponentController::idleAutoTune(void)
+{
+    _calTypeInProgress = CallTypeIdleMotor;
+    _startLogCalibration();
+    _nextButton->setEnabled(true);
+    _cancelButton->setEnabled(true);
+    _appendStatusLog(tr("WARNING: The engine will be started, ensure the prop is clear before proceeding."));
+    _appendStatusLog(tr("Press Next to start the calibration."));
+
+ }
+
 void APMSensorsComponentController::calibratePressure(void)
 {
     _calTypeInProgress = CalTypePressure;
@@ -459,7 +510,22 @@ void APMSensorsComponentController::cancelCalibration(void)
     } else if (_calTypeInProgress == CalTypeOnboardCompass) {
         _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_CANCEL_MAG_CAL, true /* showError */);
         _stopCalibration(StopCalibrationCancelled);
-    } else {
+    } else if (_calTypeInProgress == CallTypeIdleMotor) {
+        //set throttle to 0
+        //set mode back to what it was before the cal
+        _appendStatusLog(tr("Idle Autotune complete..."));
+        _rcOverrideTimer.stop();
+        _vehicle->sendRcOverrideThrottle(900);  //min throttle
+        _vehicle->setEngineRunUp(false);
+        _vehicle->setFlightMode(_initialFlightMode);
+        _stopCalibration(StopCalibrationCode::StopCalibrationSuccess);
+
+        //return joysticks to previous state
+        _vehicle->setJoystickEnabled(_initialJoystickMode);
+         qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(_initialVirtualJoystickMode);
+
+    }
+    else {
         _waitingForCancel = true;
         emit waitingForCancelChanged();
         // The firmware doesn't always allow us to cancel calibration. The best we can do is wait
@@ -491,6 +557,42 @@ void APMSensorsComponentController::nextClicked(void)
 
         if (_calTypeInProgress == CalTypeCompassMot) {
             _stopCalibration(StopCalibrationSuccess);
+        }
+        if (_calTypeInProgress == CallTypeIdleMotor)
+        {
+            _vehicle->setEngineRunUp(true);
+            _progressBar->setProperty("value", 0);
+
+            // remember current mode
+            _initialFlightMode = _vehicle->flightMode();
+
+            //remember joystick state
+            if (qgcApp()->toolbox()->joystickManager()->activeJoystick())
+                _initialJoystickMode = _vehicle->joystickEnabled();
+
+            _initialVirtualJoystickMode = qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->rawValue().toBool();
+
+            if (_initialVirtualJoystickMode)
+                qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(false);  //disable virtual joysticks if set
+
+            //if enabled, disable joysticks
+            if (_initialJoystickMode)
+               _vehicle->setJoystickEnabled(false);
+
+            _cancelButton->setEnabled(true);
+            _nextButton->setEnabled(false);
+            _appendStatusLog(tr("Setting mode to manual..."));
+
+            //set mode to manual
+            _vehicle->setFlightMode("Manual");
+
+            //start a timer that sends this command every 500ms for 5 seconds
+            _tickCount = 0;
+            _rcOverrideTimer.start(500);
+
+            //wite to status log
+            _appendStatusLog(tr("Setting throttle to 60%..."));
+            _appendStatusLog(tr("Waiting for 5 seconds..."));
         }
     }
 }

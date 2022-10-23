@@ -366,6 +366,38 @@ FlightMap {
         }
     }
 
+    // Map Click Location visuals
+    MapQuickItem {
+        id:             mapClickIconItem
+        visible:        false
+        z:              QGroundControl.zOrderMapItems
+        anchorPoint.x:  sourceItem.anchorPointX
+        anchorPoint.y:  sourceItem.anchorPointY
+        sourceItem: MissionItemIndexLabel {
+            checked:    true
+            index:      -1
+            label:      qsTr("Choose Action")
+        }
+
+        Connections {
+            target: QGroundControl.multiVehicleManager
+            function onActiveVehicleChanged(activeVehicle) {
+                if (!activeVehicle) {
+                    mapClickIconItem.visible = false
+                }
+            }
+        }
+
+        function show(coord) {
+            mapClickIconItem.coordinate = coord
+            mapClickIconItem.visible = true
+        }
+
+        function hide() {
+            mapClickIconItem.visible = false
+        }
+    }
+
     // GoTo Location visuals
     MapQuickItem {
         id:             gotoLocationItem
@@ -411,7 +443,11 @@ FlightMap {
         }
 
         function actionCancelled() {
-            hide()
+
+            //if ( _activeVehicle.flightMode !== _activeVehicle.gotoFlightMode)
+            //{
+                hide()
+            //}
         }
     }
 
@@ -521,6 +557,7 @@ FlightMap {
 
     // Handle guided mode clicks
     MouseArea {
+        id: mapMouseArea
         anchors.fill: parent
         property var clickCoord
         QGCMenu {
@@ -591,17 +628,16 @@ FlightMap {
 
         }
 
-        onClicked: {
+        onPressAndHold: {
             //debug below, however I may want to allow this popup even when not in a guided capable mode due to atak, etc
             //if (!globals.guidedControllerFlyView.guidedUIVisible && (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit || globals.guidedControllerFlyView.showROI)) {
-                console.log("map clicked")
+
                 orbitMapCircle.hide()
-                gotoLocationItem.hide()
-                //var clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
+               // gotoLocationItem.hide()
                 clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
-                //mapClickActionDialogComponent.coord = clickCoord
-               // clickMenu.popup()
-                //try to open side menu instead
+                //show the clicked location on the map
+                mapClickIconItem.show(clickCoord)
+                //open side dialog
                 mainWindow.showComponentDialog(
                 mapClickActionDialogComponent,
                 qsTr("Map Click Action"),
@@ -619,7 +655,12 @@ FlightMap {
                 onActiveVehicleCopyChanged:
                     if (!activeVehicleCopy) {
                         hideDialog()
+                        mapClickIconItem.hide()
                     }
+                function reject() {
+                    mapClickIconItem.hide()
+                    hideDialog()
+                }
 
                 QGCFlickable {
                     anchors.fill:   parent
@@ -632,17 +673,117 @@ FlightMap {
                         anchors.right:      parent.right
                         spacing:            ScreenTools.defaultFontPixelHeight
 
+                        //todo, this button should only show when the aircraft is in certain conditions
+                        //add sections: Position Info (lat/lon and mgrs display, copy to clipboard), Navigation Actions (guided, roi, orbit), ATAK Actions
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   qsTr("Navigation Actions:")
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
+                        }
+
                         QGCButton {
                             Layout.fillWidth:   true
                             text:               qsTr("Go to location")
+                            visible:            globals.guidedControllerFlyView.showGotoLocation
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                gotoLocationItem.show(mapMouseArea.clickCoord)
+                                hideDialog()
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem)
+
+                            }
+                        }
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            text:           qsTr("Orbit at location")
+                            visible:        globals.guidedControllerFlyView.showOrbit
+
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                orbitMapCircle.show(mapMouseArea.clickCoord)
+                                hideDialog()
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionOrbit, mapMouseArea.clickCoord, orbitMapCircle)
+                            }
+                        }
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            text:           qsTr("ROI at location")
+                            visible:        globals.guidedControllerFlyView.showROI
+
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                roiLocationItem.show(mapMouseArea.clickCoord)
+                                hideDialog()
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionROI, mapMouseArea.clickCoord, roiLocationItem)
+                            }
+                        }
+                        Rectangle {
+                            Layout.fillWidth:   true
+                            color:              qgcPal.text
+                            height:             1
+                            visible:            globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
+                        }
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   qsTr("Position Information:")
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                true
+                        }
+
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   mapMouseArea.clickCoord ? qsTr("Lat,Lon: ") + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7) : ""
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                true
+                        }
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   mapMouseArea.clickCoord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)  : ""
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                true
+                        }
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            text:               qsTr("Copy Coordinates to Clipboard")
                             visible:            true
                             onClicked: {
-                                gotoLocationItem.show(parent.clickCoord)
-                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, parent.clickCoord, gotoLocationItem)
+                                textEdit.text = mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7)
+                                textEdit.selectAll()
+                                textEdit.copy()
+                                mapClickIconItem.hide()
                                 hideDialog()
                             }
                         }
+                        TextEdit {
+                               id: textEdit
+                               visible: false
+                        }
 
+                        Rectangle {
+                            Layout.fillWidth:   true
+                            color:              qgcPal.text
+                            height:             1
+                        }
+
+
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   qsTr("ATAK Target Actions:")
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                true
+                        }
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            text:               qsTr("Create ATAK Target")
+                            visible:            true
+                            onClicked:{
+                                 hideDialog()
+                                 mapClickIconItem.hide()
+                                 mainWindow.showPopupDialogFromComponent(atakDialogComponent)
+                          }
+                        }
                     }
                 }
             }
@@ -698,7 +839,11 @@ FlightMap {
                 id: atakCol
                 Layout.fillWidth:   true
                 QGCLabel {
-                    text:           qsTr("Location: " + clickMenu.coord.latitude.toFixed(7) + ", " + clickMenu.coord.longitude.toFixed(7))
+                    text:           qsTr("Location: " + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7))
+                }
+                Item {
+                    Layout.fillWidth:   true
+                    height: ScreenTools.defaultFontPixelWidth * 1
                 }
                 GridLayout {
                     columnSpacing:      ScreenTools.defaultFontPixelWidth * 2
@@ -735,6 +880,19 @@ FlightMap {
                             atakController.staleMinutes = index;
                         }
                     }
+
+
+                }
+                Item {
+                    Layout.fillWidth:   true
+                    height: ScreenTools.defaultFontPixelWidth * 1
+                }
+                GridLayout {
+                    Layout.fillWidth:   true
+                    Layout.alignment:   Qt.AlignHCenter
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 2
+                    columns: 2
+
                     QGCButton {
                         text:       qsTr("Cancel")
                         onClicked: {
@@ -744,11 +902,10 @@ FlightMap {
                     QGCButton {
                         text:       qsTr("Send to ATAK")
                         onClicked: {
-                           atakController.send(clickMenu.coord, atakUid.text)
+                           atakController.send(mapMouseArea.clickCoord, atakUid.text)
                            hideDialog();
                         }
                     }
-
                 }
             }
         }

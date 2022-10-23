@@ -28,6 +28,15 @@ Item {
     property bool showIndicator: true
     property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     property var battery: _activeVehicle && _activeVehicle.batteries.count > 0  ? _activeVehicle.batteries.get(1) : undefined  //the fuel is the one with battery id = 1. I'm unsure if this is a zero index thing
+    property int _batteryCount: _activeVehicle ? _activeVehicle.batteries.count : 0
+
+    on_BatteryCountChanged:
+    {
+        if (_activeVehicle.batteries.count > 1)
+        {
+            battery = _activeVehicle.batteries.get(1)
+        }
+    }
 
     Row {
         id:             batteryIndicatorRow
