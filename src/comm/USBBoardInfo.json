@@ -16,6 +16,7 @@
         { "vendorID": 12677, "productID": 51,       "boardClass": "Pixhawk",    "name": "PX4 FMU V5X" },
         { "vendorID": 7052, "productID": 54,        "boardClass": "Pixhawk",    "name": "PX4 FMU V6U" },
         { "vendorID": 12677, "productID": 53,       "boardClass": "Pixhawk",    "name": "PX4 FMU V6X" },
+        { "vendorID": 12677, "productID": 56,       "boardClass": "Pixhawk",    "name": "PX4 FMU V6C" },
         { "vendorID": 9900, "productID": 64,        "boardClass": "Pixhawk",    "name": "TAP V1" },
         { "vendorID": 9900, "productID": 65,        "boardClass": "Pixhawk",    "name": "ASC V1" },
         { "vendorID": 9900, "productID": 22,        "boardClass": "Pixhawk",    "name": "Crazyflie 2" },
@@ -40,6 +41,7 @@
         { "vendorID": 1027, "productID": 24597,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "3DR Radio" },
         { "vendorID": 1027, "productID": 24577,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "3DR Radio on FTDI" },
         { "vendorID": 4292, "productID": 60000,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "SILabs Radio" },
+        { "vendorID": 403, "productID": 6015,       "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "SILabs Radio in VoloCom" },
 
         { "vendorID": 5446, "productID": 424,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (M8P)" },
         { "vendorID": 5446, "productID": 425,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (F9P)" },
