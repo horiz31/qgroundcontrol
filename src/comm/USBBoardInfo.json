@@ -27,6 +27,7 @@
         { "vendorID": 4104, "productID": 1,         "boardClass": "Pixhawk",    "name": "PX4 FMU UVify Core" },
         { "vendorID": 12643, "productID": 76,       "boardClass": "Pixhawk",    "name": "CUAV Flight Controller" },
         { "vendorID": 1155, "productID": 55,        "boardClass": "Pixhawk",    "name": "PX4 FMU SmartAP AIRLink" },
+        { "vendorID": 11694, "productID": 4118,      "boardClass": "Pixhawk",   "name": "Cube Orange Mavlink" },
 
         { "vendorID": 1155, "productID": 22336,     "boardClass": "Pixhawk",    "name": "ArduPilot ChibiOS" },
         { "vendorID": 4617, "productID": 22336,     "boardClass": "Pixhawk",    "name": "ArduPilot ChibiOS" },
@@ -41,7 +42,6 @@
         { "vendorID": 1027, "productID": 24597,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "3DR Radio" },
         { "vendorID": 1027, "productID": 24577,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "3DR Radio on FTDI" },
         { "vendorID": 4292, "productID": 60000,     "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "SILabs Radio" },
-        { "vendorID": 403, "productID": 6015,       "boardClass": "SiK Radio",  "name": "SiK Radio",            "comment": "SILabs Radio in VoloCom" },
 
         { "vendorID": 5446, "productID": 424,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (M8P)" },
         { "vendorID": 5446, "productID": 425,       "boardClass": "RTK GPS",    "name": "U-blox RTK GPS",       "comment": "U-blox RTK GPS (F9P)" },

@@ -95,11 +95,11 @@ void VehicleWindFactGroup::_handleWind(mavlink_message_t& message)
     mavlink_wind_t wind;
     mavlink_msg_wind_decode(&message, &wind);
 
-    // We don't want negative wind angles
     float direction = wind.direction;
-    if (direction < 0) {
-        direction += 360;
-    }
+
+    //add 180 because wind is provided +/- 180 and our graphics rotation will need 0-360
+    direction+= 180;
+
     this->direction()->setRawValue(direction);
     //qDebug() << "setting wind speed to " << wind.speed;
     speed()->setRawValue(wind.speed);

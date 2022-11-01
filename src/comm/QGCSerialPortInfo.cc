@@ -222,12 +222,14 @@ bool QGCSerialPortInfo::getBoardInfo(QGCSerialPortInfo::BoardType_t& boardType, 
         return false;
     }
 
+    //qDebug() << "vendor id is " << vendorIdentifier() << "product id is" << productIdentifier();
     for (int i=0; i<_boardInfoList.count(); i++) {
         const BoardInfo_t& boardInfo = _boardInfoList[i];
 
         if (vendorIdentifier() == boardInfo.vendorId && (productIdentifier() == boardInfo.productId || boardInfo.productId == 0)) {
             boardType = boardInfo.boardType;
             name = boardInfo.name;
+            //qDebug() << "returning true, board found " << name;
             return true;
         }
     }
