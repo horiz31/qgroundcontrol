@@ -720,7 +720,7 @@ SetupPage {
                                 anchors.left:   parent.left
                                 anchors.right:  parent.right
                                 wrapMode:       Text.WordWrap
-                                text:           qsTr("This calibration is only to be used on the SuperVolo platform, and is used to set the engine idle position. ") +
+                                text:           qsTr("This calibration is only to be used on the SuperVolo platform, and is used to set the engine idle positions. ") +
                                                 qsTr("Perform this calibration after throttle servo repair or carb/engine service. ") +
                                                 qsTr("This is an advanced procedure, please proceed with caution...")
                             }
