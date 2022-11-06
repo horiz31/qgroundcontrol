@@ -60,9 +60,9 @@ Item {
                 function getFuelColor() {
                     if(battery)
                     {
-                        if (battery.percentRemaining.value <= 20)
+                        if (battery.percentRemaining.value <= 5)
                             return qgcPal.colorOrange
-                        else if (battery.percentRemaining.value <= 10)
+                        else if (battery.percentRemaining.value <= 3)
                             return qgcPal.colorRed
                         return qgcPal.colorGreen
                     }

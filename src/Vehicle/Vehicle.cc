@@ -2638,6 +2638,25 @@ void Vehicle::guidedModeGotoLocation(const QGeoCoordinate& gotoCoord)
     _firmwarePlugin->guidedModeGotoLocation(this, gotoCoord);
 }
 
+void Vehicle::guidedModeGotoLocationAndAltitude(const QGeoCoordinate& gotoCoord, double altitudeRel, bool isClockwise)
+{
+    if (!guidedModeSupported()) {
+        qgcApp()->showAppMessage(guided_mode_not_supported_by_vehicle);
+        return;
+    }
+    if (!coordinate().isValid()) {
+        return;
+    }
+    double maxDistance = _settingsManager->flyViewSettings()->maxGoToLocationDistance()->rawValue().toDouble();
+    if (coordinate().distanceTo(gotoCoord) > maxDistance) {
+        qgcApp()->showAppMessage(QString("New location is too far. Must be less than %1 %2.").arg(qRound(FactMetaData::metersToAppSettingsHorizontalDistanceUnits(maxDistance).toDouble())).arg(FactMetaData::appSettingsHorizontalDistanceUnitsString()));
+        return;
+    }
+
+    _firmwarePlugin->guidedModeGotoLocationAndAltitude(this, gotoCoord, altitudeRel, isClockwise);
+}
+
+
 void Vehicle::guidedModeChangeAltitude(double altitudeChange, bool pauseVehicle)
 {
     if (!guidedModeSupported()) {
@@ -2679,6 +2698,34 @@ void Vehicle::guidedModeOrbit(const QGeoCoordinate& centerCoord, double radius, 
     }
 }
 
+void Vehicle::guidedModeDoPosition(const QGeoCoordinate& centerCoord, bool clockwise)
+{
+    qDebug() << "setting do position clockwise" << clockwise;
+    //note, only use for this fixedwind or vtol
+    if (!vtol() && !fixedWing()) {
+        qgcApp()->showAppMessage(QStringLiteral("Do Position not supported by Vehicle."));
+        return;
+    }
+
+    if (!(capabilityBits() & MAV_PROTOCOL_CAPABILITY_COMMAND_INT))
+    {
+        qgcApp()->showAppMessage(QStringLiteral("Command int not supported by Vehicle."));
+        return;
+    }
+    sendMavCommandInt(
+                defaultComponentId(),
+                MAV_CMD_DO_REPOSITION,
+                MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                true,                               // show error if fails
+                static_cast<float>(0),              // default ground speed
+                static_cast<float>(MAV_DO_REPOSITION_FLAGS_CHANGE_MODE),    // enable guided mode
+                static_cast<float>(qQNaN()),              // Empty
+                static_cast<float>(clockwise ? 0 : 1),    // 0 clockwise, 1 counter
+                centerCoord.latitude(),
+                centerCoord.longitude(),
+                static_cast<float>(centerCoord.altitude()));
+
+}
 void Vehicle::guidedModeROI(const QGeoCoordinate& centerCoord)
 {
     if (!roiModeSupported()) {

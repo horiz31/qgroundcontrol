@@ -28,6 +28,8 @@ Rectangle {
     property real _sliderMaxAlt:        _flyViewSettings ? _flyViewSettings.guidedMaximumAltitude.rawValue : 0
     property real _sliderMinAlt:        _flyViewSettings ? _flyViewSettings.guidedMinimumAltitude.rawValue : 0
     property bool _flying:              _activeVehicle ? _activeVehicle.flying : false
+    property bool _isClockwise:         true
+    property bool _isDirectionVisible:  true
 
     function reset() {
         altSlider.value = 0
@@ -37,9 +39,22 @@ Rectangle {
         altField.setToMinimumTakeoff()
     }
 
+    function setDirectionVisible(value)
+    {
+        if (value === true)
+            _isDirectionVisible = true;
+        else if (value === false)
+            _isDirectionVisible = false
+    }
+
     /// Returns the user specified change in altitude from the current vehicle altitude
     function getAltitudeChangeValue() {
         return altField.newAltitudeMeters - _vehicleAltitude
+    }
+
+    function isClockwise() {
+        return _isClockwise;
+        //return true if clockwise, false if counter
     }
 
     function log10(value) {
@@ -50,6 +65,7 @@ Rectangle {
         }
     }
 
+
     Column {
         id:                 headerColumn
         anchors.margins:    _margins
@@ -57,6 +73,21 @@ Rectangle {
         anchors.left:       parent.left
         anchors.right:      parent.right
 
+        QGCComboBox {
+            id:             guidedDir
+            model:          [ qsTr("CW"), qsTr("CCW")]
+            anchors.left:           parent.left
+            anchors.right:          parent.right
+            visible:         _isDirectionVisible
+
+            onActivated:
+            {
+                if (index === 0)
+                    _isClockwise = true;
+                else
+                    _isClockwise = false;
+            }
+        }
         QGCLabel {
             anchors.left:           parent.left
             anchors.right:          parent.right
@@ -103,4 +134,5 @@ Rectangle {
             angle:      180
         }
     }
+
 }

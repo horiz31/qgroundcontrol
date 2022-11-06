@@ -386,6 +386,7 @@ Item {
             confirmDialog.message = takeoffMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showTakeoff })
             altitudeSlider.setToMinimumTakeoff()
+            altitudeSlider.setDirectionVisible(false);
             altitudeSlider.visible = true
             break;
         case actionStartMission:
@@ -432,12 +433,16 @@ Item {
             confirmDialog.message = changeAltMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showChangeAlt })
             altitudeSlider.reset()
+            altitudeSlider.setDirectionVisible(false);
             altitudeSlider.visible = true
             break;
         case actionGoto:
             confirmDialog.title = gotoTitle
             confirmDialog.message = gotoMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showGotoLocation })
+            altitudeSlider.reset()
+            altitudeSlider.setDirectionVisible(true);
+            altitudeSlider.visible = true
             break;
         case actionSetWaypoint:
             confirmDialog.title = setWaypointTitle
@@ -448,6 +453,7 @@ Item {
             confirmDialog.message = orbitMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showOrbit })
             altitudeSlider.reset()
+            altitudeSlider.setDirectionVisible(false);
             altitudeSlider.visible = true
             break;
         case actionLandAbort:
@@ -459,7 +465,8 @@ Item {
             confirmDialog.title = pauseTitle
             confirmDialog.message = pauseMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showPause })
-            altitudeSlider.reset()
+            altitudeSlider.reset()            
+            altitudeSlider.setDirectionVisible(false);
             altitudeSlider.visible = true
             break;
         case actionMVPause:
@@ -511,7 +518,7 @@ Item {
     }
 
     // Executes the specified action
-    function executeAction(actionCode, actionData, actionAltitudeChange, optionChecked) {
+    function executeAction(actionCode, actionData, actionAltitudeChange, optionChecked, isClockwise) {
         var i;
         var rgVehicle;
         switch (actionCode) {
@@ -570,7 +577,8 @@ Item {
             _activeVehicle.guidedModeChangeAltitude(actionAltitudeChange, false /* pauseVehicle */)
             break
         case actionGoto:
-            _activeVehicle.guidedModeGotoLocation(actionData)
+            _activeVehicle.guidedModeGotoLocationAndAltitude(actionData, actionAltitudeChange, isClockwise);
+            //_activeVehicle.guidedModeGotoLocation(actionData)
             break
         case actionSetWaypoint:
             _activeVehicle.setCurrentMissionSequence(actionData)

@@ -735,13 +735,30 @@ void APMFirmwarePlugin::guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoord
         return;
     }
 
+    qDebug() << "sending go to location with an altitude of" << vehicle->altitudeRelative()->rawValue().toDouble();
 
     setGuidedMode(vehicle, true);
 
     QGeoCoordinate coordWithAltitude = gotoCoord;
     coordWithAltitude.setAltitude(vehicle->altitudeRelative()->rawValue().toDouble());
-    vehicle->missionManager()->writeArduPilotGuidedMissionItem(coordWithAltitude, false /* altChangeOnly */);
+    vehicle->missionManager()->writeArduPilotGuidedMissionItem(coordWithAltitude, false);  //false = includes alt change
 }
+
+void APMFirmwarePlugin::guidedModeGotoLocationAndAltitude(Vehicle* vehicle, const QGeoCoordinate& gotoCoord, double altitudeRel, bool isClockwise)
+{
+
+    qDebug() << "sending go to location with an altitude of" << (altitudeRel + vehicle->altitudeRelative()->rawValue().toDouble()) << "m";
+
+    setGuidedMode(vehicle, true);
+    QGeoCoordinate coordWithAltitude = gotoCoord;
+    coordWithAltitude.setAltitude(altitudeRel + vehicle->altitudeRelative()->rawValue().toDouble());
+
+    if (vehicle->vtol() || vehicle->fixedWing())
+        vehicle->guidedModeDoPosition(coordWithAltitude, isClockwise); //position and clockwise
+    else
+        vehicle->missionManager()->writeArduPilotGuidedMissionItem(coordWithAltitude, false);
+}
+
 
 void APMFirmwarePlugin::guidedModeRTL(Vehicle* vehicle, bool smartRTL)
 {

@@ -92,7 +92,7 @@ MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, do
     return new MissionItem(seqNum,
                            MAV_CMD_NAV_VTOL_LAND,
                            altRel ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
-                           0.0, 0.0, 0.0,
+                           2, 0.0, alt,   // param1 = 2 sets FW approach in ardupilot, unused in px4
                            qQNaN(),         // Yaw - not specified
                            lat, lon, alt,
                            true,            // autoContinue

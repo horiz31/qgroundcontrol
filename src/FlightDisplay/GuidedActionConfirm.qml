@@ -83,6 +83,8 @@ Rectangle {
 
         QGCLabel {
             id:                     messageText
+            font.pointSize: ScreenTools.mediumFontPointSize  //volo
+            font.family:    ScreenTools.demiboldFontFamily   //volo
             Layout.fillWidth:       true
             horizontalAlignment:    Text.AlignHCenter
             wrapMode:               Text.WordWrap
@@ -107,12 +109,14 @@ Rectangle {
                 onAccept: {
                     _root.visible = false
                     var altitudeChange = 0
+                    var isClockwise = true
                     if (altitudeSlider.visible) {
                         altitudeChange = altitudeSlider.getAltitudeChangeValue()
+                        isClockwise = altitudeSlider.isClockwise()
                         altitudeSlider.visible = false
                     }
                     hideTrigger = false
-                    guidedController.executeAction(_root.action, _root.actionData, altitudeChange, _root.optionChecked)
+                    guidedController.executeAction(_root.action, _root.actionData, altitudeChange, _root.optionChecked, isClockwise)
                     if (mapIndicator) {
                         mapIndicator.actionConfirmed()
                         mapIndicator = undefined

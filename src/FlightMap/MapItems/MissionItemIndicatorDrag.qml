@@ -37,8 +37,8 @@ Rectangle {
 
     property real _itemIndicatorX:          itemIndicator ? itemIndicator.x : 0
     property real _itemIndicatorY:          itemIndicator ? itemIndicator.y : 0
-    property real _itemIndicatorWidth:      itemIndicator ? itemIndicator.width : 0
-    property real _itemIndicatorHeight:     itemIndicator ? itemIndicator.height : 0
+    property real _itemIndicatorWidth:      itemIndicator ? itemIndicator.width * 2 : 0
+    property real _itemIndicatorHeight:     itemIndicator ? itemIndicator.height * 2 : 0
     property bool _mobile:                  ScreenTools.isMobile
     property real _touchWidth:              Math.max(_itemIndicatorWidth, ScreenTools.minTouchPixels)
     property real _touchHeight:             Math.max(_itemIndicatorHeight, ScreenTools.minTouchPixels)
@@ -65,6 +65,7 @@ Rectangle {
     QGCMouseArea {
         id:                 itemDrag
         anchors.fill:       parent
+        anchors.margins:    ScreenTools.defaultFontPixelHeight * -3
         drag.target:        parent
         drag.minimumX:      0
         drag.minimumY:      0

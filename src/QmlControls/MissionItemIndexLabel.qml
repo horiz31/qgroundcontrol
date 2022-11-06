@@ -30,10 +30,10 @@ Canvas {
     property real   _width:             showGimbalYaw ? Math.max(_gimbalYawWidth, labelControl.visible ? labelControl.width : indicator.width) : (labelControl.visible ? labelControl.width : indicator.width)
     property real   _height:            showGimbalYaw ? _gimbalYawWidth : (labelControl.visible ? labelControl.height : indicator.height)
     property real   _gimbalYawRadius:   ScreenTools.defaultFontPixelHeight
-    property real   _gimbalYawWidth:    _gimbalYawRadius * 2
-    property real   _smallRadiusRaw:    Math.ceil((ScreenTools.defaultFontPixelHeight * ScreenTools.smallFontPointRatio) / 2)
+    property real   _gimbalYawWidth:    _gimbalYawRadius * 2                           //addedd 2
+    property real   _smallRadiusRaw:    Math.ceil((ScreenTools.defaultFontPixelHeight * 2 * ScreenTools.smallFontPointRatio) / 2)
     property real   _smallRadius:       _smallRadiusRaw + ((_smallRadiusRaw % 2 == 0) ? 1 : 0) // odd number for better centering
-    property real   _normalRadiusRaw:   Math.ceil(ScreenTools.defaultFontPixelHeight * 0.66)
+    property real   _normalRadiusRaw:   Math.ceil(ScreenTools.defaultFontPixelHeight * 1) //0.66
     property real   _normalRadius:      _normalRadiusRaw + ((_normalRadiusRaw % 2 == 0) ? 1 : 0)
     property real   _indicatorRadius:   small ? _smallRadius : _normalRadius
     property real   _gimbalRadians:     degreesToRadians(vehicleYaw + gimbalYaw - 90)
@@ -124,6 +124,7 @@ Canvas {
 
     // Extra circle to indicate selection
     Rectangle {
+        id:             wpCheckedCircle
         width:          indicator.width * 2
         height:         width
         radius:         width * 0.5
@@ -137,7 +138,7 @@ Canvas {
     // The mouse click area is always the size of a normal indicator
     Item {
         id:                 mouseAreaFill
-        anchors.margins:    small ? -(_normalRadius - _smallRadius) : 0
+        anchors.margins:    small ? -(_normalRadius - _smallRadius) : wpCheckedCircle.width
         anchors.fill:       indicator
     }
 

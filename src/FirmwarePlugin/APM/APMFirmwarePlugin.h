@@ -50,6 +50,7 @@ public:
     bool                isCapable                       (const Vehicle *vehicle, FirmwareCapabilities capabilities) override;
     void                setGuidedMode                   (Vehicle* vehicle, bool guidedMode) override;
     void                guidedModeTakeoff               (Vehicle* vehicle, double altitudeRel) override;
+    void                guidedModeGotoLocationAndAltitude        (Vehicle* vehicle, const QGeoCoordinate& gotoCoord, double altitudeRel, bool isClockwise) override;
     void                guidedModeGotoLocation          (Vehicle* vehicle, const QGeoCoordinate& gotoCoord) override;
     double              minimumTakeoffAltitude          (Vehicle* vehicle) override;
     void                startMission                    (Vehicle* vehicle) override;

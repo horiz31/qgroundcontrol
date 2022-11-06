@@ -30,6 +30,8 @@ MissionManager::~MissionManager()
 }
 void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoCoord, bool altChangeOnly)
 {
+    double temp = (_vehicle->vtol() || _vehicle->fixedWing()) ? -90.0 : 0;
+    qDebug() << "sending guided mode mission item with altitude"<< gotoCoord.altitude() << "param3 is" << temp;
     if (inProgress()) {
         qCDebug(MissionManagerLog) << "writeArduPilotGuidedMissionItem called while transaction in progress";
         return;
@@ -54,7 +56,7 @@ void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoC
         missionItem.command =           MAV_CMD_NAV_WAYPOINT;
         missionItem.param1 =            0;
         missionItem.param2 =            0;
-        missionItem.param3 =            0;
+        missionItem.param3 =            (_vehicle->vtol() || _vehicle->fixedWing()) ? -90.0 : 0;  //radius to pass by the waypoint, positive for clockwise, negative for counter
         missionItem.param4 =            0;
         missionItem.x =                 gotoCoord.latitude();
         missionItem.y =                 gotoCoord.longitude();
@@ -74,6 +76,7 @@ void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoC
     _startAckTimeout(AckGuidedItem);
     emit inProgressChanged(true);
 }
+
 
 void MissionManager::generateResumeMission(int resumeIndex)
 {

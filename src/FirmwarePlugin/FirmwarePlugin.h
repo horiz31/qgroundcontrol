@@ -156,6 +156,9 @@ public:
     /// Command vehicle to move to specified location (altitude is included and relative)
     virtual void guidedModeGotoLocation(Vehicle* vehicle, const QGeoCoordinate& gotoCoord);
 
+    /// Command vehicle to move to specified location (altitude is included and relative)
+    virtual void guidedModeGotoLocationAndAltitude(Vehicle* vehicle, const QGeoCoordinate& gotoCoord, double altitudeRel, bool isClockwise);
+
     /// Command vehicle to change altitude
     ///     @param altitudeChange If > 0, go up by amount specified, if < 0, go down by amount specified
     ///     @param pauseVehicle true: pause vehicle prior to altitude change

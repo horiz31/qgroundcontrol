@@ -559,6 +559,7 @@ FlightMap {
     MouseArea {
         id: mapMouseArea
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         property var clickCoord
         QGCMenu {
             id: clickMenu
@@ -628,24 +629,31 @@ FlightMap {
 
         }
 
+        onPressed:
+        {
+            if (mouse.button == Qt.RightButton)
+                mouseAction(mouse)
+        }
+
+
         onPressAndHold: {
-            //debug below, however I may want to allow this popup even when not in a guided capable mode due to atak, etc
-            //if (!globals.guidedControllerFlyView.guidedUIVisible && (globals.guidedControllerFlyView.showGotoLocation || globals.guidedControllerFlyView.showOrbit || globals.guidedControllerFlyView.showROI)) {
+           mouseAction(mouse);
+        }
 
-                orbitMapCircle.hide()
-               // gotoLocationItem.hide()
-                clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
-                //show the clicked location on the map
-                mapClickIconItem.show(clickCoord)
-                //open side dialog
-                mainWindow.showComponentDialog(
-                mapClickActionDialogComponent,
-                qsTr("Map Click Action"),
-                mainWindow.showDialogDefaultWidth,
-                StandardButton.Close)
+        function mouseAction(mouse)
+        {
+            orbitMapCircle.hide()
+           // gotoLocationItem.hide()
+            clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
+            //show the clicked location on the map
+            mapClickIconItem.show(clickCoord)
+            //open side dialog
+            mainWindow.showComponentDialog(
+            mapClickActionDialogComponent,
+            qsTr("Map Click Action"),
+            mainWindow.showDialogDefaultWidth,
+            StandardButton.Close)
 
-
-           // }
         }
         Component {
             id: mapClickActionDialogComponent

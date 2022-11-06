@@ -102,9 +102,9 @@ Item {
                 function getBatteryColor() {
                     if (_batteryRemaining)
                     {
-                        if (_batteryRemaining > 40)
+                        if (_batteryRemaining > 60)
                             return qgcPal.colorGreen
-                        else if (_batteryRemaining > 20)
+                        else if (_batteryRemaining > 50)
                             return qgcPal.colorOrange
                         else
                             return qgcPal.colorRed
