@@ -103,7 +103,7 @@ void APMSensorsComponentController::_rcOverrideTimerTick()
         {
              _vehicle->say("setting throttle to 8%");
             _appendStatusLog(tr("Setting throttle to 8%..."));
-            _appendStatusLog(tr("It is recommended to let the engine run for at least one minute. Press Cancel when you wish to end the autotune process."));
+            _appendStatusLog(tr("The autotune process will complete after approximately one minute. Press Cancel if you need to terminate the autotune process."));
         }
 
         if (((_tickCount-10) >= 20) && (((_tickCount-10) % 20) == 0) && (_tickCount < 130))
@@ -114,11 +114,20 @@ void APMSensorsComponentController::_rcOverrideTimerTick()
     else
     {
         _progressBar->setProperty("value", 1);
-        if (_tickCount == 130)
+        if (_tickCount >= 130)
         {
             _vehicle->say(tr("Idle autotune complete"));
-            _appendStatusLog(tr("Autotune is complete, but you may continue to let the engine idle. Press Cancel when ready to stop the tune."));
-            _appendStatusLog(tr("The engine will continue to idle at 8% until Cancel is pressed..."));
+            _appendStatusLog(tr("Idle autotune has succesfully completed!"));
+            _rcOverrideTimer.stop();
+            _vehicle->sendRcOverrideThrottle(900);  //min throttle
+            _vehicle->setEngineRunUp(false);
+            _vehicle->setFlightMode(_initialFlightMode);
+            _stopCalibration(StopCalibrationCode::StopCalibrationSuccessShowLog);
+
+            //return joysticks to previous state
+            _vehicle->setJoystickEnabled(_initialJoystickMode);
+             qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(_initialVirtualJoystickMode);
+
         }
     }
 
@@ -513,7 +522,7 @@ void APMSensorsComponentController::cancelCalibration(void)
     } else if (_calTypeInProgress == CallTypeIdleMotor) {
         //set throttle to 0
         //set mode back to what it was before the cal
-        _appendStatusLog(tr("Idle Autotune complete..."));
+        _appendStatusLog(tr("Idle Autotune canceled!"));
         _rcOverrideTimer.stop();
         _vehicle->sendRcOverrideThrottle(900);  //min throttle
         _vehicle->setEngineRunUp(false);

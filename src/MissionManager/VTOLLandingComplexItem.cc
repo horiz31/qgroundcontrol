@@ -89,10 +89,11 @@ bool VTOLLandingComplexItem::load(const QJsonObject& complexObject, int sequence
 
 MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, double lat, double lon, double alt, QObject* parent)
 {
+    qDebug() << "writing vtol land missoin item";
     return new MissionItem(seqNum,
                            MAV_CMD_NAV_VTOL_LAND,
                            altRel ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
-                           2, 0.0, alt,   // param1 = 2 sets FW approach in ardupilot, unused in px4
+                           NAV_VTOL_LAND_OPTIONS_HOVER_DESCENT, 0.0, alt,   // param1 = 2 sets FW approach in ardupilot, unused in px4
                            qQNaN(),         // Yaw - not specified
                            lat, lon, alt,
                            true,            // autoContinue

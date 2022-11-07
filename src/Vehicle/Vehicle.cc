@@ -2700,8 +2700,7 @@ void Vehicle::guidedModeOrbit(const QGeoCoordinate& centerCoord, double radius, 
 
 void Vehicle::guidedModeDoPosition(const QGeoCoordinate& centerCoord, bool clockwise)
 {
-    qDebug() << "setting do position clockwise" << clockwise;
-    //note, only use for this fixedwind or vtol
+   //only use for this fixedwind or vtol
     if (!vtol() && !fixedWing()) {
         qgcApp()->showAppMessage(QStringLiteral("Do Position not supported by Vehicle."));
         return;

@@ -66,6 +66,7 @@ Rectangle {
 
             Item { width: 1; height: _spacer }
 
+
             FactCheckBox {
                 text:       qsTr("Use loiter to altitude")
                 fact:       missionItem.useLoiterToAlt
@@ -111,6 +112,7 @@ Rectangle {
                 onClicked:  missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
             }
         }
+
 
         SectionHeader {
             id:             landingPointSection

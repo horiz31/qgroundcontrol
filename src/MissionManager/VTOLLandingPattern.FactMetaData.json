@@ -71,6 +71,14 @@
     "shortDesc":    "Stop taking video",
     "type":         "bool",
     "default":      true
+},
+{
+    "name":             "ApproachType",
+    "shortDesc": "Style of approach for the VTOL landing",
+    "type":             "uint32",
+    "enumStrings":      "Fixed Wing,Quadrotor",
+    "enumValues":       "0,1",
+    "default":     0
 }
 ]
 }

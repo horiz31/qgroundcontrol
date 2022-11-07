@@ -705,7 +705,7 @@ ApplicationWindow {
     Popup {
         id:             indicatorPopup
         padding:        ScreenTools.defaultFontPixelWidth * 0.75
-        modal:          true
+        modal:          false  //supervolo edit, many times we want the popup to stay up, and graying out the main windows sucks if this is the intent
         focus:          true
         closePolicy:    Popup.CloseOnEscape | Popup.CloseOnPressOutside
         property var    currentItem:        null
