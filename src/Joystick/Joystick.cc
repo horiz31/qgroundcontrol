@@ -65,6 +65,7 @@ const char* Joystick::_buttonActionGimbalLeft =         QT_TR_NOOP("Gimbal Left"
 const char* Joystick::_buttonActionGimbalRight =        QT_TR_NOOP("Gimbal Right");
 const char* Joystick::_buttonActionGimbalCenter =       QT_TR_NOOP("Gimbal Center");
 const char* Joystick::_buttonActionEmergencyStop =      QT_TR_NOOP("Emergency Stop");
+const char* Joystick::_buttonActionEngineRunup =        QT_TR_NOOP("Hold for Engine Runup");
 
 const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "RollAxis",
@@ -180,6 +181,7 @@ void Joystick::_setDefaultCalibration(void) {
     _throttleMode       = ThrottleModeDownZero;
     _calibrated         = true;
     _circleCorrection   = false;
+    _runupEnabled       = false;
 
     _saveSettings();
 }
@@ -679,7 +681,9 @@ void Joystick::_handleAxis()
             emit axisValues(roll, pitch, yaw, throttle);
 
             uint16_t shortButtons = static_cast<uint16_t>(buttonPressedBits & 0xFFFF);
-            _activeVehicle->sendJoystickDataThreadSafe(roll, pitch, yaw, throttle, shortButtons);
+
+            if (!_runupEnabled)
+                _activeVehicle->sendJoystickDataThreadSafe(roll, pitch, yaw, throttle, shortButtons);
         }
     }
 }
@@ -771,6 +775,11 @@ void Joystick::setFunctionAxis(AxisFunction_t function, int axis)
     _rgFunctionAxis[function] = axis;
     _saveSettings();
     emit calibratedChanged(_calibrated);
+}
+
+void Joystick::setRunupEnabled(bool enabled)
+{
+    _runupEnabled = enabled;
 }
 
 int Joystick::getFunctionAxis(AxisFunction_t function)
@@ -1027,7 +1036,18 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         }
     } else if(action == _buttonActionEmergencyStop) {
       if(buttonDown) emit emergencyStop();
-    } else {
+    } else if (action == _buttonActionEngineRunup){
+        if (buttonDown){
+            //qDebug() << "Engine runup button pressed down";
+            emit startEngineRunup(); //button down
+        }
+        else {
+            //qDebug() << "Engine runup button released";
+            emit stopEngineRunup(); //button back up
+        }
+    }
+
+    else {
         if (buttonDown && _activeVehicle) {
             for (auto& item : _customMavCommands) {
                 if (action == item.name()) {
@@ -1124,6 +1144,7 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionEmergencyStop));
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionEngineRunup));
     for (auto& item : _customMavCommands)
         _assignableButtonActions.append(new AssignableButtonAction(this, item.name()));
 

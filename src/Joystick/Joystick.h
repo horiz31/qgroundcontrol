@@ -139,6 +139,8 @@ public:
     void setFunctionAxis(AxisFunction_t function, int axis);
     int getFunctionAxis(AxisFunction_t function);
 
+    void setRunupEnabled(bool enabled);  //function to allow turning on/off the control channels during runup
+
     void stop();
 
 /*
@@ -217,6 +219,8 @@ signals:
     void setVtolInFwdFlight         (bool set);
     void setFlightMode              (const QString& flightMode);
     void emergencyStop              ();
+    void startEngineRunup           ();
+    void stopEngineRunup            ();
 
 protected:
     void    _setDefaultCalibration  ();
@@ -276,6 +280,7 @@ protected:
     bool    _accumulator            = false;
     bool    _deadband               = false;
     bool    _circleCorrection       = true;
+    bool    _runupEnabled              = false;
     float   _axisFrequencyHz        = _defaultAxisFrequencyHz;
     float   _buttonFrequencyHz      = _defaultButtonFrequencyHz;
     Vehicle* _activeVehicle         = nullptr;
@@ -352,6 +357,7 @@ private:
     static const char* _buttonActionGimbalRight;
     static const char* _buttonActionGimbalCenter;
     static const char* _buttonActionEmergencyStop;
+    static const char* _buttonActionEngineRunup;
 
 private slots:
     void _activeVehicleChanged(Vehicle* activeVehicle);

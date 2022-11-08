@@ -87,6 +87,7 @@
 #include "EditPositionDialogController.h"
 #include "GPSUnitsController.h"
 #include "ATAKController.h"
+#include "EngineRunupController.h"
 #include "FactValueSliderListModel.h"
 #include "ShapeFileHelper.h"
 #include "QGCFileDownload.h"
@@ -517,6 +518,7 @@ void QGCApplication::_initCommon()
     qmlRegisterType<RCToParamDialogController>      (kQGCControllers,                       1, 0, "RCToParamDialogController");
     qmlRegisterType<GPSUnitsController>             (kQGCControllers,                       1, 0, "GPSUnitsController");
     qmlRegisterType<ATAKController>                 (kQGCControllers,                       1, 0, "ATAKController");
+    qmlRegisterType<EngineRunupController>          (kQGCControllers,                       1, 0, "EngineRunupController");
     qmlRegisterType<TerrainProfile>                 ("QGroundControl.Controls",             1, 0, "TerrainProfile");
     qmlRegisterType<ToolStripAction>                ("QGroundControl.Controls",             1, 0, "ToolStripAction");
     qmlRegisterType<ToolStripActionList>            ("QGroundControl.Controls",             1, 0, "ToolStripActionList");
