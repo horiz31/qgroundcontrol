@@ -62,6 +62,7 @@
         <file alias="throttle.svg">resources/throttle.svg</file>
         <file alias="distance-to-wp.svg">resources/distance-to-wp.svg</file>
         <file alias="distance-to-home.svg">resources/distance-to-home.svg</file>
+        <file alias="gimbal.svg">resources/gimbal.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

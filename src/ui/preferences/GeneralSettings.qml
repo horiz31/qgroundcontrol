@@ -1106,7 +1106,7 @@ Rectangle {
 
                     Item { width: 1; height: _margins }
                     QGCLabel {
-                        text:               qsTr("%1 Version").arg(QGroundControl.appName)
+                        text:               qsTr("EchoMav GCS Version").arg(QGroundControl.appName)
                         Layout.alignment:   Qt.AlignHCenter
                     }
                     QGCLabel {

@@ -20,6 +20,7 @@
         <file alias="ICEIndicator.qml">src/ui/toolbar/ICEIndicator.qml</file>
         <file alias="SingleBatteryIndicator.qml">src/ui/toolbar/SingleBatteryIndicator.qml</file>
         <file alias="FuelIndicator.qml">src/ui/toolbar/FuelIndicator.qml</file>
+        <file alias="NvGimbalIndicator.qml">src/ui/toolbar/NvGimbalIndicator.qml</file>
     </qresource>
     <qresource prefix="/checklists">
         <file alias="DefaultChecklist.qml">src/FlightDisplay/DefaultChecklist.qml</file>
@@ -366,5 +367,22 @@
         <file alias="General.MetaData.json.xz">src/comm/MockLink.General.MetaData.json.xz</file>
         <file alias="Parameter.MetaData.json.xz">src/comm/MockLink.Parameter.MetaData.json.xz</file>
         <file alias="Parameter.MetaData.json">src/comm/MockLink.Parameter.MetaData.json</file>
+    </qresource>
+    <qresource prefix="/nvqml">
+        <file alias="CamFModePanel.qml">src/NvExt/CamFModePanel.qml</file>
+        <file alias="CamIRPanel.qml">src/NvExt/CamIRPanel.qml</file>
+        <file alias="CamJoystickConfig.qml">src/NvExt/CamJoystickConfig.qml</file>
+        <file alias="CamJoystickConfigButtons.qml">src/NvExt/CamJoystickConfigButtons.qml</file>
+        <file alias="CamJoystickConfigGeneral.qml">src/NvExt/CamJoystickConfigGeneral.qml</file>
+        <file alias="CamMiscPanel.qml">src/NvExt/CamMiscPanel.qml</file>
+        <file alias="CamModePanel.qml">src/NvExt/CamModePanel.qml</file>
+        <file alias="CamObjDetPanel.qml">src/NvExt/CamObjDetPanel.qml</file>
+        <file alias="CamPosPanel.qml">src/NvExt/CamPosPanel.qml</file>
+        <file alias="CamQuick1Panel.qml">src/NvExt/CamQuick1Panel.qml</file>
+        <file alias="CamQuick2Panel.qml">src/NvExt/CamQuick2Panel.qml</file>
+        <file alias="CamQuickPanel.qml">src/NvExt/CamQuickPanel.qml</file>
+        <file alias="CamRecPanel.qml">src/NvExt/CamRecPanel.qml</file>
+        <file alias="CamStreamControlPanel.qml">src/NvExt/CamStreamControlPanel.qml</file>
+        <file alias="CamVMDControlPanel.qml">src/NvExt/CamVMDControlPanel.qml</file>
     </qresource>
 </RCC>

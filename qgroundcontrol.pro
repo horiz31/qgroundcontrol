@@ -439,6 +439,11 @@ HEADERS += \
     src/api/QGCSettings.h \
     src/api/QmlComponentInfo.h \
     src/GPS/Drivers/src/base_station.h \
+    src/NvExt/NvExt_CameraManagement.h \
+    src/NvExt/NvExt_Sys_Report.h \
+    src/NvExt/NvExt_Los_Report.h \
+    src/NvExt/NvExt_GndCrs_Report.h \
+    src/NvExt/NvExt_SdCard_Report.h
 
 contains (DEFINES, QGC_ENABLE_PAIRING) {
     HEADERS += \
@@ -452,6 +457,7 @@ SOURCES += \
     src/api/QGCOptions.cc \
     src/api/QGCSettings.cc \
     src/api/QmlComponentInfo.cc \
+    src/NvExt/NvExt_CameraManagement.cpp
 
 contains (DEFINES, QGC_ENABLE_PAIRING) {
     SOURCES += \
@@ -742,6 +748,7 @@ HEADERS += \
     src/Vehicle/VehicleVibrationFactGroup.h \
     src/Vehicle/VehicleWindFactGroup.h \
     src/Vehicle/VehicleHCUFactGroup.h \
+    src/Vehicle/VehicleGimbalFactGroup.h \
     src/Vehicle/VehicleHygrometerFactGroup.h \
     src/VehicleSetup/JoystickConfigController.h \
     src/comm/LinkConfiguration.h \
@@ -999,6 +1006,7 @@ SOURCES += \
     src/Vehicle/VehicleHygrometerFactGroup.cc \
     src/Vehicle/VehicleWindFactGroup.cc \
     src/Vehicle/VehicleHCUFactGroup.cc \
+    src/Vehicle/VehicleGimbalFactGroup.cc \
     src/VehicleSetup/JoystickConfigController.cc \
     src/comm/LinkConfiguration.cc \
     src/comm/LinkInterface.cc \

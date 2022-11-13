@@ -1,0 +1,97 @@
+{
+    "version":      1,
+    "fileType":  "FactMetaData",
+    "QGC.MetaData.Facts":
+[
+{
+    "name":             "groundCrossingLat",
+    "shortDesc": "Ground Crossing Latitude",
+    "type":             "double",
+    "decimalPlaces":    6,
+    "units":            ""
+},
+{
+    "name":             "groundCrossingLon",
+    "shortDesc": "Ground Crossing Longitude",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "%"
+},
+{
+    "name":             "groundCrossingAlt",
+    "shortDesc": "Ground Crossing Altitude",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "vertical m"
+},
+{
+    "name":             "mode",
+    "shortDesc": "Gimbal Mode",
+    "type":             "string",
+    "units":            "m"
+},
+{
+    "name":             "slantRange",
+    "shortDesc": "Slant Range",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "m"
+},
+{
+    "name":             "fov",
+    "shortDesc": "Field of View",
+    "type":             "double",
+    "decimalPlaces":    0,
+    "units":            "deg"
+},
+{
+    "name":             "activeSensor",
+    "shortDesc": "Active Sensor",
+    "type":             "uint8",
+    "decimalPlaces":    0,
+    "units":            ""
+},
+{
+    "name":             "isRecording",
+    "shortDesc": "Recording Status",
+    "type":             "uint8",
+    "decimalPlaces":    0,
+    "units":            ""
+},
+{
+    "name":             "isSnapshot",
+    "shortDesc": "Snapshot Status",
+    "type":             "uint8",
+    "decimalPlaces":    0,
+    "units":            ""
+},
+{
+    "name":             "cpuTemperature",
+    "shortDesc": "CPU Temperature",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "C"
+},
+{
+    "name":             "cameraTemperature",
+    "shortDesc": "Camera Temperature",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            "C"
+},
+{
+    "name":             "sdCapacity",
+    "shortDesc": "SD Card Capacity",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            ""
+},
+{
+    "name":             "sdAvailable",
+    "shortDesc": "SD Card Availability",
+    "type":             "double",
+    "decimalPlaces":    1,
+    "units":            ""
+}
+]
+}

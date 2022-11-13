@@ -69,6 +69,7 @@ const QString guided_mode_not_supported_by_vehicle = QObject::tr("Guided mode no
 
 const char* Vehicle::_settingsGroup =               "Vehicle%1";        // %1 replaced with mavlink system id
 const char* Vehicle::_joystickEnabledSettingsKey =  "JoystickEnabled";
+const char* Vehicle::_joystickCamEnabledSettingsKey =  "JoystickCamEnabled";        /* NextVision */
 
 const char* Vehicle::_rollFactName =                "roll";
 const char* Vehicle::_pitchFactName =               "pitch";
@@ -103,6 +104,7 @@ const char* Vehicle::_targetAirSpeedSetPointFactName =   "targetAirSpeedSetPoint
 const char* Vehicle::_imuTemperatureFactName =   "imuTemperature";
 const char* Vehicle::_engineRunUpFactName =   "engineRunUp";
 
+const char* Vehicle::_gimbalFactGroupName =             "nvGimbal";
 const char* Vehicle::_gpsFactGroupName =                "gps";
 const char* Vehicle::_gps2FactGroupName =               "gps2";
 const char* Vehicle::_windFactGroupName =               "wind";
@@ -177,6 +179,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _gps2FactGroup                (this)
     , _windFactGroup                (this)
     , _hcuFactGroup                 (this)
+    , _gimbalFactGroup              (this)
     , _vibrationFactGroup           (this)
     , _temperatureFactGroup         (this)
     , _clockFactGroup               (this)
@@ -200,6 +203,23 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     connect(_mavlink, &MAVLinkProtocol::messageReceived,        this, &Vehicle::_mavlinkMessageReceived);
     connect(_mavlink, &MAVLinkProtocol::mavlinkMessageStatus,   this, &Vehicle::_mavlinkMessageStatus);
+    connect(_mavlink, &MAVLinkProtocol::lineOfSightChanged,  this, &Vehicle::_updateLineOfSight);
+
+    //Connect nextvision signals to vehicle slots
+    connect(_mavlink, &MAVLinkProtocol::nvGrounndCrossingLatChanged,  this, &Vehicle::_updateNvGroundCrossingLatChange);
+    connect(_mavlink, &MAVLinkProtocol::nvGrounndCrossingLonChanged,  this, &Vehicle::_updateNvGroundCrossingLonChange);
+    connect(_mavlink, &MAVLinkProtocol::nvGrounndCrossingAltChanged,  this, &Vehicle::_updateNvGroundCrossingAltChange);
+    connect(_mavlink, &MAVLinkProtocol::nvSlantRangeChanged,          this, &Vehicle::_updateNvSlantRangeChange);
+    connect(_mavlink, &MAVLinkProtocol::nvModeChanged,                this, &Vehicle::_updateNvModeChange);
+    connect(_mavlink, &MAVLinkProtocol::nvFovChanged,                 this, &Vehicle::_updateNvFovChange);
+    connect(_mavlink, &MAVLinkProtocol::nvSensorChanged,              this, &Vehicle::_updateNvActiveSensorChange);
+    connect(_mavlink, &MAVLinkProtocol::nvIsRecordingChanged,         this, &Vehicle::_updateNvIsRecordingChange);
+    connect(_mavlink, &MAVLinkProtocol::snapShotStatusChanged,        this, &Vehicle::_updateSnapShotStatus);
+    connect(_mavlink, &MAVLinkProtocol::nvCpuTempChanged,             this, &Vehicle::_updateNvCpuTemperatureChange);
+    connect(_mavlink, &MAVLinkProtocol::nvCamTempChanged,             this, &Vehicle::_updateNvCameraTemperatureChange);
+    connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
+    connect(_mavlink, &MAVLinkProtocol::nvSdAvailableCapacityChanged, this, &Vehicle::_updateNvSdAvailableChange);
+
 
     connect(this, &Vehicle::flightModeChanged,          this, &Vehicle::_handleFlightModeChanged);
     connect(this, &Vehicle::armedChanged,               this, &Vehicle::_announceArmedChanged);
@@ -346,6 +366,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _gps2FactGroup                    (this)
     , _windFactGroup                    (this)
     , _hcuFactGroup                     (this)
+    , _gimbalFactGroup                  (this)
     , _vibrationFactGroup               (this)
     , _clockFactGroup                   (this)
     , _distanceSensorFactGroup          (this)
@@ -477,6 +498,7 @@ void Vehicle::_commonInit()
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
     _addFact(&_hobbsFact,               _hobbsFactName);
 
+    _addFactGroup(&_gimbalFactGroup,            _gimbalFactGroupName);
     _addFactGroup(&_gpsFactGroup,               _gpsFactGroupName);
     _addFactGroup(&_gps2FactGroup,              _gps2FactGroupName);
     _addFactGroup(&_windFactGroup,              _windFactGroupName);
@@ -632,6 +654,76 @@ void Vehicle::resetCounters()
     _messagesLost       = 0;
     _messageSeq         = 0;
     _heardFrom          = false;
+}
+
+void Vehicle::_updateLineOfSight(QList<QGeoCoordinate> coordsList)
+{
+    /* Removing the old points */
+    _losCoords.clear();
+    foreach( const auto &item, coordsList )
+        _losCoords << QVariant::fromValue(item);
+    emit(losCoordsChanged());
+}
+
+void Vehicle::_updateSnapShotStatus(int status)
+{
+    _snapShotStatus = status;
+    _gimbalFactGroup.isSnapshot()->setRawValue(status);
+    emit snapShotStatusChanged(_snapShotStatus);
+}
+
+void Vehicle::_updateNvModeChange(QString mode)
+{
+    qDebug() << "setting gimbal mode fact to"<< mode;
+    _gimbalFactGroup.mode()->setRawValue(mode);
+    _nvMode = mode;
+    emit nvModeChanged(_nvMode);
+}
+
+// NextVision FactGroup Settings
+void Vehicle::_updateNvGroundCrossingLatChange(float value)
+{
+    _gimbalFactGroup.groundCrossingLat()->setRawValue(value);
+}
+void Vehicle::_updateNvGroundCrossingLonChange(float value)
+{
+    _gimbalFactGroup.groundCrossingLon()->setRawValue(value);
+}
+void Vehicle::_updateNvGroundCrossingAltChange(float value)
+{
+    _gimbalFactGroup.groundCrossingAlt()->setRawValue(value);
+}
+void Vehicle::_updateNvFovChange(float value)
+{
+    _gimbalFactGroup.fov()->setRawValue(value);
+}
+void Vehicle::_updateNvSlantRangeChange(float value)
+{
+    _gimbalFactGroup.slantRange()->setRawValue(value);
+}
+void Vehicle::_updateNvActiveSensorChange(int value)
+{
+    _gimbalFactGroup.activeSensor()->setRawValue(value);
+}
+void Vehicle::_updateNvIsRecordingChange(int value)
+{
+    _gimbalFactGroup.isRecording()->setRawValue(value);
+}
+void Vehicle::_updateNvCpuTemperatureChange(float value)
+{
+    _gimbalFactGroup.cpuTemperature()->setRawValue(value);
+}
+void Vehicle::_updateNvCameraTemperatureChange(float value)
+{
+    _gimbalFactGroup.cameraTemperature()->setRawValue(value);
+}
+void Vehicle::_updateNvSdCapacityChange(float value)
+{
+    _gimbalFactGroup.sdCapacity()->setRawValue(value);
+}
+void Vehicle::_updateNvSdAvailableChange(float value)
+{
+    _gimbalFactGroup.sdAvailable()->setRawValue(value);
 }
 
 void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
@@ -2051,7 +2143,7 @@ void Vehicle::_loadSettings()
     // Joystick enabled is a global setting so first make sure there are any joysticks connected
     if (_toolbox->joystickManager()->joysticks().count()) {
         setJoystickEnabled(settings.value(_joystickEnabledSettingsKey, false).toBool());
-        _startJoystick(true);
+        setJoystickCamEnabled(settings.value(_joystickCamEnabledSettingsKey, false).toBool());      /* NextVision */
     }
 }
 
@@ -2092,6 +2184,49 @@ void Vehicle::_startJoystick(bool start)
         }
     }
 }
+
+/* NextVision Added Code For Camera Joystick */
+/* ------------------------------------------------------------------------------------------------------*/
+void Vehicle::_saveCamSettings(void)
+{
+    QSettings settings;
+
+    settings.beginGroup(QString(_settingsGroup).arg(_id));
+
+    // The camera joystick enabled setting should only be changed if a joystick is present
+    // since the checkbox can only be clicked if one is present
+    if (_toolbox->joystickManager()->joysticks().count()) {
+        settings.setValue(_joystickCamEnabledSettingsKey, _joystickCamEnabled);
+    }
+}
+
+void Vehicle::setJoystickCamEnabled(bool enabled)
+{
+    _joystickCamEnabled = enabled;
+    _startJoystickCam(_joystickCamEnabled);
+    _saveCamSettings();
+    emit joystickCamEnabledChanged(_joystickCamEnabled);
+}
+
+bool Vehicle::joystickCamEnabled(void)
+{
+    return _joystickCamEnabled;
+}
+
+void Vehicle::_startJoystickCam(bool start)
+{
+    Joystick* joystick = _joystickManager->activeCamJoystick();
+    if (joystick) {
+        if (start) {
+            joystick->startPolling(this);
+        } else {
+            if ( joystick->_is_same_joystick && !_joystickEnabled )
+                joystick->stopPolling();
+        }
+    }
+}
+/* ------------------------------------------------------------------------------------------------------*/
+
 
 QGeoCoordinate Vehicle::homePosition()
 {

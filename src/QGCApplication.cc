@@ -16,6 +16,8 @@
  *
  */
 
+#define ECHOMAV_VERSION "v1.0.6"
+
 #include <QFile>
 #include <QRegularExpression>
 #include <QFontDatabase>
@@ -278,7 +280,8 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
     setOrganizationName(QGC_ORG_NAME);
     setOrganizationDomain(QGC_ORG_DOMAIN);
 
-    this->setApplicationVersion(QString(APP_VERSION_STR));
+    //this->setApplicationVersion(QString(APP_VERSION_STR));
+    this->setApplicationVersion(QString(ECHOMAV_VERSION));
 
     // Set settings format
     QSettings::setDefaultFormat(QSettings::IniFormat);

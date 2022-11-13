@@ -35,6 +35,7 @@
 #include "VehicleHCUFactGroup.h"
 #include "VehicleGPSFactGroup.h"
 #include "VehicleGPS2FactGroup.h"
+#include "VehicleGimbalFactGroup.h"
 #include "VehicleSetpointFactGroup.h"
 #include "VehicleTemperatureFactGroup.h"
 #include "VehicleVibrationFactGroup.h"
@@ -181,6 +182,7 @@ public:
     Q_PROPERTY(QString              formattedMessages           READ formattedMessages                                              NOTIFY formattedMessagesChanged)
     Q_PROPERTY(QString              latestError                 READ latestError                                                    NOTIFY latestErrorChanged)
     Q_PROPERTY(bool                 joystickEnabled             READ joystickEnabled            WRITE setJoystickEnabled            NOTIFY joystickEnabledChanged)
+    Q_PROPERTY(bool                 joystickCamEnabled          READ joystickCamEnabled         WRITE setJoystickCamEnabled         NOTIFY joystickCamEnabledChanged)   /* NextVision */
     Q_PROPERTY(int                  flowImageIndex              READ flowImageIndex                                                 NOTIFY flowImageIndexChanged)
     Q_PROPERTY(int                  rcRSSI                      READ rcRSSI                                                         NOTIFY rcRSSIChanged)
     Q_PROPERTY(bool                 px4Firmware                 READ px4Firmware                                                    NOTIFY firmwareTypeChanged)
@@ -313,6 +315,7 @@ public:
     Q_PROPERTY(Fact* imuTemperature     READ imuTemperature CONSTANT)
     Q_PROPERTY(Fact* engineRunUp        READ engineRunUp CONSTANT)
 
+    Q_PROPERTY(FactGroup*           nvGimbal        READ gimbalFactGroup            CONSTANT)
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
     Q_PROPERTY(FactGroup*           gps2            READ gps2FactGroup              CONSTANT)
     Q_PROPERTY(FactGroup*           wind            READ windFactGroup              CONSTANT)
@@ -342,6 +345,9 @@ public:
     Q_PROPERTY(QString  gitHash                     READ gitHash                    NOTIFY gitHashChanged)
     Q_PROPERTY(quint64  vehicleUID                  READ vehicleUID                 NOTIFY vehicleUIDChanged)
     Q_PROPERTY(QString  vehicleUIDStr               READ vehicleUIDStr              NOTIFY vehicleUIDChanged)
+    Q_PROPERTY(QVariantList  losCoords              READ losCoords                  NOTIFY losCoordsChanged)
+    Q_PROPERTY(int  snapShotStatus                  READ snapShotStatus             NOTIFY snapShotStatusChanged)
+    Q_PROPERTY(QString  nvMode                      READ nvMode                     NOTIFY nvModeChanged)
 
     /// Resets link status counters
     Q_INVOKABLE void resetCounters  ();
@@ -481,6 +487,8 @@ public:
 
     bool joystickEnabled            () const;
     void setJoystickEnabled         (bool enabled);
+    bool joystickCamEnabled();                      /* NextVision */
+    void setJoystickCamEnabled(bool enabled);           /* NextVision */
     void sendJoystickDataThreadSafe (float roll, float pitch, float yaw, float thrust, quint16 buttons);
 
     // Property accesors
@@ -617,6 +625,8 @@ public:
     int             telemetryRNoise             () const{ return _telemetryRNoise; }
     bool            autoDisarm                  ();
     bool            orbitActive                 () const { return _orbitActive; }
+    int             snapShotStatus              () const { return _snapShotStatus; }
+    QString         nvMode                      () const { return _nvMode; }
     QGCMapCircle*   orbitMapCircle              () { return &_orbitMapCircle; }
     bool            readyToFlyAvailable         () const{ return _readyToFlyAvailable; }
     bool            readyToFly                  () const{ return _readyToFly; }
@@ -685,6 +695,7 @@ public:
     Fact* imuTemperature                    () { return &_imuTemperatureFact; }
     Fact* engineRunUp                       () { return &_engineRunUpFact; }
 
+    FactGroup* gimbalFactGroup              () { return &_gimbalFactGroup; }
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
     FactGroup* gps2FactGroup                () { return &_gps2FactGroup; }
     FactGroup* windFactGroup                () { return &_windFactGroup; }
@@ -796,6 +807,7 @@ public:
 
     QString gitHash() const { return _gitHash; }
     quint64 vehicleUID() const { return _uid; }
+    QVariantList losCoords(void) const { return _losCoords; }
     QString vehicleUIDStr();
 
     bool soloFirmware() const { return _soloFirmware; }
@@ -880,6 +892,7 @@ public slots:
 signals:
     void coordinateChanged              (QGeoCoordinate coordinate);
     void joystickEnabledChanged         (bool enabled);
+    void joystickCamEnabledChanged      (bool enabled);                 /* NextVision */
     void mavlinkMessageReceived         (const mavlink_message_t& message);
     void homePositionChanged            (const QGeoCoordinate& homePosition);
     void armedPositionChanged();
@@ -942,6 +955,9 @@ signals:
     void gitHashChanged                 (QString hash);
     void vehicleUIDChanged              ();
     void loadProgressChanged            (float value);
+    void losCoordsChanged               ();
+    void snapShotStatusChanged          (int snapShotStatus);
+    void nvModeChanged                  (QString nvMode);
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -984,6 +1000,22 @@ signals:
     void sensorsParametersResetAck      (bool success);
 
 private slots:
+    //NextVision slots
+    void _updateLineOfSight                 (QList<QGeoCoordinate> coordsList);
+    void _updateSnapShotStatus              (int status);
+    void _updateNvModeChange                (QString mode);
+    void _updateNvGroundCrossingLatChange   (float value);
+    void _updateNvGroundCrossingLonChange   (float value);
+    void _updateNvGroundCrossingAltChange   (float value);
+    void _updateNvSlantRangeChange          (float value);
+    void _updateNvFovChange                 (float value);
+    void _updateNvActiveSensorChange        (int value);
+    void _updateNvIsRecordingChange         (int value);
+    void _updateNvCpuTemperatureChange      (float value);
+    void _updateNvCameraTemperatureChange   (float value);
+    void _updateNvSdCapacityChange          (float value);
+    void _updateNvSdAvailableChange         (float value);
+    //End NextVision
     void _mavlinkMessageReceived            (LinkInterface* link, mavlink_message_t message);
     void _sendMessageMultipleNext           ();
     void _parametersReady                   (bool parametersReady);
@@ -1020,6 +1052,8 @@ private:
     void _loadSettings                  ();
     void _saveSettings                  ();
     void _startJoystick                 (bool start);
+    void _saveCamSettings               ();                     /* NextVision */
+    void _startJoystickCam              (bool start);           /* NextVision */
     void _handlePing                    (LinkInterface* link, mavlink_message_t& message);
     void _handleHomePosition            (mavlink_message_t& message);
     void _handleHeartbeat               (mavlink_message_t& message);
@@ -1094,6 +1128,8 @@ private:
     QFile               _csvLogFile;
 
     bool            _joystickEnabled = false;
+    bool            _joystickCamEnabled = false;        /* NextVision */
+    QVariantList        _losCoords;
 
     UAS* _uas = nullptr;
 
@@ -1238,6 +1274,8 @@ private:
 
     // Orbit status values
     bool            _orbitActive = false;
+    int             _snapShotStatus = 0;
+    QString         _nvMode;
     QGCMapCircle    _orbitMapCircle;
     QTimer          _orbitTelemetryTimer;
     static const int _orbitTelemetryTimeoutMsecs = 3000; // No telemetry for this amount and orbit will go inactive
@@ -1360,6 +1398,7 @@ private:
     VehicleGPS2FactGroup            _gps2FactGroup;
     VehicleWindFactGroup            _windFactGroup;
     VehicleHCUFactGroup             _hcuFactGroup;
+    VehicleGimbalFactGroup          _gimbalFactGroup;
     VehicleVibrationFactGroup       _vibrationFactGroup;
     VehicleTemperatureFactGroup     _temperatureFactGroup;
     VehicleClockFactGroup           _clockFactGroup;
@@ -1417,6 +1456,7 @@ private:
     static const char* _imuTemperatureFactName;
     static const char* _engineRunUpFactName;
 
+    static const char* _gimbalFactGroupName;
     static const char* _gpsFactGroupName;
     static const char* _gps2FactGroupName;
     static const char* _windFactGroupName;
@@ -1438,6 +1478,7 @@ private:
     // Settings keys
     static const char* _settingsGroup;
     static const char* _joystickEnabledSettingsKey;
+    static const char* _joystickCamEnabledSettingsKey;      /* NextVision */
 };
 
 Q_DECLARE_METATYPE(Vehicle::MavCmdResultFailureCode_t)

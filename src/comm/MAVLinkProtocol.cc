@@ -31,6 +31,12 @@
 #include "QGCLoggingCategory.h"
 #include "MultiVehicleManager.h"
 #include "SettingsManager.h"
+#include <NvExt/NvExt_Sys_Report.h>
+#include <NvExt/NvExt_Los_Report.h>
+#include <NvExt/NvExt_GndCrs_Report.h>
+#include <NvExt/NvExt_SdCard_Report.h>
+#include "QGCQGeoCoordinate.h"
+#include "mavlink_types.h"
 
 Q_DECLARE_METATYPE(mavlink_message_t)
 
@@ -38,6 +44,7 @@ QGC_LOGGING_CATEGORY(MAVLinkProtocolLog, "MAVLinkProtocolLog")
 
 const char* MAVLinkProtocol::_tempLogFileTemplate   = "FlightDataXXXXXX";   ///< Template for temporary log file
 const char* MAVLinkProtocol::_logFileExtension      = "mavlink";            ///< Extension for log files
+
 
 /**
  * The default constructor will create a new MAVLink object sending heartbeats at
@@ -309,7 +316,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 }
             }
 
-            if (_message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
+            if (_message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {                 
                 _startLogging();
                 mavlink_heartbeat_t heartbeat;
                 mavlink_msg_heartbeat_decode(&_message, &heartbeat);
@@ -325,6 +332,180 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 mavlink_high_latency2_t highLatency2;
                 mavlink_msg_high_latency2_decode(&_message, &highLatency2);
                 emit vehicleHeartbeatInfo(link, _message.sysid, _message.compid, highLatency2.autopilot, highLatency2.type);
+            }
+
+            /* 248 = V2_EXTENSION  message id, used for NextVision gimbal */
+            // NextVision
+            if (_message.msgid == 248 ) {
+
+               /* First, take the message as GND_CRS_REPORT (the shortest one), for extracting the report_type */
+                mavlink_nvext_gnd_crs_report_t gnd_crs_report;
+                mavlink_nvext_gnd_crs_report_decode(&_message,&gnd_crs_report);
+                if(gnd_crs_report.report_type == MavExtReport_GndCrs)
+                {
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->getAltAtCoord(gnd_crs_report.gnd_crossing_lat,gnd_crs_report.gnd_crossing_lon);
+                    //get ground crossing lat
+                    float groundCrossingLat  = gnd_crs_report.gnd_crossing_lat;
+                    if (_nvCurrentGroundCrossingLat != groundCrossingLat)
+                    {
+                        emit nvGrounndCrossingLatChanged(groundCrossingLat);
+                        _nvCurrentGroundCrossingLat = groundCrossingLat;
+                    }
+
+                    //get ground crossing lon
+                    float groundCrossingLon  = gnd_crs_report.gnd_crossing_lon;
+                    if (_nvCurrentGroundCrossingLon != groundCrossingLon)
+                    {
+                        emit nvGrounndCrossingLonChanged(groundCrossingLon);
+                        _nvCurrentGroundCrossingLon = groundCrossingLon;
+                    }
+
+                    //get ground crossing alt
+                    float groundCrossingAlt  = gnd_crs_report.gnd_crossing_alt;
+                    if (_nvCurrentGroundCrossingAlt != groundCrossingAlt)
+                    {
+                        emit nvGrounndCrossingAltChanged(groundCrossingAlt);
+                        _nvCurrentGroundCrossingAlt = groundCrossingAlt;
+                    }
+
+                    //get slant range crossing
+                    float slantRange  = gnd_crs_report.slant_range;
+                    if (_nvCurrentSlantRange != slantRange)
+                    {
+                        emit nvSlantRangeChanged(slantRange);
+                        _nvCurrentSlantRange = slantRange;
+                    }
+
+                }
+                else if(gnd_crs_report.report_type == MavExtReport_LOS)
+                {
+                    float los_upper_left_corner_lat,los_upper_left_corner_lon;
+                    float los_upper_right_corner_lat,los_upper_right_corner_lon;
+                    float los_lower_right_corner_lat,los_lower_right_corner_lon;
+                    float los_lower_left_corner_lat,los_lower_left_corner_lon;
+                    uint8_t buf[64];
+                    memcpy(&buf, _MAV_PAYLOAD(&_message), _message.len);
+                    memcpy(&los_upper_left_corner_lat, &buf[14],4);
+                    memcpy(&los_upper_left_corner_lon, &buf[18],4);
+                    memcpy(&los_upper_right_corner_lat, &buf[22],4);
+                    memcpy(&los_upper_right_corner_lon, &buf[26],4);
+                    memcpy(&los_lower_right_corner_lat, &buf[30],4);
+                    memcpy(&los_lower_right_corner_lon, &buf[34],4);
+                    memcpy(&los_lower_left_corner_lat, &buf[38],4);
+                    memcpy(&los_lower_left_corner_lon, &buf[42],4);
+
+                    /* the line of sight coordinates */
+                    QList<QGeoCoordinate> coords ;
+                    if((double)los_upper_left_corner_lat < 360)
+                     coords << QGeoCoordinate((double)los_upper_left_corner_lat,(double)los_upper_left_corner_lon);
+                   if((double)los_upper_right_corner_lat < 360)
+                       coords << QGeoCoordinate((double)los_upper_right_corner_lat,(double)los_upper_right_corner_lon);
+                   if((double)los_lower_right_corner_lat != 400)
+                       coords << QGeoCoordinate((double)los_lower_right_corner_lat,(double)los_lower_right_corner_lon);
+                   if((double)los_lower_left_corner_lat != 400)
+                       coords << QGeoCoordinate((double)los_lower_left_corner_lat,(double)los_lower_left_corner_lon);
+                   /* emit for updating the vehicle that the camera line of sight was changed  */
+                   if(coords.size() == 4)
+                   {
+                       /* emit for updating the vehicle that the camera line of sight was changed  */
+                       emit lineOfSightChanged(coords);
+                   }
+                   else
+                   {
+                       /* in case of less than 4 points, report 0 points. (will be fixed in the future) */
+                       QList<QGeoCoordinate> emptyCoords ;
+                       emit lineOfSightChanged(emptyCoords);
+                   }
+                }
+                else if(gnd_crs_report.report_type == MavExtReport_System)
+                {
+                    //in system we want to get
+                    //cpu temp, camera temp
+                    mavlink_nvext_sys_report_t system_report;
+                    mavlink_nvext_sys_report_decode(&_message,&system_report);
+
+                    //uint8_t buf[256];
+                    // memcpy(&buf, _MAV_PAYLOAD(&_message), _message.len);
+                    // int snapshot_val = (int)buf[28];  //bytes 0-6 are header??  so this is byte 34 in the cos
+                    //no idea why I'd do it above when I have the helper functions, but this was the nextvision docs
+                    int snapshot_val = system_report.snapshot_busy;
+                    if (_nvCurrentSnapshot != snapshot_val)
+                    {
+                        emit snapShotStatusChanged(snapshot_val);
+                        _nvCurrentSnapshot = snapshot_val;
+                    }
+
+                    //get current active sensor
+                    int active_sensor = system_report.sensor;  //0=Day, 1=IR
+                    if (_nvCurrentSensor != active_sensor)
+                    {
+                        emit nvSensorChanged(active_sensor);
+                        _nvCurrentSensor = active_sensor;
+                    }
+
+                    //get the current mode
+                    int system_mode = system_report.mode;
+                    //if (_nvCurrentMode != system_mode)
+                    //{
+                        emit nvModeChanged(nvExtModeMap.value(system_mode));  //map to mode strings
+                        _nvCurrentMode = system_mode;
+                    //}
+
+                    //get the current fov
+                    float fov = system_report.fov;
+                    if (_nvCurrentFov != fov)
+                    {
+                        emit nvFovChanged(fov);
+                        _nvCurrentFov = fov;
+                    }
+
+                    //get is recording
+                    int isRecording = system_report.recording_status;;
+                    if (_nvCurrentIsRecording != isRecording)
+                    {
+                        emit nvIsRecordingChanged(isRecording);
+                        _nvCurrentIsRecording = isRecording;
+                    }
+
+                    //get cpu temp
+                    float cpuTemp = system_report.cpu_temp;;
+                    if (_nvCurrentCpuTemp != cpuTemp)
+                    {
+                        emit nvCpuTempChanged(cpuTemp);
+                        _nvCurrentCpuTemp = cpuTemp;
+                    }
+
+                    //get camera temp
+                    float camTemp = system_report.cam_temp;;
+                    if (_nvCurrentCamTemp != camTemp)
+                    {
+                        emit nvCamTempChanged(camTemp);
+                        _nvCurrentCamTemp = camTemp;
+                    }
+
+                }
+                else if(gnd_crs_report.report_type == MavExtReport_SDCard)
+                {
+                    mavlink_nvext_sd_card_report_t sd_report;
+                    mavlink_nvext_sd_card_report_decode(&_message,&sd_report);
+                    if (sd_report.sd_card_detected != 0)  //no need to report the rest if there is no SD card
+                    {
+                        //get total capacity
+                        float sdCardTotalCapacity = sd_report.sd_total_capacity;
+                        if (_nvSdTotalCapacity != sdCardTotalCapacity)
+                        {
+                            emit nvSdTotalCapacityChanged(sdCardTotalCapacity);
+                            _nvSdTotalCapacity = sdCardTotalCapacity;
+                        }
+                        //get available capacity
+                        float sdCardAvailableCapacity = sd_report.sd_available_capacity;
+                        if (_nvSdAvailableCapacity != sdCardAvailableCapacity)
+                        {
+                            emit nvSdAvailableCapacityChanged(sdCardAvailableCapacity);
+                            _nvSdAvailableCapacity = sdCardAvailableCapacity;
+                        }
+                    }
+                }
             }
 
 #if 0
