@@ -1093,6 +1093,16 @@ QVariant FactMetaData::metersToAppSettingsHorizontalDistanceUnits(const QVariant
     }
 }
 
+QVariant FactMetaData::celciusToAppSettingsTemperatureUnits(const QVariant& celcius)
+{
+    const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("C", UnitTemperature);
+    if (pAppSettingsTranslation) {
+        return pAppSettingsTranslation->rawTranslator(celcius);
+    } else {
+        return celcius;
+    }
+}
+
 QVariant FactMetaData::metersToAppSettingsVerticalDistanceUnits(const QVariant& meters)
 {
     //qDebug() << "meters to vertical distance";
@@ -1153,6 +1163,16 @@ QString FactMetaData::appSettingsHorizontalDistanceUnitsString(void)
         return pAppSettingsTranslation->cookedUnits;
     } else {
         return QStringLiteral("m");
+    }
+}
+
+QString FactMetaData::appSettingsTemperatureUnitsString(void)
+{
+    const AppSettingsTranslation_s* pAppSettingsTranslation = _findAppSettingsUnitsTranslation("C", UnitTemperature);
+    if (pAppSettingsTranslation) {
+        return pAppSettingsTranslation->cookedUnits;
+    } else {
+        return QStringLiteral("C");
     }
 }
 

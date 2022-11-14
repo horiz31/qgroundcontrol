@@ -58,11 +58,11 @@ Item {
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     columns:            2
-                    rows:               8
+                    rows:               10
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel { text: qsTr("Mode:") }
-                    QGCLabel { text: _activeVehicle? activeVehicle.nvGimbal.mode.value : "" }
+                    QGCLabel { text: _activeVehicle? _activeVehicle.nvGimbal.mode.value : "" }
                     QGCLabel { text: qsTr("Target Latitude:") }
                     QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.------" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°" }
                     QGCLabel { text: qsTr("Target Longitude:") }
@@ -71,12 +71,41 @@ Item {
                     QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value === 10000.0)) ? "----" : QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(_activeVehicle.nvGimbal.groundCrossingAlt.value).toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Slant Range:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(_activeVehicle.nvGimbal.slantRange.value).toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----" }
-                    QGCLabel { text: qsTr("Generator:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.generator.value) ? "-- %" : _activeVehicle.hcu.generator.value.toFixed(0) + "%") : "-- %" }
-                    QGCLabel { text: qsTr("Charge Rate:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.chargeRate.value) ? "-.-- A" : _activeVehicle.hcu.chargeRate.value.toFixed(2) + " A") : "-.-- A" }
-                    QGCLabel { text: qsTr("Engine Health:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.engineHealth.value) ? "-- %" : _activeVehicle.hcu.engineHealth.value.toFixed(0) + "%") : "-- %" }
+                    QGCLabel { text: qsTr("Active Sensor:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.activeSensor.value) ? "" : getActiveSensor()) : ""
+                        function getActiveSensor() {
+                            if (_activeVehicle.nvGimbal.activeSensor.value === 0)
+                                return "Day"
+                            else
+                                return "IR"
+                        }
+                    }
+                    QGCLabel { text: qsTr("SnapShot Status:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.isSnapshot.value) ? "" : getSnapShotStatus()) : ""
+                        function getSnapShotStatus()
+                        {
+                            if (_activeVehicle.nvGimbal.isSnapshot.value === 0)
+                                return "Idle"
+                            else
+                                return "Busy"
+                        }
+                    }
+                    QGCLabel { text: qsTr("CPU Temperature:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cpuTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cpuTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
+                    QGCLabel { text: qsTr("Camera Temperature:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cameraTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cameraTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
+                    QGCLabel { text: qsTr("SD Card") }
+                    QGCLabel { text: _activeVehicle ? getSDCardStatus() : ""
+                        function getSDCardStatus()
+                        {
+                            if (isNaN(_activeVehicle.nvGimbal.sdCapacity.value) || _activeVehicle.nvGimbal.sdCapacity.value !== 0)
+                            {
+                                return (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0) + "% Full" + " (" + (_activeVehicle.nvGimbal.sdCapacity.value / 1024).toFixed(0) + " GiB)"
+                            }
+                            else
+                                return "Not Present"
+                        }
+                    }
                 }
             }
         }
@@ -103,11 +132,12 @@ Item {
             function getGimbalColor() {
                 if (!_activeVehicle)
                      return qgcPal.text
-
-                if ((_activeVehicle.nvGimbal.cpuTemperature.value > 70) || (_activeVehicle.nvGimbal.cameraTemperature > 70))
-                    return qgcPal.colorRed               
+                if ((_activeVehicle.nvGimbal.cpuTemperature.value > 65) || (_activeVehicle.nvGimbal.cameraTemperature > 65))
+                    return qgcPal.colorYellow
+                else if ((_activeVehicle.nvGimbal.cpuTemperature.value > 75) || (_activeVehicle.nvGimbal.cameraTemperature > 75))
+                    return qgcPal.colorRed
                 else
-                    return qgcPal.colorGreen
+                    return qgcPal.text
             }
         }
 

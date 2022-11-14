@@ -550,7 +550,6 @@ FlightMap {
             target: _activeVehicle
             onNvModeChanged: {
                 if(nvMode !== "PTC"){
-                  console.log("hiding the nvPTC visual")
                   nvPTCLocationItem.visible = false
                 }
             }

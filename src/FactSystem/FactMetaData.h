@@ -75,8 +75,14 @@ public:
     /// Returns the string for horizontal distance units which has configued by user
     static QString appSettingsHorizontalDistanceUnitsString(void);
 
+    /// Returns the string for temperature units which has configued by user
+    static QString appSettingsTemperatureUnitsString(void);
+
     /// Converts from meters to the user specified vertical distance unit
     static QVariant metersToAppSettingsVerticalDistanceUnits(const QVariant& meters);
+
+    /// Converts from celcius to the user specified temperature unit
+    static QVariant celciusToAppSettingsTemperatureUnits(const QVariant& celcius);
 
     /// Converts from user specified vertical distance unit to meters
     static QVariant appSettingsVerticalDistanceUnitsToMeters(const QVariant& distance);

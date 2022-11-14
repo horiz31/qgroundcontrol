@@ -492,18 +492,18 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     {
                         //get total capacity
                         float sdCardTotalCapacity = sd_report.sd_total_capacity;
-                        if (_nvSdTotalCapacity != sdCardTotalCapacity)
-                        {
+                        //if (_nvSdTotalCapacity != sdCardTotalCapacity)
+                        //{
                             emit nvSdTotalCapacityChanged(sdCardTotalCapacity);
                             _nvSdTotalCapacity = sdCardTotalCapacity;
-                        }
+                        //}
                         //get available capacity
                         float sdCardAvailableCapacity = sd_report.sd_available_capacity;
-                        if (_nvSdAvailableCapacity != sdCardAvailableCapacity)
-                        {
+                        //if (_nvSdAvailableCapacity != sdCardAvailableCapacity)
+                        //{
                             emit nvSdAvailableCapacityChanged(sdCardAvailableCapacity);
                             _nvSdAvailableCapacity = sdCardAvailableCapacity;
-                        }
+                       // }
                     }
                 }
             }

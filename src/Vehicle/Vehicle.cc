@@ -674,8 +674,9 @@ void Vehicle::_updateSnapShotStatus(int status)
 
 void Vehicle::_updateNvModeChange(QString mode)
 {
-    qDebug() << "setting gimbal mode fact to"<< mode;
-    _gimbalFactGroup.mode()->setRawValue(mode);
+    //qDebug() << "setting gimbal mode fact to"<< mode;
+    if (mode != _gimbalFactGroup.mode()->rawValue())
+        _gimbalFactGroup.mode()->setRawValue(mode);
     _nvMode = mode;
     emit nvModeChanged(_nvMode);
 }
@@ -719,6 +720,7 @@ void Vehicle::_updateNvCameraTemperatureChange(float value)
 }
 void Vehicle::_updateNvSdCapacityChange(float value)
 {
+     //Debug() << "setting sd capacity fact to"<< value;
     _gimbalFactGroup.sdCapacity()->setRawValue(value);
 }
 void Vehicle::_updateNvSdAvailableChange(float value)

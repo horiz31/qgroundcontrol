@@ -30,7 +30,7 @@ const char* VehicleGimbalFactGroup::_sdAvailableFactName =               "sdAvai
 
 
 VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
-    : FactGroup(1000, ":/json/Vehicle/NvGimbalFact.json", parent)
+    : FactGroup(500, ":/json/Vehicle/NvGimbalFact.json", parent)
     , _modeFact                  (0, _modeFactName,                 FactMetaData::valueTypeString)
     , _groundCrossingLatFact     (0, _groundCrossingLatFactName,    FactMetaData::valueTypeDouble)
     , _groundCrossingLonFact     (0, _groundCrossingLonFactName,    FactMetaData::valueTypeDouble)

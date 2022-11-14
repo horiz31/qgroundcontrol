@@ -21,7 +21,8 @@ public:
     QmlUnitsConversion(QObject *parent=nullptr): QObject(parent) {}
     ~QmlUnitsConversion() = default;
 
-    Q_PROPERTY(QString appSettingsHorizontalDistanceUnitsString READ appSettingsHorizontalDistanceUnitsString CONSTANT)
+    Q_PROPERTY(QString appSettingsHorizontalDistanceUnitsString   READ appSettingsHorizontalDistanceUnitsString CONSTANT)
+    Q_PROPERTY(QString appSettingsTemperatureUnitsString          READ appSettingsTemperatureUnitsString CONSTANT)
     Q_PROPERTY(QString appSettingsVerticalDistanceUnitsString   READ appSettingsVerticalDistanceUnitsString   CONSTANT)
     Q_PROPERTY(QString appSettingsAreaUnitsString               READ appSettingsAreaUnitsString               CONSTANT)
     Q_PROPERTY(QString appSettingsWeightUnitsString             READ appSettingsWeightUnitsString             CONSTANT)
@@ -30,13 +31,16 @@ public:
     /// Converts from meters to the user specified distance unit
     Q_INVOKABLE QVariant metersToAppSettingsHorizontalDistanceUnits(const QVariant& meters) const { return FactMetaData::metersToAppSettingsHorizontalDistanceUnits(meters); }
 
+    /// Converts from celcius to the user specified temperature unit
+    Q_INVOKABLE QVariant celciusToAppSettingsTemperatureUnits(const QVariant& celcius) const { return FactMetaData::celciusToAppSettingsTemperatureUnits(celcius); }
+
     /// Converts from user specified distance unit to meters
     Q_INVOKABLE QVariant appSettingsHorizontalDistanceUnitsToMeters(const QVariant& distance) const { return FactMetaData::appSettingsHorizontalDistanceUnitsToMeters(distance); }
 
     /// Converts from user specified speed unit to meters per second
     Q_INVOKABLE QVariant appSettingsSpeedUnitsToMetersPerSecond(const QVariant& speed) const { return FactMetaData::appSettingsSpeedUnitsToMetersPerSecond(speed); }
 
-    QString appSettingsHorizontalDistanceUnitsString(void) const { return FactMetaData::appSettingsHorizontalDistanceUnitsString(); }
+    QString appSettingsHorizontalDistanceUnitsString(void) const { return FactMetaData::appSettingsHorizontalDistanceUnitsString(); }       
 
     /// Converts from meters to the user specified distance unit
     Q_INVOKABLE QVariant metersToAppSettingsVerticalDistanceUnits(const QVariant& meters) const { return FactMetaData::metersToAppSettingsVerticalDistanceUnits(meters); }
@@ -48,6 +52,8 @@ public:
     Q_INVOKABLE QVariant appSettingsVerticalDistanceUnitsToMeters(const QVariant& distance) const { return FactMetaData::appSettingsVerticalDistanceUnitsToMeters(distance); }
 
     QString appSettingsVerticalDistanceUnitsString(void) const { return FactMetaData::appSettingsVerticalDistanceUnitsString(); }
+
+    QString appSettingsTemperatureUnitsString(void) const { return FactMetaData::appSettingsTemperatureUnitsString(); }
 
     /// Converts from grams to the user specified weight unit
     Q_INVOKABLE QVariant gramsToAppSettingsWeightUnits(const QVariant& meters) const { return FactMetaData::gramsToAppSettingsWeightUnits(meters); }
