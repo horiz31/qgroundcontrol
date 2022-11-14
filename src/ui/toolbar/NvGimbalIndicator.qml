@@ -26,6 +26,7 @@ Item {
 
     property bool showIndicator: true
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
+    property real   _sdPercentage: 0
 
 
     Component {
@@ -58,7 +59,7 @@ Item {
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     columns:            2
-                    rows:               10
+                    rows:               11
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel { text: qsTr("Mode:") }
@@ -94,16 +95,22 @@ Item {
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cpuTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cpuTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
                     QGCLabel { text: qsTr("Camera Temperature:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cameraTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cameraTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
+                    QGCLabel { text: qsTr("Camera Version:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? "" : _activeVehicle.nvGimbal.nvVersion.value.toFixed(3)) : "" }
                     QGCLabel { text: qsTr("SD Card") }
                     QGCLabel { text: _activeVehicle ? getSDCardStatus() : ""
                         function getSDCardStatus()
                         {
                             if (isNaN(_activeVehicle.nvGimbal.sdCapacity.value) || _activeVehicle.nvGimbal.sdCapacity.value !== 0)
                             {
-                                return (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0) + "% Full" + " (" + (_activeVehicle.nvGimbal.sdCapacity.value / 1024).toFixed(0) + " GiB)"
+                                _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
+                                return _sdPercentage + "% Full" + " (" + (_activeVehicle.nvGimbal.sdCapacity.value / 1024).toFixed(0) + " GiB)"
                             }
                             else
+                            {
+                                _sdPercentage = 0
                                 return "Not Present"
+                            }
                         }
                     }
                 }
@@ -116,6 +123,7 @@ Item {
         anchors.top:    parent.top
         anchors.bottom: parent.bottom
         spacing:        ScreenTools.defaultFontPixelWidth
+        visible:        _activeVehicle ? (!isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? true : false) : false
 
 
 
@@ -132,9 +140,9 @@ Item {
             function getGimbalColor() {
                 if (!_activeVehicle)
                      return qgcPal.text
-                if ((_activeVehicle.nvGimbal.cpuTemperature.value > 65) || (_activeVehicle.nvGimbal.cameraTemperature > 65))
+                if ((_activeVehicle.nvGimbal.cpuTemperature.value > 65) || (_activeVehicle.nvGimbal.cameraTemperature > 65) || (_sdPercentage > 90))
                     return qgcPal.colorYellow
-                else if ((_activeVehicle.nvGimbal.cpuTemperature.value > 75) || (_activeVehicle.nvGimbal.cameraTemperature > 75))
+                else if ((_activeVehicle.nvGimbal.cpuTemperature.value > 75) || (_activeVehicle.nvGimbal.cameraTemperature > 75) || (_sdPercentage > 98))
                     return qgcPal.colorRed
                 else
                     return qgcPal.text

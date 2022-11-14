@@ -92,6 +92,13 @@
     "type":             "double",
     "decimalPlaces":    1,
     "units":            ""
+},
+{
+    "name":             "nvVersion",
+    "shortDesc": "NextVision Software Version",
+    "type":             "double",
+    "decimalPlaces":    3,
+    "units":            ""
 }
 ]
 }

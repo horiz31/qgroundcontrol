@@ -134,6 +134,8 @@ signals:
     void systemIdChanged(int systemId);
 
     // NextVision
+    /** emitting when the nv version changes, also used to indicate a nv gimbal is present */
+    void nvPresentStatusChanged(float version);
     /** emitting every time the snapshot status changes */
     void snapShotStatusChanged(int status);
     /** emitting every time the nextvision mode changes */
@@ -272,6 +274,7 @@ private:
         { 13,           "Nadir" },
     };
 
+    /*
     int _nvCurrentMode;
     int _nvCurrentSensor;
     int _nvCurrentSnapshot;
@@ -285,7 +288,7 @@ private:
     float _nvCurrentSlantRange;
     float _nvSdTotalCapacity;
     float _nvSdAvailableCapacity;
-
+*/
 
     /* Mavlink Extension Arguments for report command */
     typedef enum

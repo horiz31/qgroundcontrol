@@ -35,11 +35,12 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
         QGCLoadElevationTileSetsTask* taskSave = new QGCLoadElevationTileSetsTask();
         getQGCMapEngine()->addTask(taskSave);
 
-        //hook up a timer to send report requests, need to do this so we get SD card info
-        //could potentially alter the report rates here as needed
+        //hook up a timer to send report requests periodically, need to do this so we get SD card info
+        //could potentially alter the report rates here as needed if we find some are too fast/slow
         _startUpTimer.setSingleShot(false);
         _startUpTimer.setInterval(1000);
         connect(&_startUpTimer, &QTimer::timeout, this, &CameraManagement::setSDCardReportFrequencyCommand);
+        _startUpTimer.start();
 
     }
 }
@@ -388,7 +389,7 @@ void CameraManagement::pointToCoordinate(float lat,float lon)
     else
     {
         sendMavCommandLong(MAV_CMD_DO_SET_ROI_LOCATION,0.0,0.0,0.0,0.0,_coord.latitude(),_coord.longitude(),terrainAltitude);
-        qDebug() << "00 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << terrainAltitude;
+        //qDebug() << "00 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << terrainAltitude;
     }
 }
 
@@ -396,13 +397,13 @@ void CameraManagement::_terrainDataReceived(bool success, QList<double> heights)
 {
     double _terrainAltitude = success ? heights[0] : 0;
     sendMavCommandLong(MAV_CMD_DO_SET_ROI_LOCATION,0.0,0.0,0.0,0.0,_coord.latitude(),_coord.longitude(),_terrainAltitude);
-    qDebug() << "11 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << _terrainAltitude;
+    //qDebug() << "11 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << _terrainAltitude;
     //sender()->deleteLater();
 }
 
 void CameraManagement::trackOnPosition(float posX,float posY, int chan)
 {
-    qDebug() << "11 PTC On chan= " << chan << "lat=" << posX << "lon" << posY <<"\n";
+    //qDebug() << "11 PTC On chan= " << chan << "lat=" << posX << "lon" << posY <<"\n";
     /* Sending the track on position command */
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_TrackOnPosition,posX,posY,0,(float)chan,0);
 }

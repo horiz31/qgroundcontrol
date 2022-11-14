@@ -345,37 +345,16 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 {
                     qgcApp()->toolbox()->joystickManager()->cameraManagement()->getAltAtCoord(gnd_crs_report.gnd_crossing_lat,gnd_crs_report.gnd_crossing_lon);
                     //get ground crossing lat
-                    float groundCrossingLat  = gnd_crs_report.gnd_crossing_lat;
-                    if (_nvCurrentGroundCrossingLat != groundCrossingLat)
-                    {
-                        emit nvGrounndCrossingLatChanged(groundCrossingLat);
-                        _nvCurrentGroundCrossingLat = groundCrossingLat;
-                    }
+                                  emit nvGrounndCrossingLatChanged(gnd_crs_report.gnd_crossing_lon);
 
                     //get ground crossing lon
-                    float groundCrossingLon  = gnd_crs_report.gnd_crossing_lon;
-                    if (_nvCurrentGroundCrossingLon != groundCrossingLon)
-                    {
-                        emit nvGrounndCrossingLonChanged(groundCrossingLon);
-                        _nvCurrentGroundCrossingLon = groundCrossingLon;
-                    }
+                    emit nvGrounndCrossingLonChanged(gnd_crs_report.gnd_crossing_lon);
 
                     //get ground crossing alt
-                    float groundCrossingAlt  = gnd_crs_report.gnd_crossing_alt;
-                    if (_nvCurrentGroundCrossingAlt != groundCrossingAlt)
-                    {
-                        emit nvGrounndCrossingAltChanged(groundCrossingAlt);
-                        _nvCurrentGroundCrossingAlt = groundCrossingAlt;
-                    }
+                    emit nvGrounndCrossingAltChanged(gnd_crs_report.gnd_crossing_alt);
 
                     //get slant range crossing
-                    float slantRange  = gnd_crs_report.slant_range;
-                    if (_nvCurrentSlantRange != slantRange)
-                    {
-                        emit nvSlantRangeChanged(slantRange);
-                        _nvCurrentSlantRange = slantRange;
-                    }
-
+                    emit nvSlantRangeChanged(gnd_crs_report.slant_range);
                 }
                 else if(gnd_crs_report.report_type == MavExtReport_LOS)
                 {
@@ -428,82 +407,39 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     // memcpy(&buf, _MAV_PAYLOAD(&_message), _message.len);
                     // int snapshot_val = (int)buf[28];  //bytes 0-6 are header??  so this is byte 34 in the cos
                     //no idea why I'd do it above when I have the helper functions, but this was the nextvision docs
-                    int snapshot_val = system_report.snapshot_busy;
-                    if (_nvCurrentSnapshot != snapshot_val)
-                    {
-                        emit snapShotStatusChanged(snapshot_val);
-                        _nvCurrentSnapshot = snapshot_val;
-                    }
+
+                    emit nvPresentStatusChanged(system_report.camera_ver);
+
+                    emit snapShotStatusChanged(system_report.snapshot_busy);
 
                     //get current active sensor
-                    int active_sensor = system_report.sensor;  //0=Day, 1=IR
-                    if (_nvCurrentSensor != active_sensor)
-                    {
-                        emit nvSensorChanged(active_sensor);
-                        _nvCurrentSensor = active_sensor;
-                    }
+                    emit nvSensorChanged(system_report.sensor);
 
                     //get the current mode
-                    int system_mode = system_report.mode;
-                    //if (_nvCurrentMode != system_mode)
-                    //{
-                        emit nvModeChanged(nvExtModeMap.value(system_mode));  //map to mode strings
-                        _nvCurrentMode = system_mode;
-                    //}
+                    emit nvModeChanged(nvExtModeMap.value(system_report.mode));  //map to mode strings
 
                     //get the current fov
-                    float fov = system_report.fov;
-                    if (_nvCurrentFov != fov)
-                    {
-                        emit nvFovChanged(fov);
-                        _nvCurrentFov = fov;
-                    }
+                    emit nvFovChanged(system_report.fov);
 
                     //get is recording
-                    int isRecording = system_report.recording_status;;
-                    if (_nvCurrentIsRecording != isRecording)
-                    {
-                        emit nvIsRecordingChanged(isRecording);
-                        _nvCurrentIsRecording = isRecording;
-                    }
+                    emit nvIsRecordingChanged(system_report.recording_status);
 
                     //get cpu temp
-                    float cpuTemp = system_report.cpu_temp;;
-                    if (_nvCurrentCpuTemp != cpuTemp)
-                    {
-                        emit nvCpuTempChanged(cpuTemp);
-                        _nvCurrentCpuTemp = cpuTemp;
-                    }
+                    emit nvCpuTempChanged(system_report.cpu_temp);
 
                     //get camera temp
-                    float camTemp = system_report.cam_temp;;
-                    if (_nvCurrentCamTemp != camTemp)
-                    {
-                        emit nvCamTempChanged(camTemp);
-                        _nvCurrentCamTemp = camTemp;
-                    }
-
+                    emit nvCamTempChanged(system_report.cam_temp);
                 }
                 else if(gnd_crs_report.report_type == MavExtReport_SDCard)
                 {
+                    //qDebug() << "got an sd card report";
                     mavlink_nvext_sd_card_report_t sd_report;
                     mavlink_nvext_sd_card_report_decode(&_message,&sd_report);
                     if (sd_report.sd_card_detected != 0)  //no need to report the rest if there is no SD card
                     {
-                        //get total capacity
-                        float sdCardTotalCapacity = sd_report.sd_total_capacity;
-                        //if (_nvSdTotalCapacity != sdCardTotalCapacity)
-                        //{
-                            emit nvSdTotalCapacityChanged(sdCardTotalCapacity);
-                            _nvSdTotalCapacity = sdCardTotalCapacity;
-                        //}
-                        //get available capacity
-                        float sdCardAvailableCapacity = sd_report.sd_available_capacity;
-                        //if (_nvSdAvailableCapacity != sdCardAvailableCapacity)
-                        //{
-                            emit nvSdAvailableCapacityChanged(sdCardAvailableCapacity);
-                            _nvSdAvailableCapacity = sdCardAvailableCapacity;
-                       // }
+                        //get total capacity and available capacity
+                        emit nvSdTotalCapacityChanged(sd_report.sd_total_capacity);
+                        emit nvSdAvailableCapacityChanged(sd_report.sd_available_capacity);
                     }
                 }
             }

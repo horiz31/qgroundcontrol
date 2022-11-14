@@ -359,6 +359,7 @@
         <file alias="VTOLLandingPattern.FactMetaData.json">src/MissionManager/VTOLLandingPattern.FactMetaData.json</file>
         <file alias="Vehicle/HCUFact.json">src/Vehicle/HCUFact.json</file>
         <file alias="ATAKVehicleManager.SettingsGroup.json">src/Settings/ATAKVehicleManager.SettingsGroup.json</file>
+        <file alias="Vehicle/NvGimbalFact.json">src/Vehicle/NvGimbalFact.json</file>
     </qresource>
     <qresource prefix="/MockLink">
         <file alias="APMArduSubMockLink.params">src/comm/APMArduSubMockLink.params</file>

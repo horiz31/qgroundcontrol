@@ -219,6 +219,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvCamTempChanged,             this, &Vehicle::_updateNvCameraTemperatureChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdAvailableCapacityChanged, this, &Vehicle::_updateNvSdAvailableChange);
+    connect(_mavlink, &MAVLinkProtocol::nvPresentStatusChanged,       this, &Vehicle::_updateNvPresentStatusChange);
 
 
     connect(this, &Vehicle::flightModeChanged,          this, &Vehicle::_handleFlightModeChanged);
@@ -677,8 +678,11 @@ void Vehicle::_updateNvModeChange(QString mode)
     //qDebug() << "setting gimbal mode fact to"<< mode;
     if (mode != _gimbalFactGroup.mode()->rawValue())
         _gimbalFactGroup.mode()->setRawValue(mode);
-    _nvMode = mode;
-    emit nvModeChanged(_nvMode);
+    if (mode != _nvMode)
+    {
+        _nvMode = mode;
+        emit nvModeChanged(_nvMode);
+    }
 }
 
 // NextVision FactGroup Settings
@@ -696,7 +700,8 @@ void Vehicle::_updateNvGroundCrossingAltChange(float value)
 }
 void Vehicle::_updateNvFovChange(float value)
 {
-    _gimbalFactGroup.fov()->setRawValue(value);
+    if (value != _gimbalFactGroup.fov()->rawValue())
+        _gimbalFactGroup.fov()->setRawValue(value);
 }
 void Vehicle::_updateNvSlantRangeChange(float value)
 {
@@ -704,29 +709,40 @@ void Vehicle::_updateNvSlantRangeChange(float value)
 }
 void Vehicle::_updateNvActiveSensorChange(int value)
 {
-    _gimbalFactGroup.activeSensor()->setRawValue(value);
+    if (value != _gimbalFactGroup.activeSensor()->rawValue())
+        _gimbalFactGroup.activeSensor()->setRawValue(value);
 }
 void Vehicle::_updateNvIsRecordingChange(int value)
 {
-    _gimbalFactGroup.isRecording()->setRawValue(value);
+     if (value != _gimbalFactGroup.isRecording()->rawValue())
+        _gimbalFactGroup.isRecording()->setRawValue(value);
 }
 void Vehicle::_updateNvCpuTemperatureChange(float value)
 {
-    _gimbalFactGroup.cpuTemperature()->setRawValue(value);
+     if (value != _gimbalFactGroup.cpuTemperature()->rawValue())
+        _gimbalFactGroup.cpuTemperature()->setRawValue(value);
 }
 void Vehicle::_updateNvCameraTemperatureChange(float value)
 {
-    _gimbalFactGroup.cameraTemperature()->setRawValue(value);
+     if (value != _gimbalFactGroup.cameraTemperature()->rawValue())
+        _gimbalFactGroup.cameraTemperature()->setRawValue(value);
 }
 void Vehicle::_updateNvSdCapacityChange(float value)
 {
-     //Debug() << "setting sd capacity fact to"<< value;
-    _gimbalFactGroup.sdCapacity()->setRawValue(value);
+    if (value != _gimbalFactGroup.sdCapacity()->rawValue())
+        _gimbalFactGroup.sdCapacity()->setRawValue(value);
 }
 void Vehicle::_updateNvSdAvailableChange(float value)
 {
-    _gimbalFactGroup.sdAvailable()->setRawValue(value);
+     if (value != _gimbalFactGroup.sdAvailable()->rawValue())
+        _gimbalFactGroup.sdAvailable()->setRawValue(value);
 }
+void Vehicle::_updateNvPresentStatusChange(float value)
+{
+    if (value != _gimbalFactGroup.nvVersion()->rawValue())
+        _gimbalFactGroup.nvVersion()->setRawValue(value);
+}
+
 
 void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message)
 {

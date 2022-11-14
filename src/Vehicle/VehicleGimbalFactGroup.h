@@ -31,6 +31,7 @@ public:
     Q_PROPERTY(Fact* cameraTemperature      READ cameraTemperature   CONSTANT)
     Q_PROPERTY(Fact* sdCapacity             READ sdCapacity          CONSTANT)
     Q_PROPERTY(Fact* sdAvailable		    READ sdAvailable         CONSTANT)
+    Q_PROPERTY(Fact* nvVersion 		        READ nvVersion           CONSTANT)
 
 
     Fact* mode                  () { return &_modeFact; }
@@ -46,6 +47,7 @@ public:
     Fact* cameraTemperature     () { return &_cameraTemperatureFact; }
     Fact* sdCapacity            () { return &_sdCapacityFact; }
     Fact* sdAvailable           () { return &_sdAvailableFact; }
+    Fact* nvVersion             () { return &_nvVersionFact; }
 
 
     static const char* _modeFactName;
@@ -61,6 +63,7 @@ public:
     static const char* _cameraTemperatureFactName;
     static const char* _sdCapacityFactName;
     static const char* _sdAvailableFactName;
+    static const char* _nvVersionFactName;
 
 
 
@@ -79,6 +82,7 @@ private:
     Fact        _cameraTemperatureFact;
     Fact        _sdCapacityFact;
     Fact        _sdAvailableFact;
+    Fact        _nvVersionFact;
 
 
 };

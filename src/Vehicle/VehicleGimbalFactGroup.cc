@@ -26,6 +26,9 @@ const char* VehicleGimbalFactGroup::_cpuTemperatureFactName =            "cpuTem
 const char* VehicleGimbalFactGroup::_cameraTemperatureFactName =         "cameraTemperature";
 const char* VehicleGimbalFactGroup::_sdCapacityFactName =                "sdCapacity";
 const char* VehicleGimbalFactGroup::_sdAvailableFactName =               "sdAvailable";
+const char* VehicleGimbalFactGroup::_nvVersionFactName =                 "nvVersion";
+
+
 
 
 
@@ -44,6 +47,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     , _cameraTemperatureFact     (0, _cameraTemperatureFactName,    FactMetaData::valueTypeDouble)
     , _sdCapacityFact            (0, _sdCapacityFactName,           FactMetaData::valueTypeDouble)
     , _sdAvailableFact           (0, _sdAvailableFactName,          FactMetaData::valueTypeDouble)
+    , _nvVersionFact             (0, _nvVersionFactName,          FactMetaData::valueTypeDouble)
 
 {
     _addFact(&_modeFact,                _modeFactName);
@@ -59,6 +63,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _addFact(&_cameraTemperatureFact,   _cameraTemperatureFactName);
     _addFact(&_sdCapacityFact,          _sdCapacityFactName);
     _addFact(&_sdAvailableFact,         _sdAvailableFactName);
+    _addFact(&_nvVersionFact,           _nvVersionFactName);
 
 
     // Start out as not available "--.--"
@@ -75,6 +80,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _cameraTemperatureFact.setRawValue  (qQNaN());
     _sdCapacityFact.setRawValue         (qQNaN());
     _sdAvailableFact.setRawValue        (qQNaN());
+    _nvVersionFact.setRawValue          (qQNaN());
 
 }
 
