@@ -59,7 +59,7 @@ Item {
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     columns:            2
-                    rows:               11
+                    rows:               12
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel { text: qsTr("Mode:") }
@@ -97,6 +97,8 @@ Item {
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cameraTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cameraTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
                     QGCLabel { text: qsTr("Camera Version:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? "" : _activeVehicle.nvGimbal.nvVersion.value.toFixed(3)) : "" }
+                    QGCLabel { text: qsTr("TRIP Version:") }
+                    QGCLabel { text: _activeVehicle ? _activeVehicle.nvGimbal.nvTripVersion.value : "" }
                     QGCLabel { text: qsTr("SD Card") }
                     QGCLabel { text: _activeVehicle ? getSDCardStatus() : ""
                         function getSDCardStatus()

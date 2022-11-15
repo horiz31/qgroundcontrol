@@ -220,6 +220,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdAvailableCapacityChanged, this, &Vehicle::_updateNvSdAvailableChange);
     connect(_mavlink, &MAVLinkProtocol::nvPresentStatusChanged,       this, &Vehicle::_updateNvPresentStatusChange);
+    connect(_mavlink, &MAVLinkProtocol::nvTripVersionChanged,         this, &Vehicle::_updateNvTripVersionChange);
 
 
     connect(this, &Vehicle::flightModeChanged,          this, &Vehicle::_handleFlightModeChanged);
@@ -741,6 +742,11 @@ void Vehicle::_updateNvPresentStatusChange(float value)
 {
     if (value != _gimbalFactGroup.nvVersion()->rawValue())
         _gimbalFactGroup.nvVersion()->setRawValue(value);
+}
+void Vehicle::_updateNvTripVersionChange(QString value)
+{
+    if (value != _gimbalFactGroup.nvTripVersion()->rawValue())
+        _gimbalFactGroup.nvTripVersion()->setRawValue(value);
 }
 
 

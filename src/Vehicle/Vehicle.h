@@ -1016,6 +1016,7 @@ private slots:
     void _updateNvSdCapacityChange          (float value);
     void _updateNvSdAvailableChange         (float value);
     void _updateNvPresentStatusChange       (float value);
+    void _updateNvTripVersionChange         (QString value);
     //End NextVision
     void _mavlinkMessageReceived            (LinkInterface* link, mavlink_message_t message);
     void _sendMessageMultipleNext           ();

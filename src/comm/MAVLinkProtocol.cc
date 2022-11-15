@@ -410,6 +410,16 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
 
                     emit nvPresentStatusChanged(system_report.camera_ver);
 
+                    int trip_ver = system_report.trip2_ver;
+                    uint8_t build_num = (trip_ver & 0x00ff0000) >> 16;
+                    uint8_t minor_ver = (trip_ver & 0x0000ff00) >> 8;
+                    uint8_t major_ver = (trip_ver & 0x000000ff);
+
+                    QString nvTripVer = QString::number(major_ver) + "." +  QString::number(minor_ver) + "." + QString::number(build_num);
+                    //get trip software version
+                    emit nvTripVersionChanged(nvTripVer);
+
+                    //get snap shot status
                     emit snapShotStatusChanged(system_report.snapshot_busy);
 
                     //get current active sensor

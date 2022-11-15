@@ -162,6 +162,8 @@ signals:
     void nvSdTotalCapacityChanged(float sdTotalCapacity);
     /** emitting every time the nextvision sd available capacity changes */
     void nvSdAvailableCapacityChanged(float sdAvailableCapacity);
+    /** emitting every time the nextvision trip version changes */
+    void nvTripVersionChanged(QString version);
 
     void mavlinkMessageStatus(int uasId, uint64_t totalSent, uint64_t totalReceived, uint64_t totalLoss, float lossPercent);
 

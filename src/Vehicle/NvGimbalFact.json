@@ -28,7 +28,7 @@
     "name":             "mode",
     "shortDesc": "Gimbal Mode",
     "type":             "string",
-    "units":            "m"
+    "units":            ""
 },
 {
     "name":             "slantRange",
@@ -95,9 +95,15 @@
 },
 {
     "name":             "nvVersion",
-    "shortDesc": "NextVision Software Version",
+    "shortDesc": "NextVision Camera Software Version",
     "type":             "double",
     "decimalPlaces":    3,
+    "units":            ""
+},
+{
+    "name":             "nvTripVersion",
+    "shortDesc": "NextVision TRIP Software Version",
+    "type":             "string",
     "units":            ""
 }
 ]

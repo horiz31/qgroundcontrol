@@ -32,6 +32,7 @@ public:
     Q_PROPERTY(Fact* sdCapacity             READ sdCapacity          CONSTANT)
     Q_PROPERTY(Fact* sdAvailable		    READ sdAvailable         CONSTANT)
     Q_PROPERTY(Fact* nvVersion 		        READ nvVersion           CONSTANT)
+    Q_PROPERTY(Fact* nvTripVersion 		    READ nvTripVersion           CONSTANT)
 
 
     Fact* mode                  () { return &_modeFact; }
@@ -48,6 +49,7 @@ public:
     Fact* sdCapacity            () { return &_sdCapacityFact; }
     Fact* sdAvailable           () { return &_sdAvailableFact; }
     Fact* nvVersion             () { return &_nvVersionFact; }
+    Fact* nvTripVersion         () { return &_nvTripVersionFact; }
 
 
     static const char* _modeFactName;
@@ -64,6 +66,7 @@ public:
     static const char* _sdCapacityFactName;
     static const char* _sdAvailableFactName;
     static const char* _nvVersionFactName;
+    static const char* _nvTripVersionFactName;
 
 
 
@@ -83,6 +86,7 @@ private:
     Fact        _sdCapacityFact;
     Fact        _sdAvailableFact;
     Fact        _nvVersionFact;
+    Fact        _nvTripVersionFact;
 
 
 };
