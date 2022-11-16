@@ -3026,6 +3026,30 @@ void Vehicle::sendMavCommand(int compId, MAV_CMD command, bool showError, float 
                           param1, param2, param3, param4, param5, param6, param7);
 }
 
+void Vehicle::sendMavCommandNoAck(int compId, MAV_CMD command, bool showError, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
+{
+    //Send a command with no expectation of ack
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog) << "_sendMavCommandWorker: primary link gone!";
+        return;
+    }
+
+    mavlink_message_t msg;
+    mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                       compId,
+                                       sharedLink->mavlinkChannel(),
+                                       &msg,
+                                       id(),
+                                       defaultComponentId(),            // target component
+                                       static_cast<MAV_CMD>(command),    // command id
+                                       0,                                // 0=first transmission of command
+                                       param1, param2, param3, param4, param5, param6, param7);
+    sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+
+
+}
+
 void Vehicle::sendCommand(int compId, int command, bool showError, double param1, double param2, double param3, double param4, double param5, double param6, double param7)
 {
     sendMavCommand(

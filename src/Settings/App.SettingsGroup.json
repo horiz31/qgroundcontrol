@@ -182,6 +182,15 @@
     "default":          3
 },
 {
+    "name":             "camJoystickPitchRollEnableOption",
+    "shortDesc":        "Camera Roll/Pitch Control Enable",
+    "longDesc":         "This value specifies when the camera roll/pitch joystick control is enabled. If the same stick will be used for both vehicle and gimbal control, then setting this to use the 'Override Stick' feature will allow a button to be use to enable to joystick roll/pitch control only when it is depressed.",
+    "type":             "uint32",
+    "enumStrings":      "Always, Only when 'Override Stick' button is depressed",
+    "enumValues":       "0,1",
+    "default":          0
+},
+{
     "name":             "camJoystickGain",
     "shortDesc":        "Camera Joystick Gain",
     "longDesc":         "This value specifies the default camera joystick gain value.",

@@ -119,6 +119,7 @@ private:
     void _terrainDataReceived(bool success, QList<double> heights);
     QGeoCoordinate _coord;
     double gndCrsAltitude = 0.0;
+    bool _rollPitchEnabled = true;
 
 public:
 
@@ -255,6 +256,8 @@ private:
     MavlinkExtSetGimbalArgs  getZoomValue(unsigned char* buttons,QList<AssignedButtonAction*> button_actions);
     void sendMavCommandLong(MAV_CMD command,  float param1,   float param2,   float param3,
                             float param4, float param5,   float param6,   float param7);
+    void sendMavCommandLongNoAck(MAV_CMD command,  float param1,   float param2,   float param3,
+                            float param4, float param5,   float param6,   float param7);
 
     QTimer  _startUpTimer;
 
@@ -266,6 +269,7 @@ public slots:
     void _activeVehicleChanged(Vehicle* activeVehicle);
     void _activeCamJoystickChanged(Joystick* activeCamJoystick);
     void manualCamControl( float cam_roll_yaw,float cam_pitch, unsigned char* buttons);
+    void buttonCamActionsChanged();
 };
 
 #endif // CAMERAMANAGEMENT_H

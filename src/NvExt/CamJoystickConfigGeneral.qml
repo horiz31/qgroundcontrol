@@ -23,6 +23,7 @@ import QGroundControl.FactControls  1.0
 Item {
 
     property Fact _camJoystickDZ: QGroundControl.settingsManager.appSettings.camJoystickDZ
+    property Fact _joystickPitchRollEnableOption: QGroundControl.settingsManager.appSettings.camJoystickPitchRollEnableOption
     property Fact _camJoystickGain: QGroundControl.settingsManager.appSettings.camJoystickGain
     property Fact _camJoystickRollInvert: QGroundControl.settingsManager.appSettings.camJoystickRollInvert
     property Fact _camJoystickPitchInvert: QGroundControl.settingsManager.appSettings.camJoystickPitchInvert
@@ -46,6 +47,17 @@ Item {
             }
             ListElement {
                 text:       qsTr("Right Analog Stick")
+            }
+        }
+
+        ListModel {
+            id: pitchRollEnableOptionModel
+
+            ListElement {
+                text:       qsTr("Always")
+            }
+            ListElement {
+                text:       qsTr("Only when 'Override Stick' button is depressed")
             }
         }
 
@@ -129,9 +141,28 @@ Item {
                 Component.onCompleted: {
                     pitchRollAxleCombo.currentIndex = _activeCamJoystick.camPitchRollAxle
                 }
-                onActivated:        _activeCamJoystick.camPitchRollAxle = index
-
+                onActivated:        _activeCamJoystick.camPitchRollAxle = index               
             }
+
+            QGCLabel {
+                text:               qsTr("Camera Pitch & Roll Enable:")
+                Layout.alignment:   Qt.AlignVCenter
+            }
+
+            //the idea is that in scenarios where there are only two joysticks, an enable button can be configured which converts the roll/pitch input into camera control ONLY when the enable button is depressed. Otherwise it'll be normal aircraft
+            FactComboBox {
+                id:                 joystickPitchRollEnableOption
+                sizeToContents: true
+                //width:              ScreenTools.defaultFontPixelWidth * 80
+                Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 20
+                Layout.alignment:   Qt.AlignVCenter
+                fact:               _joystickPitchRollEnableOption
+                indexModel:         false
+                onActivated: {
+                    joystickManager.activeCamJoystick.setCamJoystickPitchRollEnableOption(index)
+                }
+            }
+
 
             QGCLabel {
                 text:                   qsTr("Joystick DZ[%]:")

@@ -69,9 +69,9 @@ Item {
                     QGCLabel { text: qsTr("Target Longitude:") }
                     QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.------" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°" }
                     QGCLabel { text: qsTr("Target Altitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value === 10000.0)) ? "----" : QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(_activeVehicle.nvGimbal.groundCrossingAlt.value).toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
+                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value === 10000.0)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Slant Range:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(_activeVehicle.nvGimbal.slantRange.value).toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----" }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : _activeVehicle.nvGimbal.slantRange.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Active Sensor:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.activeSensor.value) ? "" : getActiveSensor()) : ""
                         function getActiveSensor() {
@@ -92,9 +92,9 @@ Item {
                         }
                     }
                     QGCLabel { text: qsTr("CPU Temperature:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cpuTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cpuTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cpuTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : _activeVehicle.nvGimbal.cpuTemperature.value.toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
                     QGCLabel { text: qsTr("Camera Temperature:") }
-                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cameraTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : QGroundControl.unitsConversion.celciusToAppSettingsTemperatureUnits(_activeVehicle.nvGimbal.cameraTemperature.value).toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cameraTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : _activeVehicle.nvGimbal.cameraTemperature.value.toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
                     QGCLabel { text: qsTr("Camera Version:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? "" : _activeVehicle.nvGimbal.nvVersion.value.toFixed(3)) : "" }
                     QGCLabel { text: qsTr("TRIP Version:") }
@@ -137,15 +137,19 @@ Item {
             source:             "/res/gimbal.svg"
             fillMode:           Image.PreserveAspectFit
             opacity:            1
-            color:              getGimbalColor()
+            color:              _activeVehicle ? getGimbalColor() : qgcPal.text
+            visible:            _activeVehicle ? (!isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? true : false) : false
 
             function getGimbalColor() {
-                if (!_activeVehicle)
+                if (!_activeVehicle || (isNaN(_activeVehicle.nvGimbal.nvVersion.value)))
                      return qgcPal.text
-                if ((_activeVehicle.nvGimbal.cpuTemperature.value > 65) || (_activeVehicle.nvGimbal.cameraTemperature > 65) || (_sdPercentage > 90))
+
+                _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
+
+                if ((_activeVehicle.nvGimbal.cpuTemperature.rawValue > 75) || (_activeVehicle.nvGimbal.cameraTemperature.rawValue > 75) || (_sdPercentage > 98))
+                     return qgcPal.colorRed
+                else if ((_activeVehicle.nvGimbal.cpuTemperature.rawValue > 65) || (_activeVehicle.nvGimbal.cameraTemperature.rawValue > 65) || (_sdPercentage > 90))
                     return qgcPal.colorYellow
-                else if ((_activeVehicle.nvGimbal.cpuTemperature.value > 75) || (_activeVehicle.nvGimbal.cameraTemperature > 75) || (_sdPercentage > 98))
-                    return qgcPal.colorRed
                 else
                     return qgcPal.text
             }

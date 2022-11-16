@@ -12,7 +12,7 @@ Q_GLOBAL_STATIC(TerrainTileManager, _terrainTileManager)
 CameraManagement::CameraManagement(QObject *parent,MultiVehicleManager *multiVehicleManager, JoystickManager *joystickManager) : QObject(parent),_multiVehicleManager(nullptr),activeVehicle(nullptr),_joystickManager(nullptr)
 {
     this->_multiVehicleManager = multiVehicleManager;
-    this->_joystickManager = joystickManager;
+    this->_joystickManager = joystickManager;    
     activeVehicle = _multiVehicleManager->activeVehicle();
     connect(_multiVehicleManager, &MultiVehicleManager::activeVehicleChanged, this, &CameraManagement::_activeVehicleChanged);
     connect(this->_joystickManager, &JoystickManager::activeCamJoystickChanged, this, &CameraManagement::_activeCamJoystickChanged);
@@ -50,20 +50,54 @@ void CameraManagement::_activeCamJoystickChanged(Joystick* activeCamJoystick)
     if(activeCamJoystick){
         /* connect to joystick manual cam control message */
         connect(activeCamJoystick, &Joystick::manualControlCam, this, &CameraManagement::manualCamControl);
+        connect(activeCamJoystick, &Joystick::buttonCamActionsChanged, this, &CameraManagement::buttonCamActionsChanged);
+
+
         this->_activeCamJoystick = activeCamJoystick;
 
         /* clear the camera button state machine vars */
         for ( int i = 0; i < 32;i++ ){
             _camButtonFuncState[i] = JoyBtnReleased;
             _camButtonFuncValue[i] = 0;
+            _rollPitchEnabled = false;
         }
     }
     else
     {
         if ( this->_activeCamJoystick )
+        {
             disconnect(this->_activeCamJoystick, &Joystick::manualControlCam, this, &CameraManagement::manualCamControl);
+            disconnect(this->_activeCamJoystick, &Joystick::buttonCamActionsChanged, this, &CameraManagement::buttonCamActionsChanged);
+        }
         this->_activeCamJoystick = activeCamJoystick;
     }
+}
+
+void CameraManagement::buttonCamActionsChanged()
+{
+    //when cam button config changed, if the overrided stick option is no longer set, default _rollPitchEnabled to true
+    /* read the current joystick configuration */
+     QList<AssignedButtonAction*> button_actions;
+     button_actions = _activeCamJoystick->_buttonCamActionArray;
+     bool _isOverrideStickSet = false;
+    /* call the button functions for each button */
+    for (int buttonIndex=0; buttonIndex<_activeCamJoystick->totalButtonCount(); buttonIndex++)
+    {
+        //bool button_value = (buttons & (1 << buttonIndex)) ? true :false;
+        AssignedButtonAction *button_action = button_actions.at(buttonIndex);
+        if ( !button_action )
+            continue;
+        if (button_action->action == "Override Stick")
+        {
+            _isOverrideStickSet = true;
+            break;
+        }
+    }
+    if (!_isOverrideStickSet)  //the button for override stick is not currently configured
+    {
+        _rollPitchEnabled = false;  //default condition
+    }
+
 }
 
 void CameraManagement::manualCamControl(float cam_roll_yaw, float cam_pitch,unsigned char* buttons)
@@ -124,9 +158,13 @@ void CameraManagement::manualCamControl(float cam_roll_yaw, float cam_pitch,unsi
         }
     }
 
-    /* send the gimbal command to the system only when virtual joystick is disabled */
-    if ( qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->rawValue().toBool() == false )
-        sendGimbalCommand(cam_roll_yaw/ ( -32768),cam_pitch/ ( -32768));
+    /* send the gimbal command to the system only when virtual joystick is disabled and _rollPitchEnable is true*/
+    if ( qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->rawValue().toBool() == false)
+    {
+        //if we are in the mode where camera pitch/roll is only enabled by the joystick "Override Stick" button being pressed, then send the roll/pitch commands, otherwise don't unless roll/Pitch is enabled
+        if ((qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickPitchRollEnableOption()->rawValue().toInt() == 1 && _rollPitchEnabled) || (qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickPitchRollEnableOption()->rawValue().toInt() == 0))
+            sendGimbalCommand(cam_roll_yaw/ ( -32768),cam_pitch/ ( -32768));
+    }
 }
 
 
@@ -224,7 +262,28 @@ void CameraManagement::doCamAction(QString buttonAction, bool pressed, int butto
         /* Record */
         if (doAction)
             sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,_camButtonFuncValue[buttonIndex],0,0,0,0,0);
-    }
+    }else if (buttonAction == "Override Stick"){
+            if (pressed){
+                if (!_rollPitchEnabled)
+                {
+                        _rollPitchEnabled = true;
+                        qDebug() << "camera joystick enabled";
+                        //if we are in the mode where camera pitch/roll is only enabled by the joystick "Override Stick" button being pressed and the button is pressed, then disable vehicle roll/pitch while this is pressed
+                        if (qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickPitchRollEnableOption()->rawValue().toInt() == 1)
+                            this->_joystickManager->activeJoystick()->setRollPitchEnabled(false);
+                }
+            }
+            else {
+                if (_rollPitchEnabled)
+                {
+                    _rollPitchEnabled = false;
+                    qDebug() << "camera joystick disabled, turning back on vehicle roll/pitch control";
+                    this->_joystickManager->activeJoystick()->setRollPitchEnabled(true);
+
+                }
+
+            }
+        }
 }
 
 /* Returning the zoom value according to the buttons pressed */
@@ -319,6 +378,24 @@ void CameraManagement::sendMavCommandLong(MAV_CMD command,  float param1,   floa
     }
 
     activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),
+                   command,
+                   true,
+                   param1, param2, param3, param4, param5, param6, param7);
+}
+
+/* Sending Mavlink Command Long Messages without an Ack */
+void CameraManagement::sendMavCommandLongNoAck(MAV_CMD command,  float param1,   float param2,   float param3,
+                                          float param4,     float param5,   float param6,   float param7)
+{
+    if(!activeVehicle)
+        return;
+
+    WeakLinkInterfacePtr weakLink = activeVehicle->vehicleLinkManager()->primaryLink();
+    if (weakLink.expired()) {
+        return;
+    }
+
+    activeVehicle->sendMavCommandNoAck(activeVehicle->defaultComponentId(),
                    command,
                    true,
                    param1, param2, param3, param4, param5, param6, param7);

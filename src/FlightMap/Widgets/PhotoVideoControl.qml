@@ -174,6 +174,10 @@ Rectangle {
             color:              qgcPal.windowShadeLight
             radius:             height * 0.5
             visible:            _showModeIndicator
+            MouseArea {
+                anchors.fill:   parent
+                enabled:        true
+            }
 
             //-- Video Mode
             Rectangle {
@@ -200,6 +204,8 @@ Rectangle {
                         onClicked:      setCameraMode(false)
                     }
                 }
+
+                //
             }
             //-- Photo Mode
             Rectangle {
@@ -242,6 +248,37 @@ Rectangle {
                 font.pointSize: ScreenTools.smallFontPointSize
                 text:           qsTr("Camera Trigger")
                 checked:        true
+            }
+        }
+
+        RowLayout {
+            Layout.alignment:   Qt.AlignHCenter
+            spacing:            0
+            visible:            true// _showModeIndicator && !_mavlinkCamera && _simpleCameraAvailable && !_videoStreamInPhotoMode
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width:                  parent.height
+                height:                 parent.height
+                color:                  _modeIndicatorPhotoMode ? qgcPal.windowShadeLight : qgcPal.window
+                radius:                 height * 0.5
+                anchors.left:           parent.left
+                border.color:           qgcPal.text
+                border.width:           _modeIndicatorPhotoMode ? 0 : 1
+                QGCColoredImage {
+                    //height:             parent.height * 0.5
+                    width:              height
+                    Layout.alignment:   Qt.AlignHCenter
+                    source:             "/res/gimbal.svg"
+                    fillMode:           Image.PreserveAspectFit
+                    sourceSize.height:  height
+                    color:              qgcPal.text
+                    MouseArea {
+                        anchors.fill:   parent
+                        enabled:        true
+                        onClicked:      console.log("set gimbal mode")
+                    }
+                }
             }
         }
 

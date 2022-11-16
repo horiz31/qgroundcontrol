@@ -101,6 +101,7 @@ const char* Joystick::_buttonActionStow =               QT_TR_NOOP("Stow");
 const char* Joystick::_buttonActionPilot =              QT_TR_NOOP("Pilot");
 const char* Joystick::_buttonActionRetract =            QT_TR_NOOP("Retract");
 const char* Joystick::_buttonActionHoldCord =           QT_TR_NOOP("Hold Coordinate");
+const char* Joystick::_buttonActionOverrideStick =      QT_TR_NOOP("Override Stick");
 /* ------------------------------------------------------------------------------------------------------*/
 
 const float Joystick::_defaultAxisFrequencyHz   = 25.0f;
@@ -150,6 +151,7 @@ Joystick::Joystick(const QString& name, int axisCount, int buttonCount, int hatC
     }
     _buildCamActionList();
 
+    _joystickPitchRollEnableOption =  qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickPitchRollEnableOption()->rawValue().toInt();
     _camJoystickDZ = qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickDZ()->rawValue().toInt();
     _camJoystickGain = qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickGain()->rawValue().toInt();
     _camJoystickRollInvert = qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickRollInvert()->rawValue().toBool();
@@ -230,6 +232,7 @@ void Joystick::_setDefaultCalibration(void) {
     _calibrated         = true;
     _circleCorrection   = false;
     _runupEnabled       = false;
+    _rollPitchEnabled   = true;
 
     _saveSettings();
 }
@@ -443,6 +446,7 @@ void Joystick::_saveSettings()
         settings.setValue(maxTpl.arg(axis), calibration->max);
         settings.setValue(revTpl.arg(axis), calibration->reversed);
         settings.setValue(deadbndTpl.arg(axis), calibration->deadband);
+       /*
         qCDebug(JoystickLog) << "_saveSettings name:axis:min:max:trim:reversed:deadband"
                                 << _name
                                 << axis
@@ -451,6 +455,7 @@ void Joystick::_saveSettings()
                                 << calibration->center
                                 << calibration->reversed
                                 << calibration->deadband;
+                                */
     }
 
     // Always save function Axis mappings in TX Mode 2
@@ -459,7 +464,7 @@ void Joystick::_saveSettings()
     _remapAxes(_transmitterMode, 2, temp);
     for (int function = 0; function < maxFunction; function++) {
         settings.setValue(_rgFunctionSettingsKey[function], temp[function]);
-        qCDebug(JoystickLog) << "_saveSettings name:function:axis" << _name << function << _rgFunctionSettingsKey[function];
+        //qCDebug(JoystickLog) << "_saveSettings name:function:axis" << _name << function << _rgFunctionSettingsKey[function];
     }
     _saveButtonSettings();
 }
@@ -570,7 +575,7 @@ void Joystick::run()
     }
     while (!_exitThread) {
         _update();
-        if ( _is_same_joystick )
+        if ( _is_same_joystick )  //when the camera and vehicle are using the same joystick
         {
             _handleButtons();
             _handleAxis();
@@ -1007,6 +1012,11 @@ void Joystick::_handleAxis()
 
             uint16_t shortButtons = static_cast<uint16_t>(buttonPressedBits & 0xFFFF);
 
+            if (_joystickPitchRollEnableOption == 1 && !_rollPitchEnabled)
+            {
+                roll = 0;
+                pitch = 0;
+            }
             if (!_runupEnabled)
                 _activeVehicle->sendJoystickDataThreadSafe(roll, pitch, yaw, throttle, shortButtons);
         }
@@ -1283,11 +1293,19 @@ void Joystick::_buildCamActionList()
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionPilot));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionRetract));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionHoldCord));
+    _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionOverrideStick));
+
     for(int i = 0; i < _assignableCamButtonActions.count(); i++) {
         AssignableButtonAction* p = qobject_cast<AssignableButtonAction*>(_assignableCamButtonActions[i]);
         _availableCamActionTitles << p->action();
     }
     emit assignableCamActionsChanged();
+}
+
+void Joystick::setCamJoystickPitchRollEnableOption(int mode)
+{
+    qDebug() << "setting pitch roll enable option to " << mode;
+    _joystickPitchRollEnableOption = mode;
 }
 
 void Joystick::setCamJoystickDZ(int DZ)
@@ -1308,6 +1326,12 @@ void Joystick::setCamJoystickRollInvert(bool value)
 void Joystick::setCamJoystickPitchInvert(bool value)
 {
     _camJoystickPitchInvert = value;
+}
+
+void Joystick::setRollPitchEnabled(bool value)
+{
+    qDebug() << "vehicle roll pitch enable is now" << value;
+    _rollPitchEnabled = value;
 }
 
 /* ------------------------------------------------------------------------------------------------------*/
@@ -1489,7 +1513,6 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
             emit stopEngineRunup(); //button back up
         }
     }
-
     else {
         if (buttonDown && _activeVehicle) {
             for (auto& item : _customMavCommands) {
@@ -1569,23 +1592,23 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     }
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLFixedWing));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLMultiRotor));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomIn, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomOut, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomIn,  true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomOut, true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextStream));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousStream));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextCamera));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousCamera));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionTriggerCamera));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomIn, true));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomOut, true));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomIn,  true));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomOut, true));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextStream));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousStream));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNextCamera));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionPreviousCamera));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionTriggerCamera));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStartVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStopVideoRecord));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleVideoRecord));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
+   // _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalDown,    true));
+   // _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalUp,      true));
+   // _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalLeft,    true));
+   // _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalRight,   true));
+   // _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionGimbalCenter));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionEmergencyStop));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionEngineRunup));
     for (auto& item : _customMavCommands)

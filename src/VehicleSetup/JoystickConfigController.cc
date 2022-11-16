@@ -459,7 +459,7 @@ void JoystickConfigController::_setInternalCalibrationValuesFromSettings()
         info->reversed  = calibration.reversed;
         info->deadband  = calibration.deadband;
         emit axisDeadbandChanged(axis,info->deadband);
-        qCDebug(JoystickConfigControllerLog) << "Read settings name:axis:min:max:trim:reversed" << joystick->name() << axis << info->axisMin << info->axisMax << info->axisTrim << info->reversed;
+        //qCDebug(JoystickConfigControllerLog) << "Read settings name:axis:min:max:trim:reversed" << joystick->name() << axis << info->axisMin << info->axisMax << info->axisTrim << info->reversed;
     }
     
     for (int function = 0; function < Joystick::maxFunction; function++) {

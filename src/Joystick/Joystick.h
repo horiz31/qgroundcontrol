@@ -140,6 +140,8 @@ public:
     QStringList assignableCamActionTitles      () { return _availableCamActionTitles; }
     QList<AssignedButtonAction*>                _buttonCamActionArray;
 
+    int                                         _joystickPitchRollEnableOption;
+    Q_INVOKABLE void    setCamJoystickPitchRollEnableOption        (int option);
     int                                         _camJoystickDZ;
     Q_INVOKABLE void    setCamJoystickDZ        (int DZ);
     int                                         _camJoystickGain;
@@ -148,6 +150,8 @@ public:
     Q_INVOKABLE void    setCamJoystickRollInvert        (bool value);
     bool                                        _camJoystickPitchInvert;
     Q_INVOKABLE void    setCamJoystickPitchInvert        (bool value);
+
+    void setRollPitchEnabled (bool value);
     /* ------------------------------------------------------------------------------------------------------*/
 
     // Property accessors
@@ -260,6 +264,7 @@ signals:
     void manualControlCam           (float roll_yaw, float pitch, unsigned char* buttons);
     void manualControlCamQml        (float roll_yaw, float pitch);
     void camPitchRollAxleChanged    ();
+
     /* ------------------------------------------------------------------------------------------------------*/
 
 protected:
@@ -330,7 +335,8 @@ protected:
     bool    _accumulator            = false;
     bool    _deadband               = false;
     bool    _circleCorrection       = true;
-    bool    _runupEnabled              = false;
+    bool    _runupEnabled           = false;
+    bool    _rollPitchEnabled       = true;
     float   _axisFrequencyHz        = _defaultAxisFrequencyHz;
     float   _buttonFrequencyHz      = _defaultButtonFrequencyHz;
     Vehicle* _activeVehicle         = nullptr;
@@ -428,6 +434,7 @@ private:
     static const char* _buttonActionPilot;
     static const char* _buttonActionRetract;
     static const char* _buttonActionHoldCord;
+    static const char* _buttonActionOverrideStick;
     /* ------------------------------------------------------------------------------------------------------*/
     static const char* _buttonActionEmergencyStop;
     static const char* _buttonActionEngineRunup;

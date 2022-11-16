@@ -127,7 +127,21 @@ Item {
 
     PhotoVideoControl {
         id:                     photoVideoControl
-        visible:                false // Super Volo edit, as we expect to build our own control for gimbal
+        anchors.margins:        _toolsMargin
+        anchors.top:            instrumentPanel.bottom
+        anchors.topMargin:      _toolsMargin * 4
+        anchors.right:          parent.right
+        anchors.verticalCenter: undefined
+        width:                  _rightPanelWidth
+        visible:                QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue
+
+    }
+
+    /*
+
+    PhotoVideoControl {
+        id:                     photoVideoControl
+        visible:                true
         anchors.margins:        _toolsMargin
         anchors.right:          parent.right
         width:                  _rightPanelWidth
@@ -153,7 +167,7 @@ Item {
 
         property bool _verticalCenter: !QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue
     }
-
+*/
 
     //Wind Inidicator, Super Volo integration
     WindIndicator {
