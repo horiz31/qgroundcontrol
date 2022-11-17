@@ -33,9 +33,7 @@ Rectangle {
         anchors.fill:   parent
         propagateComposedEvents: false
         hoverEnabled: true
-        preventStealing: true
-        onClicked: console.log("clicked")
-
+        preventStealing: true        
     }
     property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
     property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
@@ -177,7 +175,7 @@ Rectangle {
         // using the unified properties/functions.
         Rectangle {
             Layout.alignment:   Qt.AlignHCenter
-            width:              ScreenTools.defaultFontPixelWidth * 10
+            width:              ScreenTools.defaultFontPixelWidth * 12
             height:             width / 2
             color:              qgcPal.windowShadeLight
             radius:             height * 0.5
@@ -266,8 +264,9 @@ Rectangle {
         // using the unified properties/functions.
         Rectangle {
             Layout.alignment:   Qt.AlignHCenter
+            Layout.topMargin:   ScreenTools.defaultFontPixelWidth
             color:              Qt.rgba(0,0,0,0)
-            width:              ScreenTools.defaultFontPixelWidth * 6
+            width:              ScreenTools.defaultFontPixelWidth * 7
             height:             width
             radius:             width * 0.5
             border.color:       qgcPal.buttonText
@@ -294,92 +293,117 @@ Rectangle {
         ColumnLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            0
-            //QGCLabel {
-            //    Layout.alignment:   Qt.AlignHCenter
-            //    text:               (_activeVehicle.nvGimbal.cameraVersion !== "") ? "NextVision Gimbal" : "Unknown"
-            //    visible:            !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-            //}
-            QGCLabel {
-                            Layout.alignment:   Qt.AlignHCenter
-                            text:               qsTr("Gimbal Modes");
-                           visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-            }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
-                anchors.margins:            _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("Observation")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to OBS mode")
-            }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
+            visible:            _activeVehicle ? (_activeVehicle.nvGimbal != null) : false
+                GridLayout {
+                    id:     nvControlgridLayout
+                    columns:            2
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
+                    rowSpacing:         ScreenTools.defaultFontPixelHeight
 
-                Layout.margins:     _margins
-                //width:       ScreenTools.defaultFontPixelWidth * 20
-                //width:              ScreenTools.defaultFontPixelWidth * 20
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("Pilot View")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to Pilot mode")
-            }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
-                Layout.margins:     _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("GRR")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to GRR mode")
-            }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
-                Layout.margins:     _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("Hold")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to Hold mode")
+                    QGCButton {
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        text:           qsTr("OBS")
+                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Observation") : false
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        onClicked: {
+                            joystickManager.cameraManagement.setSysModeObsCommand();
+                        }
+                    }
+                    QGCButton {
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Pilot" || _activeVehicle.nvGimbal.mode.value === "Local Pos") : false
+                        text:           qsTr("PILOT")
+                        leftPadding:    ScreenTools.defaultFontPixelWidth
+                        rightPadding:   ScreenTools.defaultFontPixelWidth
+                        onClicked: {
+                            joystickManager.cameraManagement.setSysModePilotCommand();
+                        }
+                    }
+                    QGCButton {
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "GRR") : false
+                        text:           qsTr("GRR")
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        onClicked: {
+                            joystickManager.cameraManagement.setSysModeGrrCommand();
+                        }
+                    }
+                    QGCButton {
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        text:           qsTr("HOLD")
+                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Hold") : false
+                        leftPadding:    ScreenTools.defaultFontPixelWidth
+                        rightPadding:   ScreenTools.defaultFontPixelWidth
+                        onClicked: {
+                            joystickManager.cameraManagement.setSysModeHoldCommand();
+                        }
+                    }
             }
             QGCLabel {
+                            Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                            Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
                             Layout.alignment:   Qt.AlignHCenter
                             text:               qsTr("Active Sensor");
-                            visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                            visible:            !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
             }
             QGCButton {
-                Layout.fillWidth:   true
                 Layout.alignment:   Qt.AlignHCenter
-                anchors.margins:            _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("Day")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to day mode")
+                backRadius:     4
+                showBorder:     true
+                font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                text:           qsTr("IR")
+                visible:        _activeVehicle ? (_activeVehicle.nvGimbal.activeSensor.value === 0) : false
+                leftPadding:    10
+                rightPadding:   10
+                onClicked: {
+                    joystickManager.cameraManagement.setSysSensorIrCommand();
+                }
             }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
-                anchors.margins:            _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("IR")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to day mode")
-            }
-            QGCButton {
-                Layout.fillWidth:   true
-                Layout.alignment:   Qt.AlignHCenter
-                anchors.margins:            _margins
-                //width:              ScreenTools.defaultFontPixelWidth * 15
-                height:             ScreenTools.defaultFontPixelHeight * 3
-                text:               qsTr("Recalibrate")
-                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
-                onClicked:          console.log("change to day mode")
+            GridLayout {
+                columns:            2
+                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
+                rowSpacing:         ScreenTools.defaultFontPixelHeight
+                visible:            _activeVehicle ? (_activeVehicle.nvGimbal.activeSensor.value === 1) : false
+
+                QGCButton {
+                    backRadius:     4
+                    showBorder:     true
+                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                    text:           qsTr("DAY")
+                    leftPadding:    10
+                    rightPadding:   10
+                    onClicked: {
+                        joystickManager.cameraManagement.setSysSensorDayCommand();
+                    }
+                }
+                QGCButton {
+                    backRadius:     4
+                    showBorder:     true
+                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                    text:           qsTr("NUC")
+                    leftPadding:    10
+                    rightPadding:   10
+                    onClicked: {
+                        joystickManager.cameraManagement.setSysIrNUCCommand();
+                    }
+                }
             }
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter
@@ -412,7 +436,7 @@ Rectangle {
         id: settingsDialogComponent
 
         QGCPopupDialog {
-            title:      qsTr("Settings")
+            title:      qsTr("Video Settings")
             buttons:    StandardButton.Close
 
             ColumnLayout {

@@ -267,7 +267,7 @@ void CameraManagement::doCamAction(QString buttonAction, bool pressed, int butto
                 if (!_rollPitchEnabled)
                 {
                         _rollPitchEnabled = true;
-                        qDebug() << "camera joystick enabled";
+                        //qDebug() << "camera joystick enabled";
                         //if we are in the mode where camera pitch/roll is only enabled by the joystick "Override Stick" button being pressed and the button is pressed, then disable vehicle roll/pitch while this is pressed
                         if (qgcApp()->toolbox()->settingsManager()->appSettings()->camJoystickPitchRollEnableOption()->rawValue().toInt() == 1)
                             this->_joystickManager->activeJoystick()->setRollPitchEnabled(false);
@@ -277,7 +277,7 @@ void CameraManagement::doCamAction(QString buttonAction, bool pressed, int butto
                 if (_rollPitchEnabled)
                 {
                     _rollPitchEnabled = false;
-                    qDebug() << "camera joystick disabled, turning back on vehicle roll/pitch control";
+                    //qDebug() << "camera joystick disabled, turning back on vehicle roll/pitch control";
                     this->_joystickManager->activeJoystick()->setRollPitchEnabled(true);
 
                 }

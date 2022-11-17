@@ -1329,8 +1329,7 @@ void Joystick::setCamJoystickPitchInvert(bool value)
 }
 
 void Joystick::setRollPitchEnabled(bool value)
-{
-    qDebug() << "vehicle roll pitch enable is now" << value;
+{    
     _rollPitchEnabled = value;
 }
 

@@ -20,12 +20,13 @@ Button {
     property bool   iconLeft:       false
     property real   backRadius:     0
     property real   heightFactor:   0.5
+    property bool   highlight:      false
     property string iconSource
 
     property alias wrapMode:            text.wrapMode
     property alias horizontalAlignment: text.horizontalAlignment
 
-    property bool   _showHighlight:     pressed | hovered | checked
+    property bool   _showHighlight:     pressed | hovered | checked | highlight
 
     property int _horizontalPadding:    ScreenTools.defaultFontPixelWidth
     property int _verticalPadding:      Math.round(ScreenTools.defaultFontPixelHeight * heightFactor)
