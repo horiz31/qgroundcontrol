@@ -133,7 +133,7 @@ Item {
         anchors.right:          parent.right
         anchors.verticalCenter: undefined
         width:                  _rightPanelWidth
-        visible:                QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue
+        visible:                QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
 
     }
 

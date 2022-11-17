@@ -137,8 +137,7 @@ Item {
             source:             "/res/gimbal.svg"
             fillMode:           Image.PreserveAspectFit
             opacity:            1
-            color:              _activeVehicle ? getGimbalColor() : qgcPal.text
-            visible:            _activeVehicle ? (!isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? true : false) : false
+            color:              getGimbalColor()
 
             function getGimbalColor() {
                 if (!_activeVehicle || (isNaN(_activeVehicle.nvGimbal.nvVersion.value)))

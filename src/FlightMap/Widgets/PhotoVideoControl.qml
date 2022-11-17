@@ -28,7 +28,15 @@ Rectangle {
     color:      "#80000000"
     radius:     _margins
     visible:    (_mavlinkCamera || _videoStreamAvailable || _simpleCameraAvailable) && multiVehiclePanelSelector.showSingleVehiclePanel
+    z:      QGroundControl.zOrderTopMost
+    MouseArea {
+        anchors.fill:   parent
+        propagateComposedEvents: false
+        hoverEnabled: true
+        preventStealing: true
+        onClicked: console.log("clicked")
 
+    }
     property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
     property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
 
@@ -144,7 +152,7 @@ Rectangle {
         anchors.right:      parent.right
         source:             "/res/gear-black.svg"
         mipmap:             true
-        height:             ScreenTools.defaultFontPixelHeight
+        height:             ScreenTools.defaultFontPixelHeight * 2
         width:              height
         sourceSize.height:  height
         color:              qgcPal.text
@@ -251,36 +259,7 @@ Rectangle {
             }
         }
 
-        RowLayout {
-            Layout.alignment:   Qt.AlignHCenter
-            spacing:            0
-            visible:            true// _showModeIndicator && !_mavlinkCamera && _simpleCameraAvailable && !_videoStreamInPhotoMode
 
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width:                  parent.height
-                height:                 parent.height
-                color:                  _modeIndicatorPhotoMode ? qgcPal.windowShadeLight : qgcPal.window
-                radius:                 height * 0.5
-                anchors.left:           parent.left
-                border.color:           qgcPal.text
-                border.width:           _modeIndicatorPhotoMode ? 0 : 1
-                QGCColoredImage {
-                    //height:             parent.height * 0.5
-                    width:              height
-                    Layout.alignment:   Qt.AlignHCenter
-                    source:             "/res/gimbal.svg"
-                    fillMode:           Image.PreserveAspectFit
-                    sourceSize.height:  height
-                    color:              qgcPal.text
-                    MouseArea {
-                        anchors.fill:   parent
-                        enabled:        true
-                        onClicked:      console.log("set gimbal mode")
-                    }
-                }
-            }
-        }
 
         // Take Photo, Start/Stop Video button
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
@@ -309,15 +288,98 @@ Rectangle {
             }
         }
 
+
+
         //-- Status Information
         ColumnLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            0
-
+            //QGCLabel {
+            //    Layout.alignment:   Qt.AlignHCenter
+            //    text:               (_activeVehicle.nvGimbal.cameraVersion !== "") ? "NextVision Gimbal" : "Unknown"
+            //    visible:            !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+            //}
             QGCLabel {
+                            Layout.alignment:   Qt.AlignHCenter
+                            text:               qsTr("Gimbal Modes");
+                           visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+            }
+            QGCButton {
+                Layout.fillWidth:   true
                 Layout.alignment:   Qt.AlignHCenter
-                text:               _cameraName
-                visible:            _cameraName !== ""
+                anchors.margins:            _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("Observation")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to OBS mode")
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+
+                Layout.margins:     _margins
+                //width:       ScreenTools.defaultFontPixelWidth * 20
+                //width:              ScreenTools.defaultFontPixelWidth * 20
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("Pilot View")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to Pilot mode")
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+                Layout.margins:     _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("GRR")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to GRR mode")
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+                Layout.margins:     _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("Hold")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to Hold mode")
+            }
+            QGCLabel {
+                            Layout.alignment:   Qt.AlignHCenter
+                            text:               qsTr("Active Sensor");
+                            visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+                anchors.margins:            _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("Day")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to day mode")
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+                anchors.margins:            _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("IR")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to day mode")
+            }
+            QGCButton {
+                Layout.fillWidth:   true
+                Layout.alignment:   Qt.AlignHCenter
+                anchors.margins:            _margins
+                //width:              ScreenTools.defaultFontPixelWidth * 15
+                height:             ScreenTools.defaultFontPixelHeight * 3
+                text:               qsTr("Recalibrate")
+                visible:             !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                onClicked:          console.log("change to day mode")
             }
             QGCLabel {
                 Layout.alignment:   Qt.AlignHCenter
