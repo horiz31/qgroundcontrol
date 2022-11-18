@@ -432,7 +432,8 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     emit nvFovChanged(system_report.fov);
 
                     //get is recording
-                    emit nvIsRecordingChanged(system_report.recording_status);
+                    uint8_t recording_status = system_report.recording_status & 0x0f;  //first nibble is channel 0, which is all we care about for now
+                    emit nvIsRecordingChanged(recording_status);
 
                     //get cpu temp
                     emit nvCpuTempChanged(system_report.cpu_temp);

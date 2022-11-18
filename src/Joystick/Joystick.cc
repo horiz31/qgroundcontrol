@@ -1304,7 +1304,7 @@ void Joystick::_buildCamActionList()
 
 void Joystick::setCamJoystickPitchRollEnableOption(int mode)
 {
-    qDebug() << "setting pitch roll enable option to " << mode;
+    //qDebug() << "setting pitch roll enable option to " << mode;
     _joystickPitchRollEnableOption = mode;
 }
 
@@ -1331,6 +1331,8 @@ void Joystick::setCamJoystickPitchInvert(bool value)
 void Joystick::setRollPitchEnabled(bool value)
 {    
     _rollPitchEnabled = value;
+    //if I want to know about this from qml, emit a signal
+    emit rollPitchEnabled(value);
 }
 
 /* ------------------------------------------------------------------------------------------------------*/

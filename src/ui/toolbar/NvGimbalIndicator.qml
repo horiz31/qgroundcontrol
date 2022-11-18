@@ -26,8 +26,6 @@ Item {
 
     property bool showIndicator: true
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
-    property real   _sdPercentage: 0
-
 
     Component {
         id: gimbalInfo
@@ -59,7 +57,7 @@ Item {
                     anchors.margins:    ScreenTools.defaultFontPixelHeight
                     columnSpacing:      ScreenTools.defaultFontPixelWidth
                     columns:            2
-                    rows:               12
+                    rows:               13
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     QGCLabel { text: qsTr("Mode:") }
@@ -91,6 +89,18 @@ Item {
                                 return "Busy"
                         }
                     }
+                    QGCLabel { text: qsTr("Recording Status:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.isRecording.value) ? "" : getRecordingStatus()) : ""
+                        function getRecordingStatus()
+                        {
+                            if (_activeVehicle.nvGimbal.isRecording.value === 0)
+                                return "No"
+                            else if (_activeVehicle.nvGimbal.isRecording.value === 1)
+                                return "Yes"
+                            else
+                                return "Disabled"
+                        }
+                    }
                     QGCLabel { text: qsTr("CPU Temperature:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.cpuTemperature.value) ? "-- " + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString : _activeVehicle.nvGimbal.cpuTemperature.value.toFixed(0) + " °" + QGroundControl.unitsConversion.appSettingsTemperatureUnitsString) : "--" }
                     QGCLabel { text: qsTr("Camera Temperature:") }
@@ -105,12 +115,11 @@ Item {
                         {
                             if (isNaN(_activeVehicle.nvGimbal.sdCapacity.value) || _activeVehicle.nvGimbal.sdCapacity.value !== 0)
                             {
-                                _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
+                                var _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
                                 return _sdPercentage + "% Full" + " (" + (_activeVehicle.nvGimbal.sdCapacity.value / 1024).toFixed(0) + " GiB)"
                             }
                             else
-                            {
-                                _sdPercentage = 0
+                            {                                
                                 return "Not Present"
                             }
                         }
@@ -137,14 +146,13 @@ Item {
             source:             "/res/gimbal.svg"
             fillMode:           Image.PreserveAspectFit
             opacity:            1
-            color:              qgcPal.text//getGimbalColor()
+            color:              getGimbalColor()
 
             function getGimbalColor() {
-                if (!_activeVehicle || (isNaN(_activeVehicle.nvGimbal.nvVersion.value)))
+                if (!_activeVehicle)
                      return qgcPal.text
 
-                _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
-
+                var _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
                 if ((_activeVehicle.nvGimbal.cpuTemperature.rawValue > 75) || (_activeVehicle.nvGimbal.cameraTemperature.rawValue > 75) || (_sdPercentage > 98))
                      return qgcPal.colorRed
                 else if ((_activeVehicle.nvGimbal.cpuTemperature.rawValue > 65) || (_activeVehicle.nvGimbal.cameraTemperature.rawValue > 65) || (_sdPercentage > 90))
@@ -152,6 +160,7 @@ Item {
                 else
                     return qgcPal.text
             }
+
         }
 
          QGCLabel {             

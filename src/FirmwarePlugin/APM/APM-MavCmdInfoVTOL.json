@@ -4,5 +4,14 @@
     "fileType":  "MavCmdInfo",
 
     "mavCmdInfo": [
+    {
+        "id":                       84,
+        "comment":                  "MAV_CMD_NAV_VTOL_TAKEOFF",
+        "description":              "Takeoff to specified altitude.",
+        "specifiesCoordinate":      false,
+        "specifiesAltitudeOnly":    true,
+        "friendlyEdit":             true,
+        "category":                 "Basic"
+    }
     ]
 }

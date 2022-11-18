@@ -256,7 +256,7 @@
             "rawName":              "MAV_CMD_NAV_VTOL_TAKEOFF",
             "friendlyName":         "VTOL takeoff",
             "description":          "Hover straight up to specified altitude, transition to fixed-wing and fly to the specified takeoff location.",
-            "specifiesCoordinate":  true,
+            "specifiesCoordinate":  false,
             "isTakeoffCommand":     true,
             "friendlyEdit":         true,
             "category":             "Basic",

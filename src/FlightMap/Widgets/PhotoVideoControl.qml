@@ -27,7 +27,7 @@ Rectangle {
     height:     mainLayout.height + (_margins * 2)
     color:      "#80000000"
     radius:     _margins
-    visible:    (_mavlinkCamera || _videoStreamAvailable || _simpleCameraAvailable) && multiVehiclePanelSelector.showSingleVehiclePanel
+    visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
     z:      QGroundControl.zOrderTopMost
     MouseArea {
         anchors.fill:   parent
@@ -35,12 +35,22 @@ Rectangle {
         hoverEnabled: true
         preventStealing: true        
     }
+    Connections {
+        target: joystickManager.activeJoystick
+        onRollPitchEnabled: {
+            if (!value)
+                border.color = qgcPal.colorBlue
+            else
+                border.color = "#80000000"
+        }
+    }
     property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
     property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
 
     // The following properties relate to a simple camera
     property var    _flyViewSettings:                           QGroundControl.settingsManager.flyViewSettings
     property bool   _simpleCameraAvailable:                     !_mavlinkCamera && _activeVehicle && _flyViewSettings.showSimpleCameraControl.rawValue
+    property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
     property bool   _onlySimpleCameraAvailable:                 !_anyVideoStreamAvailable && _simpleCameraAvailable
     property bool   _simpleCameraIsShootingInCurrentMode:       _onlySimpleCameraAvailable && !_simplePhotoCaptureIsIdle
 
@@ -92,7 +102,8 @@ Rectangle {
     property bool   _switchToVideoModeAllowed:                  _modeIndicatorPhotoMode && (_mavlinkCamera ? !_mavlinkCameraIsShooting : true)
     property bool   _videoIsRecording:                          _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamRecording
     property bool   _canShootInCurrentMode:                     _mavlinkCamera ? _mavlinkCameraCanShoot : _videoStreamCanShoot || _simpleCameraAvailable
-    property bool   _isShootingInCurrentMode:                   _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamIsShootingInCurrentMode || _simpleCameraIsShootingInCurrentMode
+    property bool   _isShootingInCurrentMode:                   _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamIsShootingInCurrentMode
+    property bool   _isRecording:                               _videoStreamRecording || (_activeVehicle.nvGimbal.isRecording.value === 1)
 
     function setCameraMode(photoMode) {
         _videoStreamInPhotoMode = photoMode
@@ -107,6 +118,41 @@ Rectangle {
 
     function toggleShooting() {
         console.log("toggleShooting", _anyVideoStreamAvailable)
+        // handle local recording
+        if (_anyVideoStreamAvailable) {
+            if (_videoStreamInPhotoMode) {
+                _simplePhotoCaptureIsIdle = false
+                _videoStreamManager.grabImage()
+                simplePhotoCaptureTimer.start()
+            } else {
+                if (_videoStreamManager.recording) {
+                    console.log("stop local recording");
+                    _videoStreamManager.stopRecording()
+                } else {
+                    console.log("start local recording");
+                    _videoStreamManager.startRecording()
+                }
+            }
+        }
+
+        //handle nextvision recording
+        if (_videoStreamInPhotoMode) {
+            console.log("nextvision snapshot");
+            joystickManager.cameraManagement.setSysSnapshotCommand(0);
+        }
+        else
+        {
+             if (_activeVehicle.nvGimbal.isRecording.value === 1) {
+                console.log("nextvision recording off");
+                joystickManager.cameraManagement.setSysRecOffCommand(0);
+             }
+             else if (_activeVehicle.nvGimbal.isRecording.value === 0) {
+                console.log("nextvision recording on");
+                joystickManager.cameraManagement.setSysRecOnCommand(0);
+             }
+        }
+
+        /*
         if (_mavlinkCamera && _mavlinkCamera.capturesVideo) {
             if(_mavlinkCameraInVideoMode) {
                 _mavlinkCamera.toggleVideo()
@@ -133,7 +179,7 @@ Rectangle {
                     _videoStreamManager.startRecording()
                 }
             }
-        }
+        }*/
     }
 
     Timer {
@@ -155,7 +201,7 @@ Rectangle {
         sourceSize.height:  height
         color:              qgcPal.text
         fillMode:           Image.PreserveAspectFit
-        visible:            !_onlySimpleCameraAvailable
+        visible:            _nextVisionGimbalAvailable
 
         QGCMouseArea {
             fillItem:   parent
@@ -169,6 +215,7 @@ Rectangle {
         anchors.top:                parent.top
         anchors.horizontalCenter:   parent.horizontalCenter
         spacing:                    ScreenTools.defaultFontPixelHeight / 2
+        visible:                    _nextVisionGimbalAvailable
 
         // Photo/Video Mode Selector
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
@@ -179,7 +226,7 @@ Rectangle {
             height:             width / 2
             color:              qgcPal.windowShadeLight
             radius:             height * 0.5
-            visible:            _showModeIndicator
+            visible:            _nextVisionGimbalAvailable
             MouseArea {
                 anchors.fill:   parent
                 enabled:        true
@@ -209,9 +256,7 @@ Rectangle {
                         enabled:        _switchToVideoModeAllowed
                         onClicked:      setCameraMode(false)
                     }
-                }
-
-                //
+                }               
             }
             //-- Photo Mode
             Rectangle {
@@ -240,24 +285,6 @@ Rectangle {
             }
         }
 
-        RowLayout {
-            Layout.alignment:   Qt.AlignHCenter
-            spacing:            0
-            visible:            _showModeIndicator && !_mavlinkCamera && _simpleCameraAvailable && _videoStreamInPhotoMode
-
-            QGCRadioButton {
-                id:             videoGrabRadio
-                font.pointSize: ScreenTools.smallFontPointSize
-                text:           qsTr("Video Grab")
-            }
-            QGCRadioButton {
-                font.pointSize: ScreenTools.smallFontPointSize
-                text:           qsTr("Camera Trigger")
-                checked:        true
-            }
-        }
-
-
 
         // Take Photo, Start/Stop Video button
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
@@ -271,12 +298,13 @@ Rectangle {
             radius:             width * 0.5
             border.color:       qgcPal.buttonText
             border.width:       3
+            visible:            _nextVisionGimbalAvailable
 
             Rectangle {
                 anchors.centerIn:   parent
-                width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)
+                width:              parent.width * (_isRecording ? 0.5 : 0.75)  //   _isShootingInCurrentMode
                 height:             width
-                radius:             _isShootingInCurrentMode ? 0 : width * 0.5
+                radius:             _isRecording ? 0 : width * 0.5  //   _isShootingInCurrentMode
                 color:              _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
             }
 
@@ -293,12 +321,13 @@ Rectangle {
         ColumnLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            0
-            visible:            _activeVehicle ? (_activeVehicle.nvGimbal != null) : false
+            visible:            _nextVisionGimbalAvailable
                 GridLayout {
                     id:     nvControlgridLayout
                     columns:            2
                     columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
                     rowSpacing:         ScreenTools.defaultFontPixelHeight
+                    visible:            _nextVisionGimbalAvailable
 
                     QGCButton {
                         backRadius:     4
@@ -309,6 +338,7 @@ Rectangle {
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Observation") : false
                         leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         onClicked: {
                             joystickManager.cameraManagement.setSysModeObsCommand();
                         }
@@ -322,6 +352,7 @@ Rectangle {
                         text:           qsTr("PILOT")
                         leftPadding:    ScreenTools.defaultFontPixelWidth
                         rightPadding:   ScreenTools.defaultFontPixelWidth
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         onClicked: {
                             joystickManager.cameraManagement.setSysModePilotCommand();
                         }
@@ -335,6 +366,7 @@ Rectangle {
                         text:           qsTr("GRR")
                         leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         onClicked: {
                             joystickManager.cameraManagement.setSysModeGrrCommand();
                         }
@@ -348,6 +380,7 @@ Rectangle {
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Hold") : false
                         leftPadding:    ScreenTools.defaultFontPixelWidth
                         rightPadding:   ScreenTools.defaultFontPixelWidth
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         onClicked: {
                             joystickManager.cameraManagement.setSysModeHoldCommand();
                         }
@@ -358,7 +391,7 @@ Rectangle {
                             Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
                             Layout.alignment:   Qt.AlignHCenter
                             text:               qsTr("Active Sensor");
-                            visible:            !_videoStreamInPhotoMode //& _activeVehicle.nvGimbal
+                            visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
             }
             QGCButton {
                 Layout.alignment:   Qt.AlignHCenter
@@ -367,7 +400,7 @@ Rectangle {
                 font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                 pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                 text:           qsTr("IR")
-                visible:        _activeVehicle ? (_activeVehicle.nvGimbal.activeSensor.value === 0) : false
+                visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _activeVehicle.nvGimbal.activeSensor.value === 0
                 leftPadding:    10
                 rightPadding:   10
                 onClicked: {
@@ -378,7 +411,7 @@ Rectangle {
                 columns:            2
                 columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
                 rowSpacing:         ScreenTools.defaultFontPixelHeight
-                visible:            _activeVehicle ? (_activeVehicle.nvGimbal.activeSensor.value === 1) : false
+                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _activeVehicle.nvGimbal.activeSensor.value === 1
 
                 QGCButton {
                     backRadius:     4

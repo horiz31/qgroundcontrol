@@ -172,7 +172,7 @@ Rectangle {
 
                                 property Fact _lockNoseUpCompass: QGroundControl.settingsManager.flyViewSettings.lockNoseUpCompass
                             }
-
+/*
                             FactCheckBox {
                                 text:       qsTr("Show simple camera controls (DIGICAM_CONTROL)")
                                 visible:    _showDumbCameraControl.visible
@@ -180,7 +180,7 @@ Rectangle {
 
                                 property Fact _showDumbCameraControl: QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl
                             }
-
+*/
                             GridLayout {
                                 columns: 2
 

@@ -3217,7 +3217,7 @@ void Vehicle::_sendMavCommandFromList(int index)
             emit mavCommandResult(_id, commandEntry.targetCompId, commandEntry.command, MAV_RESULT_FAILED, MavCmdResultFailureNoResponseToCommand);
         }
         if (commandEntry.showError) {
-            qgcApp()->showAppMessage(tr("Vehicle did not respond to command: %1").arg(rawCommandName));
+            //qgcApp()->showAppMessage(tr("Vehicle did not respond to command: %1").arg(rawCommandName));
         }
         return;
     }

@@ -261,6 +261,7 @@ signals:
      * ------------------------------------------------------------------------------------------------------*/
     void buttonCamActionsChanged    ();
     void assignableCamActionsChanged();
+    void rollPitchEnabled           (bool value);
     void manualControlCam           (float roll_yaw, float pitch, unsigned char* buttons);
     void manualControlCamQml        (float roll_yaw, float pitch);
     void camPitchRollAxleChanged    ();

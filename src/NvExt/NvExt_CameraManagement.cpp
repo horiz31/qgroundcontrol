@@ -512,7 +512,8 @@ void CameraManagement::setSysModeHoldCommand()
 void CameraManagement::setSysModePilotCommand()
 {
     /* Sending the Pilot command */
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
+    //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
 }
 
 void CameraManagement::setSysModeStowCommand()
