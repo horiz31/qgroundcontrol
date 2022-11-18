@@ -246,7 +246,8 @@ Item {
             text:        _controllerDirty ? qsTr("Upload Required") : qsTr("Upload")
             enabled:     !_controllerSyncInProgress
             visible:     !_controllerOffline && !_controllerSyncInProgress && !uploadCompleteText.visible
-            primary:     _controllerDirty
+            //primary:     _controllerDirty
+            warning:     _controllerDirty
             onClicked:   _planMasterController.upload()
 
             PropertyAnimation on opacity {

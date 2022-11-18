@@ -933,8 +933,8 @@ bool FirmwarePlugin::_armVehicleAndValidate(Vehicle* vehicle)
     // Only try arming the vehicle a single time. Doing retries on arming with a delay can lead to safety issues.
     vehicle->setArmed(true, false /* showError */);
 
-    // Wait 2000 msecs for vehicle to arm
-    for (int i=0; i<20; i++) {
+    // Wait 3000 msecs for vehicle to arm
+    for (int i=0; i<30; i++) {
         if (vehicle->armed()) {
             vehicleArmed = true;
             break;
