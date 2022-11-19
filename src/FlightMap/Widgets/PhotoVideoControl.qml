@@ -735,6 +735,22 @@ Rectangle {
                             }
                         }
                     }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("IR Color Mode")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "Color"
+                            onClicked: joystickManager.cameraManagement.setSysIrColorPCommand()
+                        }
+                        QGCButton {
+                            text: "B&W"
+                            onClicked: joystickManager.cameraManagement.setSysIrBWPCommand()
+                        }
+                    }
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight

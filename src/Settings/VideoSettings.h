@@ -38,7 +38,7 @@ public:
     DEFINE_SETTINGFACT(forceVideoDecoder)
     DEFINE_SETTINGFACT(objDetection)
     DEFINE_SETTINGFACT(remoteRecording)
-    DEFINE_SETTINGFACT(videoPlaybackMode)
+    DEFINE_SETTINGFACT(videoPlaybackMode)    
 
     enum VideoDecoderOptions {
         ForceVideoDecoderDefault = 0,
