@@ -230,6 +230,7 @@ public:
     Q_INVOKABLE void setSysNadirCommand(void);
     Q_INVOKABLE void setSysNadirScanCommand(void);    
     Q_INVOKABLE void setSysObjDetOnCommand(void);
+    Q_INVOKABLE void setSysObjDetOnCommandAfterDelay(int delay);
     Q_INVOKABLE void setSysObjDetOffCommand(void);
     Q_INVOKABLE void setSysObjDetSetNetTypeCommand(int netType);
     Q_INVOKABLE void setSysObjDetSetConfThresCommand(float confThres);
@@ -260,6 +261,7 @@ private:
                             float param4, float param5,   float param6,   float param7);
 
     QTimer  _startUpTimer;
+    QTimer  _delayTimer;
 
 private Q_SLOTS:
     void setSDCardReportFrequencyCommand();

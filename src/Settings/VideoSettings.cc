@@ -112,6 +112,9 @@ DECLARE_SETTINGSFACT(VideoSettings, rtspTimeout)
 DECLARE_SETTINGSFACT(VideoSettings, streamEnabled)
 DECLARE_SETTINGSFACT(VideoSettings, disableWhenDisarmed)
 DECLARE_SETTINGSFACT(VideoSettings, lowLatencyMode)
+DECLARE_SETTINGSFACT(VideoSettings, objDetection)
+DECLARE_SETTINGSFACT(VideoSettings, remoteRecording)
+DECLARE_SETTINGSFACT(VideoSettings, videoPlaybackMode)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
 {
@@ -122,7 +125,7 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
             if (_noVideo) {
                 _videoSourceFact->setRawValue(videoSourceNoVideo);
             } else {
-                _videoSourceFact->setRawValue(videoDisabled);
+                _videoSourceFact->setRawValue(videoSourceUDPH265);  //volo, change from VideoSourceDisabled
             }
         }
         connect(_videoSourceFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);

@@ -345,7 +345,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 {
                     qgcApp()->toolbox()->joystickManager()->cameraManagement()->getAltAtCoord(gnd_crs_report.gnd_crossing_lat,gnd_crs_report.gnd_crossing_lon);
                     //get ground crossing lat
-                                  emit nvGrounndCrossingLatChanged(gnd_crs_report.gnd_crossing_lon);
+                    emit nvGrounndCrossingLatChanged(gnd_crs_report.gnd_crossing_lon);
 
                     //get ground crossing lon
                     emit nvGrounndCrossingLonChanged(gnd_crs_report.gnd_crossing_lon);

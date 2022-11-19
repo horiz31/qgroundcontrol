@@ -379,7 +379,7 @@ void CameraManagement::sendMavCommandLong(MAV_CMD command,  float param1,   floa
 
     activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),
                    command,
-                   true,
+                   false,
                    param1, param2, param3, param4, param5, param6, param7);
 }
 
@@ -436,8 +436,7 @@ void CameraManagement::getAltAtCoord(float lat,float lon)
         if (weakLink.expired()) {
             return;
         }
-        SharedLinkInterfacePtr sharedLink = weakLink.lock();
-
+        SharedLinkInterfacePtr sharedLink = weakLink.lock();        
         /* when the virtual joystick is disabled send the ground altitude from here instead */
         mavlink_msg_command_long_pack_chan(1,
                                            0,
@@ -615,6 +614,7 @@ void CameraManagement::setSysRecToggleCommand(int chan)
 void CameraManagement::setSysRecOnCommand(int chan)
 {
     /* Set the system sensor */
+    //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Enable,(float)chan,0,0,0,0);
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Enable,(float)chan,0,0,0,0);
 }
 
@@ -716,6 +716,18 @@ void CameraManagement::setSysObjDetOnCommand(void)
     /* Set the system sensor */
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DetectionControl,MavExtCmdArg_DetectorEnDis,1,0,0,0,0);
 }
+
+void CameraManagement::setSysObjDetOnCommandAfterDelay(int delay)
+{
+    /* Set the system object detector after delay */
+    _delayTimer.setSingleShot(true);
+    _delayTimer.setInterval(delay);
+    connect(&_delayTimer, &QTimer::timeout, this, &CameraManagement::setSysObjDetOnCommand);
+    _delayTimer.start();
+
+}
+
+
 void CameraManagement::setSysObjDetOffCommand(void)
 {
     /* Set the system sensor */

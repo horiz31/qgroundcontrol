@@ -138,6 +138,33 @@
     "enumValues":       "0,1,2,3,4,5",
     "default":           0,
     "qgcRebootRequired": true
+},
+{
+    "name":             "objDetection",
+    "shortDesc":        "Enables object detection on the video stream",
+    "longDesc":         "If this option is enabled, object detection for people and vehicles is enabled.",
+    "type":             "uint32",
+    "enumStrings":      "Off,Human & Vehicle,Fire & Smoke,Human Overboard,Marine Vessel",
+    "enumValues":       "4,0,1,2,3",
+    "default":     4
+},
+{
+    "name":             "remoteRecording",
+    "shortDesc":        "Enable recording onboard the aircraft",
+    "longDesc":         "If this option is enabled, video and snapshots will be recording locally on the aircraft on an SD card.",
+    "type":             "uint32",
+    "enumStrings":      "Enabled,Disabled",
+    "enumValues":       "1,0",
+    "default":     0
+},
+{
+    "name":             "videoPlaybackMode",
+    "shortDesc":        "Video Mode",
+    "longDesc":         "Specify how the video will be displayed, either full screen, picture in picture with Day/IR or side by side day and IR",
+    "type":             "uint32",
+    "enumStrings":      "Full Screen, PIP, SBS, Fusion",
+    "enumValues":       "1,4,5,3",
+    "default":     1
 }
 ]
 }

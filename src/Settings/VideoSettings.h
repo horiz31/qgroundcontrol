@@ -36,6 +36,9 @@ public:
     DEFINE_SETTINGFACT(disableWhenDisarmed)
     DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(forceVideoDecoder)
+    DEFINE_SETTINGFACT(objDetection)
+    DEFINE_SETTINGFACT(remoteRecording)
+    DEFINE_SETTINGFACT(videoPlaybackMode)
 
     enum VideoDecoderOptions {
         ForceVideoDecoderDefault = 0,

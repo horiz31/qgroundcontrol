@@ -16,7 +16,7 @@
             "specifiesCoordinate":      false,
             "specifiesAltitudeOnly":    true,
             "friendlyEdit":             true,
-            "category":                 "Basic"
+            "category":                 "Basic"            
         },
         {
             "id":                   85,
