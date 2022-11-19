@@ -173,6 +173,7 @@ Item {
 
     MouseArea {
         anchors.fill:   parent
+        enabled: _activeVehicle ? (!isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? true : false) : false
         onClicked: {
             mainWindow.showIndicatorPopup(_root, gimbalInfo)
         }
