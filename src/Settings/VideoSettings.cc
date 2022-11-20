@@ -115,6 +115,8 @@ DECLARE_SETTINGSFACT(VideoSettings, lowLatencyMode)
 DECLARE_SETTINGSFACT(VideoSettings, objDetection)
 DECLARE_SETTINGSFACT(VideoSettings, remoteRecording)
 DECLARE_SETTINGSFACT(VideoSettings, videoPlaybackMode)
+DECLARE_SETTINGSFACT(VideoSettings, fovOverlay)
+DECLARE_SETTINGSFACT(VideoSettings, pilotViewOnFBW)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
 {

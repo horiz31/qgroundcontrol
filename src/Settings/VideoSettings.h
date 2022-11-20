@@ -39,6 +39,9 @@ public:
     DEFINE_SETTINGFACT(objDetection)
     DEFINE_SETTINGFACT(remoteRecording)
     DEFINE_SETTINGFACT(videoPlaybackMode)    
+    DEFINE_SETTINGFACT(fovOverlay)
+    DEFINE_SETTINGFACT(pilotViewOnFBW)
+
 
     enum VideoDecoderOptions {
         ForceVideoDecoderDefault = 0,

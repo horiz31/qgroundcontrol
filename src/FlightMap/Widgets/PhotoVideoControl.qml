@@ -700,6 +700,18 @@ Rectangle {
                             }
                         }
                     }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Map FOV Overlay")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.fovOverlay.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.fovOverlay.rawValue = checked ? 1 : 0
+                    }
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
@@ -712,6 +724,18 @@ Rectangle {
                         checked:            _videoStreamSettings.remoteRecording.rawValue
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.remoteRecording.rawValue = checked ? 1 : 0
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Pilot view on FBW")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.pilotViewOnFBW.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
                     }
 
                     QGCLabel {
@@ -735,6 +759,9 @@ Rectangle {
                             }
                         }
                     }
+
+
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("IR Color Mode")

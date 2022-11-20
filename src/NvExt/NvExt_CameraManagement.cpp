@@ -14,7 +14,7 @@ CameraManagement::CameraManagement(QObject *parent,MultiVehicleManager *multiVeh
     this->_multiVehicleManager = multiVehicleManager;
     this->_joystickManager = joystickManager;    
     activeVehicle = _multiVehicleManager->activeVehicle();
-    connect(_multiVehicleManager, &MultiVehicleManager::activeVehicleChanged, this, &CameraManagement::_activeVehicleChanged);
+    connect(_multiVehicleManager, &MultiVehicleManager::activeVehicleChanged, this, &CameraManagement::_activeVehicleChanged);  
     connect(this->_joystickManager, &JoystickManager::activeCamJoystickChanged, this, &CameraManagement::_activeCamJoystickChanged);
 
     /* connect the tile loaded signal to the cache worker */
@@ -26,7 +26,9 @@ CameraManagement::CameraManagement(QObject *parent,MultiVehicleManager *multiVeh
 void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
 {
     this->activeVehicle = activeVehicle;
-    if(activeVehicle){
+    if(activeVehicle)
+    {
+        connect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);
         float time = QDateTime::currentSecsSinceEpoch();
         /* Sending the system time to the vehicle */
         sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemTime,time,0,0,0,0,0);
@@ -43,6 +45,16 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
         _startUpTimer.start();
 
     }
+    else
+    {
+        disconnect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);
+    }
+}
+
+void CameraManagement::_flightModeChanged()
+{
+    if ((this->activeVehicle->flightMode() == "FBW A" || this->activeVehicle->flightMode() == "FBW B") && qgcApp()->toolbox()->settingsManager()->videoSettings()->pilotViewOnFBW()->rawValue().toBool() == true)
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
 }
 
 void CameraManagement::_activeCamJoystickChanged(Joystick* activeCamJoystick)

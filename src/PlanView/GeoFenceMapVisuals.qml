@@ -17,6 +17,8 @@ import QGroundControl.ScreenTools   1.0
 import QGroundControl.Palette       1.0
 import QGroundControl.Controls      1.0
 import QGroundControl.FlightMap     1.0
+import QGroundControl.FactSystem        1.0
+import QGroundControl.FactControls      1.0
 
 /// GeoFence map visuals
 Item {
@@ -43,6 +45,7 @@ Item {
     property real   _interiorOpacityExclusion:  0.2 * opacity
     property real   _interiorOpacityInclusion:  1 * opacity
     property var    _losCoords:                 QGroundControl.multiVehicleManager.activeVehicle ? QGroundControl.multiVehicleManager.activeVehicle.losCoords : []
+    property var    _videoSettings:             QGroundControl.settingsManager.videoSettings
 
     function addPolygon(inclusionPolygon) {
         // Initial polygon is inset to take 2/3rds space
@@ -157,7 +160,7 @@ Item {
             opacity:        0.2
             border.color:   "green"
             border.width:   3
-            visible:        true  //TBD: make this selectable
+            visible:        _videoSettings.fovOverlay.value
             path:           _losCoords
         }
     }

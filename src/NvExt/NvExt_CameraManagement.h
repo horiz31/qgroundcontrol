@@ -191,6 +191,8 @@ public:
     void addTileToCahce(QString tile_hash, QByteArray tile_data);
     void getAltAtCoord(float lat,float lon);
 
+    void _flightModeChanged();
+
     Q_INVOKABLE void pointToCoordinate(float lat,float lon);
     Q_INVOKABLE void trackOnPosition(float posX,float posY, int chan);
     Q_INVOKABLE void setSysModeObsCommand(void);
@@ -243,7 +245,7 @@ public:
     Q_INVOKABLE void setSysSBSModeCommand(int mode);
     Q_INVOKABLE void setSysVMDOnCommand(void);
     Q_INVOKABLE void setSysVMDOffCommand(void);
-    Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);
+    Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);   
 
 protected:
     MultiVehicleManager*    _multiVehicleManager;

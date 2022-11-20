@@ -165,6 +165,20 @@
     "enumStrings":      "Full Screen, PIP, SBS, Fusion",
     "enumValues":       "1,4,5,3",
     "default":     1
+},
+{
+    "name":             "fovOverlay",
+    "shortDesc":        "FOV Map Overlay",
+    "longDesc":         "Specify if the camera's field of view will be shown as an overlay on the map",
+    "type":             "bool",
+    "default":     true
+},
+{
+    "name":             "pilotViewOnFBW",
+    "shortDesc":        "Switch to Pilot view on FBW mode change",
+    "longDesc":         "Specify if the gimbal should switch to pilot view when the flight mode is changed to FBWA or FBWB",
+    "type":             "bool",
+    "default":     true
 }
 ]
 }
