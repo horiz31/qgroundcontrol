@@ -910,7 +910,7 @@ Item {
             anchors.left:       mapScale.left
             anchors.right:      rightPanel.left
             anchors.bottom:     parent.bottom
-            height:             ScreenTools.defaultFontPixelHeight * 7
+            height:             ScreenTools.defaultFontPixelHeight * 9
             missionController:  _missionController
             visible:            _internalVisible && _editingLayer === _layerMission && QGroundControl.corePlugin.options.showMissionStatus
 
