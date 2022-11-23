@@ -50,7 +50,7 @@ Item {
     property real   _margins:               ScreenTools.defaultFontPixelWidth / 2
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
-    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 27
+    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 22
 
     property real _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
 

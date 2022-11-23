@@ -204,13 +204,13 @@ Item {
             text:               vehicle ? vehicle.airSpeed.value.toFixed(1) : "--.-"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
-            font.pointSize:     ScreenTools.largeFontPointSize
+            font.pointSize:     ScreenTools.mediumFontPointSize
         }
         QGCLabel {
             text:               vehicle ?  vehicle.groundSpeed.value.toFixed(1) : "--.-"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
-            font.pointSize:     ScreenTools.largeFontPointSize
+            font.pointSize:     ScreenTools.mediumFontPointSize
         }
 
     }
@@ -231,7 +231,7 @@ Item {
         text:                       vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.value).toFixed(0) : "----"   //vehicle.altitudeRelative.value.toFixed(0)
         color:                      "white"
         font.family:        ScreenTools.normalFontFamily
-        font.pointSize:     ScreenTools.largeFontPointSize
+        font.pointSize:     ScreenTools.mediumFontPointSize
     }
 
     QGCColoredImage {

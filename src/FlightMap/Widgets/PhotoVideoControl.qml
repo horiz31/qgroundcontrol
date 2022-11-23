@@ -223,9 +223,11 @@ Rectangle {
         anchors.margins:    _margins
         anchors.top:        parent.top
         anchors.right:      parent.right
+        anchors.rightMargin: ScreenTools.defaultFontPixelWidth
+        anchors.topMargin:  ScreenTools.defaultFontPixelWidth
         source:             "/res/gear-black.svg"
         mipmap:             true
-        height:             ScreenTools.defaultFontPixelHeight * 2
+        height:             ScreenTools.defaultFontPixelHeight * 1.3
         width:              height
         sourceSize.height:  height
         color:              qgcPal.text
@@ -250,6 +252,7 @@ Rectangle {
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
         // using the unified properties/functions.
         Rectangle {
+            id:                 photoVidSwitch
             Layout.alignment:   Qt.AlignHCenter
             width:              ScreenTools.defaultFontPixelWidth * 12
             height:             width / 2
@@ -395,8 +398,8 @@ Rectangle {
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                         text:           qsTr("OBS")
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Observation") : false
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         SequentialAnimation {
                                     id: animObsButton
@@ -431,8 +434,8 @@ Rectangle {
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Pilot" || _activeVehicle.nvGimbal.mode.value === "Local Pos") : false
                         text:           qsTr("PILOT")
-                        leftPadding:    ScreenTools.defaultFontPixelWidth
-                        rightPadding:   ScreenTools.defaultFontPixelWidth
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         SequentialAnimation {
                                     id: animPilotButton
@@ -467,8 +470,8 @@ Rectangle {
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "GRR") : false
                         text:           qsTr("GRR")
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1.5
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1.5
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         SequentialAnimation {
                                     id: animGrrButton
@@ -503,8 +506,8 @@ Rectangle {
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                         text:           qsTr("HOLD")
                         highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Hold") : false
-                        leftPadding:    ScreenTools.defaultFontPixelWidth
-                        rightPadding:   ScreenTools.defaultFontPixelWidth
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
                         SequentialAnimation {
                                     id: animHoldButton
@@ -579,6 +582,7 @@ Rectangle {
                 columns:            2
                 columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
                 rowSpacing:         ScreenTools.defaultFontPixelHeight
+                Layout.alignment:   Qt.AlignHCenter
                 visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
 
                 QGCButton {
@@ -588,8 +592,8 @@ Rectangle {
                     font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                     pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                     text:           qsTr("DAY")
-                    leftPadding:    10
-                    rightPadding:   10
+                    leftPadding:    7
+                    rightPadding:   7
                     SequentialAnimation {
                                 id: animDayButton
                                 // Expand the button
@@ -622,8 +626,8 @@ Rectangle {
                     font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                     pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                     text:           qsTr("NUC")
-                    leftPadding:    10
-                    rightPadding:   10
+                    leftPadding:    7
+                    rightPadding:   7
                     SequentialAnimation {
                                 id: animNucButton
                                 // Expand the button
