@@ -23,6 +23,7 @@ ToolStripActionList {
             text:           qsTr("Plan")
             iconSource:     "/qmlimages/Plan.svg"
             onTriggered:    mainWindow.showPlanView()
+            enabled:        _activeVehicle && _activeVehicle.parameterManager.parametersReady
         },
         PreFlightCheckListShowAction { onTriggered: displayPreFlightChecklist() },
         ClearFlightTrail {  onTriggered:  clearFlightPath()  },

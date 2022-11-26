@@ -28,7 +28,7 @@
             "id":                   16,
             "rawName":              "MAV_CMD_NAV_WAYPOINT",
             "friendlyName":         "Waypoint",
-            "description":          "Travel to a position in 3D space brad.",
+            "description":          "Travel to a position in 3D space.",
             "specifiesCoordinate":  true,
             "friendlyEdit":         true,
             "category":             "Basic",

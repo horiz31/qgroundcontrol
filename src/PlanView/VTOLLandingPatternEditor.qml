@@ -55,7 +55,7 @@ Rectangle {
             id:             finalApproachSection
             anchors.left:   parent.left
             anchors.right:  parent.right
-            text:           qsTr("Final approach")
+            text:           qsTr("Approach")
         }
 
         Column {
@@ -70,7 +70,7 @@ Rectangle {
             FactCheckBox {
                 text:       qsTr("Use loiter to altitude")
                 fact:       missionItem.useLoiterToAlt
-                visible:    missionItem.useLoiterToAlt.visible
+                visible:    true
             }
 
             GridLayout {
@@ -82,6 +82,7 @@ Rectangle {
 
                 AltitudeFactTextField {
                     Layout.fillWidth:   true
+                    inputMethodHints:   Qt.ImhDigitsOnly
                     fact:               missionItem.finalApproachAltitude
                     altitudeMode:       _altitudeMode
                 }
@@ -93,6 +94,7 @@ Rectangle {
 
                 FactTextField {
                     Layout.fillWidth:   true
+                    inputMethodHints:   Qt.ImhDigitsOnly
                     fact:               missionItem.loiterRadius
                     visible:            missionItem.useLoiterToAlt.rawValue
                 }
@@ -118,7 +120,7 @@ Rectangle {
             id:             landingPointSection
             anchors.left:   parent.left
             anchors.right:  parent.right
-            text:           qsTr("Landing point")
+            text:           qsTr("Final approach")
         }
 
         Column {
@@ -138,20 +140,24 @@ Rectangle {
 
                 FactTextField {
                     Layout.fillWidth:   true
+                    inputMethodHints:   Qt.ImhDigitsOnly
                     fact:               missionItem.landingHeading
                 }
 
-                QGCLabel { text: qsTr("Ground Altitude") }
+                //QGCLabel { text: qsTr("Ground Altitude") }
+                QGCLabel { text: qsTr("Approach Altitude") }  //supervolo firmware expect to use the altitude as the appoach altitude, this is outside current ardupilot specs
 
                 AltitudeFactTextField {
                     Layout.fillWidth:   true
                     fact:               missionItem.landingAltitude
+                    inputMethodHints:   Qt.ImhDigitsOnly
                     altitudeMode:       _altitudeMode
                 }
 
                 QGCLabel { text: qsTr("Landing Dist") }
 
                 FactTextField {
+                    inputMethodHints:   Qt.ImhDigitsOnly                    
                     fact:               missionItem.landingDistance
                     Layout.fillWidth:   true
                 }

@@ -59,6 +59,8 @@ FlightMap {
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
+    property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
+
 
     function updateAirspace(reset) {
         if(_airspaceEnabled) {
@@ -655,14 +657,15 @@ FlightMap {
                         QGCLabel {
                             Layout.fillWidth:       true
                             text:                   qsTr("Camera Actions:")
-                            font.family:    ScreenTools.demiboldFontFamily
-                            visible:                QGroundControl.videoManager.hasVideo && !QGroundControl.videoManager.fullScreen
+                            font.family:            ScreenTools.demiboldFontFamily
+                            visible:                !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
                         }
 
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:               qsTr("Point at location")
-                            visible:            QGroundControl.videoManager.hasVideo && !QGroundControl.videoManager.fullScreen
+                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
                             onClicked: {
                                 mapClickIconItem.hide()
                                 hideDialog()
@@ -689,6 +692,7 @@ FlightMap {
 
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:               qsTr("Go to location")
                             visible:            globals.guidedControllerFlyView.showGotoLocation
                             onClicked: {
@@ -701,6 +705,7 @@ FlightMap {
                         }
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:           qsTr("Orbit at location")
                             visible:        globals.guidedControllerFlyView.showOrbit
 
@@ -713,6 +718,7 @@ FlightMap {
                         }
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:           qsTr("ROI at location")
                             visible:        globals.guidedControllerFlyView.showROI
 
@@ -748,8 +754,19 @@ FlightMap {
                             //horizontalAlignment:    Text.AlignHCenter
                             visible:                true
                         }
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   mapMouseArea.clickCoord ? qsTr("Range: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  : ""
+                            visible:                true
+                        }
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   mapMouseArea.clickCoord ? qsTr("Bearing: ") + _activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °" : ""
+                            visible:                true
+                        }
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:               qsTr("Copy Coordinates to Clipboard")
                             visible:            true
                             onClicked: {
@@ -781,6 +798,7 @@ FlightMap {
 
                         QGCButton {
                             Layout.fillWidth:   true
+                            backRadius:         4
                             text:               qsTr("Create ATAK Target")
                             visible:            true
                             onClicked:{

@@ -44,6 +44,12 @@ Rectangle {
                 border.color = "#80000000"
         }
     }
+    Connections {
+        target: QGroundControl.multiVehicleManager.activeVehicle
+        onNvModeChanged: {
+            _currentNvMode = _activeVehicle.nvGimbal.mode.value;
+        }
+    }
     property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
     property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
 
@@ -110,6 +116,7 @@ Rectangle {
     property bool   _nvIRMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 1 : false
     property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
     property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
+    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
 
     function setCameraMode(photoMode) {
         _videoStreamInPhotoMode = photoMode
@@ -391,84 +398,12 @@ Rectangle {
                     visible:            _nextVisionGimbalAvailable
 
                     QGCButton {
-                        id:             obsButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        text:           qsTr("OBS")
-                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Observation") : false
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        SequentialAnimation {
-                                    id: animObsButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: obsButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: obsButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animObsButton.start()
-                            joystickManager.cameraManagement.setSysModeObsCommand()
-                        }
-                    }
-                    QGCButton {
-                        id:             pilotButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Pilot" || _activeVehicle.nvGimbal.mode.value === "Local Pos") : false
-                        text:           qsTr("PILOT")
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        SequentialAnimation {
-                                    id: animPilotButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: pilotButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: pilotButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animPilotButton.start()
-                            joystickManager.cameraManagement.setSysModePilotCommand()
-                        }
-                    }
-                    QGCButton {
                         id:             grrButton
                         backRadius:     4
                         showBorder:     true
                         font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "GRR") : false
+                        highlight:      _currentNvMode === "GRR"
                         text:           qsTr("GRR")
                         leftPadding:    ScreenTools.defaultFontPixelWidth * 1
                         rightPadding:   ScreenTools.defaultFontPixelWidth * 1
@@ -499,13 +434,86 @@ Rectangle {
                         }
                     }
                     QGCButton {
+                        id:             pilotButton
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        highlight:      ((_currentNvMode === "Pilot") || (_currentNvMode === "Local Pos")) ? true : false
+                        text:           qsTr("PILOT")
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        SequentialAnimation {
+                                    id: animPilotButton
+                                    // Expand the button
+                                    PropertyAnimation {
+                                        target: pilotButton
+                                        property: "scale"
+                                        to: 1.2
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+
+                                    // Shrink back to normal
+                                    PropertyAnimation {
+                                        target: pilotButton
+                                        property: "scale"
+                                        to: 1.0
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                        onClicked: {
+                            animPilotButton.start()
+                            joystickManager.cameraManagement.setSysModePilotCommand()
+                        }
+                    }
+                    QGCButton {
+                        id:             obsButton
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        text:           qsTr("OBS")
+                        highlight:      _currentNvMode === "Observation"
+                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
+                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        SequentialAnimation {
+                                    id: animObsButton
+                                    // Expand the button
+                                    PropertyAnimation {
+                                        target: obsButton
+                                        property: "scale"
+                                        to: 1.2
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+
+                                    // Shrink back to normal
+                                    PropertyAnimation {
+                                        target: obsButton
+                                        property: "scale"
+                                        to: 1.0
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                        onClicked: {
+                            animObsButton.start()
+                            joystickManager.cameraManagement.setSysModeObsCommand()
+                        }
+                    }
+
+                    QGCButton {
                         id:             holdButton
                         backRadius:     4
                         showBorder:     true
                         font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
                         text:           qsTr("HOLD")
-                        highlight:      _activeVehicle ? (_activeVehicle.nvGimbal.mode.value === "Hold") : false
+                        highlight:      _currentNvMode === "Hold"
                         leftPadding:    ScreenTools.defaultFontPixelWidth * .5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * .5
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable

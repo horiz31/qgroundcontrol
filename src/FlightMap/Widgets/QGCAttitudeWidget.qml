@@ -285,9 +285,9 @@ Item {
                     }
                     QGCTextField {
                         id:             targetAirspeed
+                        inputMethodHints:   Qt.ImhDigitsOnly
                         text:           vehicle ? getCurrentAirSpeed() : "";
-                        enabled:        true
-                        inputMethodHints:    Qt.ImhFormattedNumbersOnly
+                        enabled:        true                        
 
                         function getCurrentAirSpeed()
                         {

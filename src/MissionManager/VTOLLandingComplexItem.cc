@@ -89,7 +89,7 @@ bool VTOLLandingComplexItem::load(const QJsonObject& complexObject, int sequence
 
 MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, double lat, double lon, double alt, QObject* parent)
 {
-    qDebug() << "writing vtol land missoin item";
+    qDebug() << "writing vtol land mission item";
     return new MissionItem(seqNum,
                            MAV_CMD_NAV_VTOL_LAND,
                            altRel ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,

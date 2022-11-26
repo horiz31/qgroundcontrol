@@ -237,6 +237,11 @@ void sigHandler(int s)
 
 int main(int argc, char *argv[])
 {
+    //if we want the app to use the virtual keyboard. Useful on a tablet like the Uxv, somewhat annoying on desktop with keyboard
+#ifdef QGC_USE_VIRTUAL_KEYBOARD
+    qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
+#endif
+
 #ifndef __mobile__
     // We make the runguard key different for custom and non custom
     // builds, so they can be executed together in the same device.

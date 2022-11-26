@@ -48,16 +48,16 @@
 },
 {
     "name":             "LandingAltitude",
-    "shortDesc":        "Altitude for landing point on ground.",
+    "shortDesc":        "Altitude for approach altitude.",
     "type":             "double",
     "units":            "vertical m",
     "decimalPlaces":    1,
-    "default":          0.0
+    "default":          60.96
 },
 {
     "name":         "UseLoiterToAlt",
     "shortDesc":    "Use a loiter to altitude item for final appoach. Otherwise use a regular waypoint.",
-    "type":         "bool",
+    "type":         "bool",    
     "default":      true
 },
 {

@@ -174,6 +174,7 @@ Rectangle {
 
                 FactTextField {
                     id:                 altField
+                    inputMethodHints:   Qt.ImhDigitsOnly  //see what happens supervolo on tablet                    
                     Layout.fillWidth:   true
                     fact:               missionItem.altitude
                 }
