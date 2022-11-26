@@ -408,6 +408,7 @@ Rectangle {
                         leftPadding:    ScreenTools.defaultFontPixelWidth * 1
                         rightPadding:   ScreenTools.defaultFontPixelWidth * 1
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        hoverEnabled:   false
                         SequentialAnimation {
                                     id: animGrrButton
                                     // Expand the button
@@ -444,6 +445,7 @@ Rectangle {
                         leftPadding:    ScreenTools.defaultFontPixelWidth * .5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * .5
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        hoverEnabled:   false
                         SequentialAnimation {
                                     id: animPilotButton
                                     // Expand the button
@@ -465,7 +467,7 @@ Rectangle {
                                     }
                                 }
                         onClicked: {
-                            animPilotButton.start()
+                            animPilotButton.start()                            
                             joystickManager.cameraManagement.setSysModePilotCommand()
                         }
                     }
@@ -480,6 +482,7 @@ Rectangle {
                         leftPadding:    ScreenTools.defaultFontPixelWidth * 1
                         rightPadding:   ScreenTools.defaultFontPixelWidth * 1
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        hoverEnabled:   false
                         SequentialAnimation {
                                     id: animObsButton
                                     // Expand the button
@@ -517,6 +520,7 @@ Rectangle {
                         leftPadding:    ScreenTools.defaultFontPixelWidth * .5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * .5
                         visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
+                        hoverEnabled:   false
                         SequentialAnimation {
                                     id: animHoldButton
                                     // Expand the button
@@ -561,6 +565,7 @@ Rectangle {
                 visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
                 leftPadding:    10
                 rightPadding:   10
+                hoverEnabled:   false
                 SequentialAnimation {
                             id: animIrButton
                             // Expand the button
@@ -602,6 +607,7 @@ Rectangle {
                     text:           qsTr("DAY")
                     leftPadding:    7
                     rightPadding:   7
+                    hoverEnabled:   false
                     SequentialAnimation {
                                 id: animDayButton
                                 // Expand the button
@@ -636,6 +642,7 @@ Rectangle {
                     text:           qsTr("NUC")
                     leftPadding:    7
                     rightPadding:   7
+                    hoverEnabled:   false
                     SequentialAnimation {
                                 id: animNucButton
                                 // Expand the button

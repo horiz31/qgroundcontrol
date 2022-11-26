@@ -126,7 +126,8 @@ Rectangle {
                     Layout.fillWidth:   true
                     wrapMode:           Text.WordWrap
                     font.pointSize:     ScreenTools.smallFontPointSize
-                    text:               qsTr("Altitude below specifies the approximate altitude of the ground. Normally 0 for landing back at original launch location.")
+                    //text:               qsTr("Altitude below specifies the approximate altitude of the ground. Normally 0 for landing back at original launch location.")
+                    text:               qsTr("Approach altitude. The altitude above ground the aircraft will use to transition to the landing location.")  //volo edit
                     visible:            missionItem.isLandCommand
                 }
 
