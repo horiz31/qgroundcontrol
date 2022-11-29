@@ -524,7 +524,20 @@ void CameraManagement::setSysModePilotCommand()
 {
     /* Sending the Pilot command */
     //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-10,0,0,0,0,0);
+
+    /* Set the fov after short delay, because we can't stack commands */
+    _delayTimer.setSingleShot(true);
+    _delayTimer.setInterval(500);
+    connect(&_delayTimer, &QTimer::timeout, this, &CameraManagement::setPilotPhaseTwo);
+    _delayTimer.start();
+
+
+}
+void CameraManagement::setPilotPhaseTwo()
+{
+    //zoom out
+    setSysZoomOutCommand();
 }
 
 void CameraManagement::setSysModeStowCommand()

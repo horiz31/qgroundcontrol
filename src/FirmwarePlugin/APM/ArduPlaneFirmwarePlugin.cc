@@ -62,7 +62,7 @@ ArduPlaneFirmwarePlugin::ArduPlaneFirmwarePlugin(void)
         APMPlaneMode(APMPlaneMode::AVOID_ADSB,      false),
         APMPlaneMode(APMPlaneMode::GUIDED,          true),
         APMPlaneMode(APMPlaneMode::INITIALIZING,    false),
-        APMPlaneMode(APMPlaneMode::QSTABILIZE,      false),
+        APMPlaneMode(APMPlaneMode::QSTABILIZE,      true),
         APMPlaneMode(APMPlaneMode::QHOVER,          true),
         APMPlaneMode(APMPlaneMode::QLOITER,         true),
         APMPlaneMode(APMPlaneMode::QLAND,           true),
