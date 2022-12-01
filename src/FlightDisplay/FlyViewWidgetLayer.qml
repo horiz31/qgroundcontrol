@@ -40,8 +40,9 @@ Item {
     property var    parentToolInsets
     property var    totalToolInsets:        _totalToolInsets
     property var    mapControl
-
-    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
+    property var    _mapPosition:           QGroundControl.flightMapPosition
+    property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
+    property var    _activeVehicleCoordinate:   _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
     property var    _planMasterController:  globals.planMasterControllerFlyView
     property var    _missionController:     _planMasterController.missionController
     property var    _geoFenceController:    _planMasterController.geoFenceController
@@ -275,9 +276,18 @@ Item {
         onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
+        onCenterMap:           { mapControl.zoomLevel = 18; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
+        //onCenterMap:                mapControl.mapFitFunctions.fitMapViewportToMissionItems()
+        //onCenterMap:                mapFitFunctions.fitMapViewportToAllItems()
         property real leftInset: x + width
     }
 
+    MapFitFunctions {
+        id:                         mapFitFunctions // The name for this id cannot be changed without breaking references outside of this code. Beware!
+        map:                        mapControl
+        usePlannedHomePosition:     false
+        planMasterController:       _planMasterController
+    }
     FlyViewAirspaceIndicator {
         anchors.top:                parent.top
         anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 0.25

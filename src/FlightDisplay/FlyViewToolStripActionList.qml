@@ -17,6 +17,7 @@ ToolStripActionList {
 
     signal displayPreFlightChecklist
     signal clearFlightPath
+    signal centerMap
 
     model: [
         ToolStripAction {
@@ -27,6 +28,7 @@ ToolStripActionList {
         },
         PreFlightCheckListShowAction { onTriggered: displayPreFlightChecklist() },
         ClearFlightTrail {  onTriggered:  clearFlightPath()  },
+        CenterMap {  onTriggered:  centerMap()  },
         GuidedActionTakeoff { },
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },

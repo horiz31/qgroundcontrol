@@ -19,12 +19,14 @@ ToolStrip {
 
     signal displayPreFlightChecklist
     signal clearFlightPath
+    signal centerMap
 
     FlyViewToolStripActionList {
         id: flyViewToolStripActionList
 
         onDisplayPreFlightChecklist: _root.displayPreFlightChecklist()
         onClearFlightPath: _root.clearFlightPath()
+        onCenterMap:    _root.centerMap()
     }
 
     model: flyViewToolStripActionList.model

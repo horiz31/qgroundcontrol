@@ -19,7 +19,8 @@ import QGroundControl.Airspace      1.0
 import QGroundControl.Controllers   1.0
 import QGroundControl.Controls      1.0
 import QGroundControl.FlightDisplay 1.0
-import QGroundControl.FlightMap     1.0
+import
+QGroundControl.FlightMap     1.0
 import QGroundControl.Palette       1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Vehicle       1.0
@@ -200,8 +201,8 @@ FlightMap {
         interval:   10000
         running:    false
         onTriggered: {
-            _disableVehicleTracking = false
-            updateMapToVehiclePosition()
+                //_disableVehicleTracking = false
+                //updateMapToVehiclePosition()
         }
     }
 
@@ -410,7 +411,7 @@ FlightMap {
         sourceItem: MissionItemIndexLabel {
             checked:    true
             index:      -1
-            label:      qsTr("Go here", "Go to location waypoint")
+            label:      qsTr("Guided Point", "Guided mode point")
         }
 
         property bool inGotoFlightMode: _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.gotoFlightMode : false
@@ -703,6 +704,24 @@ FlightMap {
 
                             }
                         }
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            backRadius:         4
+                            text:               qsTr("Go to and point camera at location")
+                            visible:            globals.guidedControllerFlyView.showGotoLocation && !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                gotoLocationItem.show(mapMouseArea.clickCoord)
+                                hideDialog()
+                                if(_activeVehicle)
+                                    joystickManager.cameraManagement.pointToCoordinate(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
+
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem)
+
+
+                            }
+                        }
                         QGCButton {
                             Layout.fillWidth:   true
                             backRadius:         4
@@ -716,6 +735,7 @@ FlightMap {
                                 globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionOrbit, mapMouseArea.clickCoord, orbitMapCircle)
                             }
                         }
+
                         QGCButton {
                             Layout.fillWidth:   true
                             backRadius:         4
