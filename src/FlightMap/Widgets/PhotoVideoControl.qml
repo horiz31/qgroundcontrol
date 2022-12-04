@@ -734,6 +734,18 @@ Rectangle {
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Map Target Overlay")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.targetOverlay.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.targetOverlay.rawValue = checked ? 1 : 0
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Remote Recording")
                         visible:            _nextVisionGimbalAvailable
                     }

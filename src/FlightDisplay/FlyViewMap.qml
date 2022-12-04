@@ -25,6 +25,7 @@ import QGroundControl.Palette       1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Vehicle       1.0
 
+
 FlightMap {
     id:                         _root
     allowGCSLocationCenter:     true
@@ -33,6 +34,7 @@ FlightMap {
     zoomLevel:                  QGroundControl.flightMapZoom
     center:                     QGroundControl.flightMapPosition
 
+
     property Item pipState: _pipState
     QGCPipState {
         id:         _pipState
@@ -40,6 +42,7 @@ FlightMap {
         isDark:     _isFullWindowItemDark
     }
 
+    property var    altitudeSlider             //passed in so we can know if it is visible or not
     property var    rightPanelWidth
     property var    planMasterController
     property bool   pipMode:                    false   // true: map is shown in a small pip mode
@@ -61,6 +64,7 @@ FlightMap {
     property bool   _saveZoomLevelSetting:      true
 
     property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
+    property var    _videoSettings:             QGroundControl.settingsManager.videoSettings
 
 
     function updateAirspace(reset) {
@@ -369,6 +373,31 @@ FlightMap {
         }
     }
 
+    // NextVision Target visuals
+    MapQuickItem {
+        id:             nextVisionTargetIndicator
+        anchorPoint.x:  sourceItem.anchorPointX
+        anchorPoint.y:  sourceItem.anchorPointY
+        coordinate:     _activeVehicle ? _activeVehicle.nvTargetCoordinate : QtPositioning.coordinate()       
+        visible:        targetVisible()
+
+        sourceItem: MissionItemIndexLabel {
+            checked:    true
+            index:      -1
+            label:      qsTr("+", "Gimbal Target")
+        }
+        function targetVisible()
+        {
+            if (!_activeVehicle)
+                return false
+            if ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)))
+                return false
+            return _videoSettings.targetOverlay.value
+        }
+
+    }
+
+
     // Map Click Location visuals
     MapQuickItem {
         id:             mapClickIconItem
@@ -403,8 +432,8 @@ FlightMap {
 
     // GoTo Location visuals
     MapQuickItem {
-        id:             gotoLocationItem
-        visible:        false
+        id:             gotoLocationItem        
+        visible:        _activeVehicle ? inGotoFlightMode : false
         z:              QGroundControl.zOrderMapItems
         anchorPoint.x:  sourceItem.anchorPointX
         anchorPoint.y:  sourceItem.anchorPointY
@@ -417,18 +446,30 @@ FlightMap {
         property bool inGotoFlightMode: _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.gotoFlightMode : false
 
         onInGotoFlightModeChanged: {
-            if (!inGotoFlightMode && gotoLocationItem.visible) {
-                // Hide goto indicator when vehicle falls out of guided mode
-                gotoLocationItem.visible = false
+            if (inGotoFlightMode && !gotoLocationItem.visible)
+            {
+                gotoLocationItem.visible = true
             }
+            else if (!inGotoFlightMode && gotoLocationItem.visible) {
+                // Hide goto indicator when vehicle falls out of guided mode                
+                gotoLocationItem.visible = false
+            }            
         }
 
         Connections {
             target: QGroundControl.multiVehicleManager
-            function onActiveVehicleChanged(activeVehicle) {
-                if (!activeVehicle) {
+            function onActiveVehicleChanged(activeVehicle)
+            {
+                if (!activeVehicle) {                   
                     gotoLocationItem.visible = false
                 }
+            }
+
+        }
+        Connections {
+            target: _activeVehicle
+            function onGuidedModeCoordinateChanged(guidedCoordinate) {
+                gotoLocationItem.coordinate = guidedCoordinate
             }
         }
 
@@ -437,8 +478,7 @@ FlightMap {
             gotoLocationItem.visible = true
         }
 
-        function hide() {
-            gotoLocationItem.visible = false
+        function hide() {           
         }
 
         function actionConfirmed() {
@@ -446,11 +486,122 @@ FlightMap {
         }
 
         function actionCancelled() {
+            //update the coordinate back to what the vehicle is tracking as it's guided coordinate
+            //visibility of if this is shown or not is handled by whether we are in guided mode or not
+            gotoLocationItem.coordinate = _activeVehicle.guidedModeCoordinate
+            //hide()
+        }
+    }
 
-            //if ( _activeVehicle.flightMode !== _activeVehicle.gotoFlightMode)
-            //{
-                hide()
-            //}
+
+    // Guided Mode PLANNING visuals, this is shown during goto and pause planning to indicate the guided mode radius and direction in a grey circle
+    QGCMapCircleVisuals {
+        id:             guidedPlanMapCircle
+        mapControl:     parent
+        mapCircle:      _guidedPlanCircle
+        visible:        false
+        borderColor:    qgcPal.colorGrey
+
+        centerDragHandleVisible: false
+        interactive:             false
+
+        property alias center:              _guidedPlanCircle.center
+        property alias clockwiseRotation:   _guidedPlanCircle.clockwiseRotation
+        property alias radius:              _guidedPlanCircle.radius.rawValue
+        readonly property real defaultRadius: _activeVehicle ? _activeVehicle.guidedModeRadius : 150
+
+
+        function setCenter(coord) {
+            guidedPlanMapCircle.center = coord
+        }
+        function setRadius(radius)
+        {
+            guidedPlanMapCircle.radius = radius
+        }
+        function setClockwise(clockwise)
+        {
+            guidedPlanMapCircle.clockwiseRotation = clockwise
+        }
+        function show()
+        {
+            guidedPlanMapCircle.visible = true
+        }
+
+        function hide()
+        {
+            guidedPlanMapCircle.visible = false
+        }
+        function actionCancelled()
+        {
+            guidedPlanMapCircle.visible = false
+        }
+        function actionConfirmed()
+        {
+            guidedPlanMapCircle.visible = false
+        }
+
+        Component.onCompleted: globals.guidedControllerFlyView.guidedPlanMapCircle = guidedPlanMapCircle
+
+        QGCMapCircle {
+            id:                 _guidedPlanCircle
+            interactive:        true
+            radius.rawValue:    _activeVehicle ? _activeVehicle.guidedModePlannedRadius : 150
+            showRotation:       true
+            clockwiseRotation:  true
+        }
+    }
+
+    // Guided Mode Radius visuals, these should show any time the vehicle is in guided mode, and indicate the radius and location
+    QGCMapCircleVisuals {
+        id:             guidedMapCircle
+        mapControl:     parent
+        mapCircle:      _guidedCircle
+        visible:        _activeVehicle ? inGotoFlightMode : false
+        borderColor:    qgcPal.colorGreen
+        centerDragHandleVisible: false
+        interactive:             false
+
+        property alias center:              _guidedCircle.center
+        property alias clockwiseRotation:   _guidedCircle.clockwiseRotation
+        property alias radius:              _guidedCircle.radius.rawValue
+        readonly property real defaultRadius: _activeVehicle ? _activeVehicle.guidedModeRadius : 150
+        property bool inGotoFlightMode: _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.gotoFlightMode : false
+
+        /*
+        onInGotoFlightModeChanged: {
+            if (!inGotoFlightMode && guidedMapCircle.visible) {
+                // Hide  when vehicle falls out of guided mode
+                guidedMapCircle.visible = false
+            }
+            else if (inGotoFlightMode)
+            {
+                _guidedCircle.radius.rawValue = _activeVehicle.guidedModeRadius
+                guidedMapCircle.visible = true;
+                guidedMapCircle.borderColor = qgcPal.colorGreen
+            }
+        }
+        */
+
+        Connections {
+            target: _activeVehicle
+            function onGuidedModeRadiusChanged() {
+                guidedMapCircle.radius = _activeVehicle.guidedModeRadius
+            }
+            function onGuidedModeCoordinateChanged(guidedCoordinate) {
+                guidedMapCircle.center = guidedCoordinate
+            }
+            function onGuidedModeisClockwiseChanged(isClockwise) {
+                guidedMapCircle.clockwiseRotation = isClockwise
+            }
+
+        }      
+
+        QGCMapCircle {
+            id:                 _guidedCircle
+            interactive:        true
+            radius.rawValue:    _activeVehicle ? _activeVehicle.guidedModeRadius : 150
+            showRotation:       true
+            clockwiseRotation:  true
         }
     }
 
@@ -699,8 +850,11 @@ FlightMap {
                             onClicked: {
                                 mapClickIconItem.hide()
                                 gotoLocationItem.show(mapMouseArea.clickCoord)
+                                guidedPlanMapCircle.setCenter(mapMouseArea.clickCoord)
+                                guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                                guidedPlanMapCircle.setClockwise(true)
                                 hideDialog()
-                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem)
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem, guidedPlanMapCircle)
 
                             }
                         }
@@ -713,11 +867,15 @@ FlightMap {
                             onClicked: {
                                 mapClickIconItem.hide()
                                 gotoLocationItem.show(mapMouseArea.clickCoord)
+                                guidedPlanMapCircle.setCenter(mapMouseArea.clickCoord)
+                                guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                                guidedPlanMapCircle.setClockwise(true)
+
                                 hideDialog()
                                 if(_activeVehicle)
                                     joystickManager.cameraManagement.pointToCoordinate(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
 
-                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem)
+                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem, guidedPlanMapCircle)
 
 
                             }

@@ -13,6 +13,8 @@ import QtQuick.Controls         1.2
 import QGroundControl               1.0
 import QGroundControl.Controls      1.0
 import QGroundControl.Vehicle       1.0
+import QGroundControl.ScreenTools   1.0
+import QGroundControl.Palette               1.0
 
 /// Altitude slider for guided change altitude command
 Rectangle {
@@ -20,6 +22,8 @@ Rectangle {
 
     readonly property real _maxAlt: 121.92  // 400 feet
     readonly property real _minAlt: 3
+
+    property var mapRadiusIndicator
 
     property var  _activeVehicle:       QGroundControl.multiVehicleManager.activeVehicle
     property var  _flyViewSettings:     QGroundControl.settingsManager.flyViewSettings
@@ -30,9 +34,15 @@ Rectangle {
     property bool _flying:              _activeVehicle ? _activeVehicle.flying : false
     property bool _isClockwise:         true
     property bool _isDirectionVisible:  true
+    property bool _isRadiusVisible:     true
+    property bool _isRadiusInputVisible: true
+    property bool _isRadiusFollowVehicle: false
 
     function reset() {
         altSlider.value = 0
+        guidedRadiusField.text = _activeVehicle.guidedModeRadius.toString()
+        guidedDir.currentIndex = 0
+
     }
 
     function setToMinimumTakeoff() {
@@ -46,6 +56,28 @@ Rectangle {
         else if (value === false)
             _isDirectionVisible = false
     }
+    function setRadiusVisible(value)
+    {
+        if (value === true)
+            _isRadiusVisible = true;
+        else if (value === false)
+            _isRadiusVisible = false
+    }
+    function setRadiusInputVisible(value)
+    {
+        if (value === true)
+            _isRadiusInputVisible = true;
+        else if (value === false)
+            _isRadiusInputVisible = false
+    }
+
+    function setRadiusFollowVehicle(value)
+    {
+        if (value === true)
+            _isRadiusFollowVehicle = true;
+        else if (value === false)
+            _isRadiusFollowVehicle = false
+    }
 
     /// Returns the user specified change in altitude from the current vehicle altitude
     function getAltitudeChangeValue() {
@@ -57,6 +89,12 @@ Rectangle {
         //return true if clockwise, false if counter
     }
 
+    //this is grabed by the action controller prior to setting the command
+    function guidedRadius()
+    {
+        return QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(Number(guidedRadiusField.text));
+    }
+
     function log10(value) {
         if (value === 0) {
             return 0
@@ -65,6 +103,15 @@ Rectangle {
         }
     }
 
+    //add connection to the vehicle, on coordinate change, if __isRadiusFollowVehicle = true, update the center of the circle
+    Connections {
+        target: _activeVehicle
+        onCoordinateChanged: {
+            if(_isRadiusFollowVehicle && _root.mapRadiusIndicator){
+              _root.mapRadiusIndicator.setCenter(_activeVehicle.coordinate)
+            }
+        }
+    }
 
     Column {
         id:                 headerColumn
@@ -73,6 +120,14 @@ Rectangle {
         anchors.left:       parent.left
         anchors.right:      parent.right
 
+        QGCLabel {
+            anchors.left:           parent.left
+            anchors.right:          parent.right
+            wrapMode:               Text.WordWrap
+            horizontalAlignment:    Text.AlignHCenter
+            text:                   qsTr("Direction:")
+            visible:                _isDirectionVisible
+        }
         QGCComboBox {
             id:             guidedDir
             model:          [ qsTr("CW"), qsTr("CCW")]
@@ -83,9 +138,15 @@ Rectangle {
             onActivated:
             {
                 if (index === 0)
+                {
                     _isClockwise = true;
+                    _root.mapRadiusIndicator.setClockwise(true)
+                }
                 else
+                {
                     _isClockwise = false;
+                    _root.mapRadiusIndicator.setClockwise(false)
+                }
             }
         }
         QGCLabel {
@@ -93,23 +154,59 @@ Rectangle {
             anchors.right:          parent.right
             wrapMode:               Text.WordWrap
             horizontalAlignment:    Text.AlignHCenter
-            text:                   qsTr("New Alt(rel)")
+            text:                   qsTr("Radius:")
+            visible:                _isRadiusInputVisible
+        }
+        QGCTextField {
+            id:             guidedRadiusField
+            text:           _activeVehicle ? _activeVehicle.guidedModeRadius.toString() : ""
+            visible:        _activeVehicle ? (_isRadiusInputVisible && _activeVehicle.supportsGuidedRadius) : false
+            showUnits:      true
+            unitsLabel:     QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
+            anchors.left:   parent.left
+            anchors.right:  parent.right
+            inputMethodHints: Qt.ImhDigitsOnly
+            validator: IntValidator {bottom: 20; top: 10000;}
+            onEditingFinished: {               
+                if (_root.mapRadiusIndicator)
+                    _root.mapRadiusIndicator.setRadius(Number(guidedRadiusField.text))
+                altSlider.forceActiveFocus()
+            }
+            onAccepted: {                
+            }
+        }
+
+        QGCLabel {
+            anchors.left:           parent.left
+            anchors.right:          parent.right
+            wrapMode:               Text.WordWrap
+            horizontalAlignment:    Text.AlignHCenter
+            text:                   qsTr("New Alt:")
         }
 
         QGCLabel {
             id:                         altField
             anchors.horizontalCenter:   parent.horizontalCenter
+            font.family:                ScreenTools.demiboldFontFamily
+            font.pointSize:             ScreenTools.mediumFontPointSize
             text:                       newAltitudeAppUnits + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString  //QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
-
+            color:                      fontColor()
             property real   altGainRange:           Math.max(_sliderMaxAlt - _vehicleAltitude, 0)
             property real   altLossRange:           Math.max(_vehicleAltitude - _sliderMinAlt, 0)
             property real   altExp:                 Math.pow(altSlider.value, 3)
             property real   altLossGain:            altExp * (altSlider.value > 0 ? altGainRange : altLossRange)
             property real   newAltitudeMeters:      _vehicleAltitude + altLossGain
-            property string newAltitudeAppUnits:    QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(newAltitudeMeters).toFixed(1)  //this seems to be a bug, shouldn't it be vertical?  , was QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(newAltitudeMeters).toFixed(1)
+            property string newAltitudeAppUnits:    Math.round(QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(newAltitudeMeters).toFixed(0) / 10) * 10  //no need to do this in increments less than 10
 
             function setToMinimumTakeoff() {
                 altSlider.value = Math.pow(_activeVehicle.minimumTakeoffAltitude() / altGainRange, 1.0/3.0)
+            }
+
+            function fontColor() {
+                //console.log("altlossgain is" + altLossGain);
+                if (altLossGain > 5) return qgcPal.colorGreen
+                else if (altLossGain < -5) return qgcPal.colorOrange
+                else return qgcPal.text
             }
         }
     }
@@ -127,12 +224,13 @@ Rectangle {
         zeroCentered:       true
         rotation:           180
 
+
         // We want slide up to be positive values
         transform: Rotation {
             origin.x:   altSlider.width  / 2
             origin.y:   altSlider.height / 2
             angle:      180
         }
-    }
+    } 
 
 }

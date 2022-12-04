@@ -23,6 +23,32 @@ Item {
     property real   _heading:     _activeVehicle ? _activeVehicle.heading.rawValue.toFixed(0) : 0    
     PreFlightCheckModel {
         id:     listModel
+
+        PreFlightCheckGroup {
+            name: qsTr("Aircraft Assembly and Condition Checks")
+
+            PreFlightCheckButton {
+                name:        qsTr("Verify Assembly")
+                manualText:  qsTr("Aircraft is fully assembled, 6x bolts are secured with torque limited T-handle?")
+            }
+            PreFlightCheckButton {
+                name:        qsTr("Inspect VTOL Motors and Props")
+                manualText:  qsTr("VTOL motors spin free, are securely mounted and without defects, verify the props are security mounted and without damage.")
+            }
+            PreFlightCheckButton {
+                name:        qsTr("Inspect Control Surfaces")
+                manualText:  qsTr("Inspect the wings and control surfaces for any damange or binding.")
+            }
+            PreFlightCheckButton {
+                name:           qsTr("Check Servo Linkages")
+                manualText:     qsTr("Do they move freely, are the linkages free of damage?")
+            }
+
+            PreFlightCheckButton {
+                name:        qsTr("Engine Inspection")
+                manualText:  qsTr("Check that the engine is securely mounted, there are no cracks in the motor/generator, and the prop is in good condition.")
+            }
+        }
         PreFlightCheckGroup {
             name: qsTr("Mission and Payload Checks")
 
@@ -39,6 +65,10 @@ Item {
 
         PreFlightCheckGroup {
             name: qsTr("Sensor Checks")
+
+            PreFlightAirSpeedHealthCheck {
+                allowTelemetryFailureOverride:    true
+            }
 
             PreFlightBatteryCheck {
                 failurePercent:                 50
@@ -59,54 +89,32 @@ Item {
             PreFlightIMUTempCheck {
             }
 
-            PreFlightAirSpeedHealthCheck {
-                allowTelemetryFailureOverride:    true
+            PreFlightCheckButton {
+                name:            qsTr("Actuators")
+                manualText:      qsTr("Pickup and move the aircraft and ensure that control surfaces react. Did they work properly?")
             }
 
         }
 
         PreFlightCheckGroup {
-            name: qsTr("Servos, Motors and Engine Test")
+            name: qsTr("Final Engine and Motor Test")
 
-            PreFlightICEHealthCheck {
+            PreFlightCheckButton {
+                name:            qsTr("Position Aircraft")
+                manualText:      qsTr("Move the aircraft to the desired launch location.")
+            }
+            PreFlightCheckButton {
+                name:        qsTr("Ensrure safe flight area")
+                manualText:  qsTr("Ensure the launch area and takeoff path free of obstacles and non-essential people.")
             }
 
             PreFlightMultiRotorHealthCheck {
             }
-
-            PreFlightCheckButton {
-                name:           qsTr("Check Props")
-                manualText:     qsTr("Are all props securely mounted and free of damage?")
+            PreFlightICEHealthCheck {
             }
-            PreFlightCheckButton {
-                name:           qsTr("Check Servo Linkages")
-                manualText:     qsTr("Do they move freely, are the linkages free of damage?")
-            }
-            PreFlightCheckButton {
-                name:           qsTr("Check Surfaces")
-                manualText:     qsTr("Check wings and control surfaces for damage, are they ok?")
-            }
-            PreFlightCheckButton {
-                name:            qsTr("Actuators")
-                manualText:      qsTr("Move the aircraft and ensure that control surfaces react. Did they work properly?")
-            }
-
 
         }
 
-        PreFlightCheckGroup {
-            name: qsTr("Weather and launch safety")
-
-            PreFlightCheckButton {
-                name:        "Wind and Weather"
-                manualText:  qsTr("Ensure the aloft wind speeds are below the threshold for safe operation.")
-            }
-
-            PreFlightCheckButton {
-                name:        qsTr("Flight area")
-                manualText:  qsTr("Ensure the launch area and takeoff path free of obstacles and people.")
-            }
-        }
     }
 }
 

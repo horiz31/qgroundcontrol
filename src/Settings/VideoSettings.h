@@ -40,6 +40,7 @@ public:
     DEFINE_SETTINGFACT(remoteRecording)
     DEFINE_SETTINGFACT(videoPlaybackMode)    
     DEFINE_SETTINGFACT(fovOverlay)
+    DEFINE_SETTINGFACT(targetOverlay)
     DEFINE_SETTINGFACT(pilotViewOnFBW)
 
 

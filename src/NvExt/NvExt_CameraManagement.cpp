@@ -524,7 +524,7 @@ void CameraManagement::setSysModePilotCommand()
 {
     /* Sending the Pilot command */
     //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-10,0,0,0,0,0);
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,0,0,0,0,0,0);
 
     /* Set the fov after short delay, because we can't stack commands */
     _delayTimer.setSingleShot(true);
@@ -738,7 +738,7 @@ void CameraManagement::setSysNadirScanCommand(void)
 
 void CameraManagement::setSysObjDetOnCommand(void)
 {
-    /* Set the system sensor */
+    /* Set the system object detector on */
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DetectionControl,MavExtCmdArg_DetectorEnDis,1,0,0,0,0);
 }
 

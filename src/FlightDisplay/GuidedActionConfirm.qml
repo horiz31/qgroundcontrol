@@ -32,6 +32,7 @@ Rectangle {
     property var    actionData
     property bool   hideTrigger:        false
     property var    mapIndicator
+    property var    mapRadiusIndicator
     property alias  optionText:         optionCheckBox.text
     property alias  optionChecked:      optionCheckBox.checked
 
@@ -64,6 +65,10 @@ Rectangle {
         if (mapIndicator) {
             mapIndicator.actionCancelled()
             mapIndicator = undefined
+        }
+        if (mapRadiusIndicator) {
+            mapRadiusIndicator.actionCancelled()
+            mapRadiusIndicator = undefined
         }
     }
 
@@ -110,17 +115,24 @@ Rectangle {
                     _root.visible = false
                     var altitudeChange = 0
                     var isClockwise = true
+                    var guidedRadius = _activeVehicle.guidedModeRadius
                     if (altitudeSlider.visible) {
                         altitudeChange = altitudeSlider.getAltitudeChangeValue()
                         isClockwise = altitudeSlider.isClockwise()
+                        guidedRadius = altitudeSlider.guidedRadius()
                         altitudeSlider.visible = false
                     }
                     hideTrigger = false
-                    guidedController.executeAction(_root.action, _root.actionData, altitudeChange, _root.optionChecked, isClockwise)
+                    guidedController.executeAction(_root.action, _root.actionData, altitudeChange, _root.optionChecked, isClockwise, guidedRadius)
                     if (mapIndicator) {
                         mapIndicator.actionConfirmed()
                         mapIndicator = undefined
                     }
+                    if (mapRadiusIndicator) {
+                        mapRadiusIndicator.actionConfirmed()
+                        mapRadiusIndicator = undefined
+                    }
+
                 }
             }
 

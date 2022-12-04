@@ -155,6 +155,12 @@
         <field name="Range">1 32767</field>
         <field name="Increment">1</field>
       </param>
+      <param humanName="Guided Radius" name="ArduPlane:GUIDED_RADIUS" documentation="Defines the radius which will be used to loiter around the guided mode point." user="Standard">
+        <field name="Units">m</field>
+        <field name="UnitText">meters</field>
+        <field name="Range">1 32767</field>
+        <field name="Increment">1</field>
+      </param>
       <param humanName="Waypoint Maximum Radius" name="ArduPlane:WP_MAX_RADIUS" documentation="Sets the maximum distance to a waypoint for the waypoint to be considered complete. This overrides the &quot;cross the finish line&quot; logic that is normally used to consider a waypoint complete. For normal AUTO behaviour this parameter should be set to zero. Using a non-zero value is only recommended when it is critical that the aircraft does approach within the given radius, and should loop around until it has done so. This can cause the aircraft to loop forever if its turn radius is greater than the maximum radius set." user="Standard">
         <field name="Units">m</field>
         <field name="UnitText">meters</field>

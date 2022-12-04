@@ -153,6 +153,7 @@ Item {
         pipMode:                !_mainWindowIsMap
         toolInsets:             customOverlay.totalToolInsets
         mapName:                "FlightDisplayView"
+        altitudeSlider:         _guidedAltSlider
     }
 
     FlyViewVideo {

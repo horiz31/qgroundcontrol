@@ -22,7 +22,7 @@ import QGroundControl.Controllers   1.0
 
 PreFlightCheckButton {
     name:               qsTr("Engine Run Up")
-    manualText:         qsTr("A run up of the engine is recommended to ensure operation prior to takeoff. Click to acknowledge or perform a run up procedure.")
+    manualText:         qsTr("A run up of the engine is recommended to warm the engine and validate operation prior to takeoff. Click below to start the run up procedure.")
 
     specifiedBottomPadding: Math.round(ScreenTools.defaultFontPixelHeight / 2) + engineTestButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)
     property bool   allowFailurePercentOverride:    false

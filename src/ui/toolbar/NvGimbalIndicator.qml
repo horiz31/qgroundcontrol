@@ -63,13 +63,15 @@ Item {
                     QGCLabel { text: qsTr("Mode:") }
                     QGCLabel { text: _activeVehicle? _activeVehicle.nvGimbal.mode.value : "" }
                     QGCLabel { text: qsTr("Target Latitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.------" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°" }
+                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°" }
                     QGCLabel { text: qsTr("Target Longitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.------" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°" }
+                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°" }
                     QGCLabel { text: qsTr("Target Altitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value === 10000.0)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
+                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) === 32808.0)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Slant Range:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : _activeVehicle.nvGimbal.slantRange.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----" }
+                    QGCLabel { text: qsTr("Field of View:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.fov.value) ? "--°" : _activeVehicle.nvGimbal.fov.value.toFixed(0) + "°") : "--°" }
                     QGCLabel { text: qsTr("Active Sensor:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.activeSensor.value) ? "" : getActiveSensor()) : ""
                         function getActiveSensor() {

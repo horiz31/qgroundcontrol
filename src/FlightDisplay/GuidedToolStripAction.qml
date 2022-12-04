@@ -17,6 +17,6 @@ ToolStripAction {
 
     onTriggered: {
         _guidedController.closeAll()
-        _guidedController.confirmAction(actionID)
+        _guidedController.confirmAction(actionID, null, null, _guidedController.guidedPlanMapCircle)
     }
 }

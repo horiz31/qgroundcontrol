@@ -690,14 +690,29 @@ void Vehicle::_updateNvModeChange(QString mode)
 void Vehicle::_updateNvGroundCrossingLatChange(float value)
 {
     _gimbalFactGroup.groundCrossingLat()->setRawValue(value);
+    QGeoCoordinate newTargetPosition(_gimbalFactGroup.groundCrossingLat()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingLon()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingAlt()->rawValue().toDouble());
+    if (newTargetPosition != _nvTargetCoordinate) {
+        _nvTargetCoordinate = newTargetPosition;
+        emit nvTargetCoordinateChanged(_nvTargetCoordinate);
+    }
 }
 void Vehicle::_updateNvGroundCrossingLonChange(float value)
 {
     _gimbalFactGroup.groundCrossingLon()->setRawValue(value);
+    QGeoCoordinate newTargetPosition(_gimbalFactGroup.groundCrossingLat()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingLon()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingAlt()->rawValue().toDouble());
+    if (newTargetPosition != _nvTargetCoordinate) {
+        _nvTargetCoordinate = newTargetPosition;
+        emit nvTargetCoordinateChanged(_nvTargetCoordinate);
+    }
 }
 void Vehicle::_updateNvGroundCrossingAltChange(float value)
 {
     _gimbalFactGroup.groundCrossingAlt()->setRawValue(value);
+    QGeoCoordinate newTargetPosition(_gimbalFactGroup.groundCrossingLat()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingLon()->rawValue().toDouble(), _gimbalFactGroup.groundCrossingAlt()->rawValue().toDouble());
+    if (newTargetPosition != _nvTargetCoordinate) {
+        _nvTargetCoordinate = newTargetPosition;
+        emit nvTargetCoordinateChanged(_nvTargetCoordinate);
+    }
 }
 void Vehicle::_updateNvFovChange(float value)
 {
@@ -2488,7 +2503,10 @@ void Vehicle::_parametersReady(bool parametersReady)
     if (parametersReady) {
         disconnect(_parameterManager, &ParameterManager::parametersReadyChanged, this, &Vehicle::_parametersReady);
         _setupAutoDisarmSignalling();
+        _setupGuidedModeRadius();
         _initialConnectStateMachine->advance();
+
+
     }
 }
 
@@ -2795,6 +2813,12 @@ void Vehicle::guidedModeGotoLocation(const QGeoCoordinate& gotoCoord)
         return;
     }
     _firmwarePlugin->guidedModeGotoLocation(this, gotoCoord);
+
+    //todo, save the current guidedmode coordinate and direction in properties
+    _guidedModeCoordinate = gotoCoord;
+    _guidedModeisClockwise = true;
+    emit
+
 }
 
 void Vehicle::guidedModeGotoLocationAndAltitude(const QGeoCoordinate& gotoCoord, double altitudeRel, bool isClockwise)
@@ -2806,6 +2830,7 @@ void Vehicle::guidedModeGotoLocationAndAltitude(const QGeoCoordinate& gotoCoord,
     if (!coordinate().isValid()) {
         return;
     }
+
     double maxDistance = _settingsManager->flyViewSettings()->maxGoToLocationDistance()->rawValue().toDouble();
     if (coordinate().distanceTo(gotoCoord) > maxDistance) {
         qgcApp()->showAppMessage(QString("New location is too far. Must be less than %1 %2.").arg(qRound(FactMetaData::metersToAppSettingsHorizontalDistanceUnits(maxDistance).toDouble())).arg(FactMetaData::appSettingsHorizontalDistanceUnitsString()));
@@ -2813,6 +2838,8 @@ void Vehicle::guidedModeGotoLocationAndAltitude(const QGeoCoordinate& gotoCoord,
     }
 
     _firmwarePlugin->guidedModeGotoLocationAndAltitude(this, gotoCoord, altitudeRel, isClockwise);
+
+
 }
 
 
@@ -2823,6 +2850,14 @@ void Vehicle::guidedModeChangeAltitude(double altitudeChange, bool pauseVehicle)
         return;
     }
     _firmwarePlugin->guidedModeChangeAltitude(this, altitudeChange, pauseVehicle);
+
+    if (pauseVehicle)
+    {
+        _guidedModeCoordinate = _coordinate;
+        emit guidedModeCoordinateChanged(_guidedModeCoordinate);
+        _guidedModeisClockwise = true;
+        emit guidedModeisClockwiseChanged(_guidedModeisClockwise);
+    }
 }
 
 void Vehicle::guidedModeOrbit(const QGeoCoordinate& centerCoord, double radius, double amslAltitude)
@@ -2882,6 +2917,11 @@ void Vehicle::guidedModeDoPosition(const QGeoCoordinate& centerCoord, bool clock
                 centerCoord.latitude(),
                 centerCoord.longitude(),
                 static_cast<float>(centerCoord.altitude()));
+
+    _guidedModeCoordinate = centerCoord;
+    emit guidedModeCoordinateChanged(_guidedModeCoordinate);
+    _guidedModeisClockwise = clockwise;
+    emit guidedModeisClockwiseChanged(_guidedModeisClockwise);
 
 }
 void Vehicle::guidedModeROI(const QGeoCoordinate& centerCoord)
@@ -2978,6 +3018,18 @@ bool Vehicle::guidedMode() const
 void Vehicle::setGuidedMode(bool guidedMode)
 {
     return _firmwarePlugin->setGuidedMode(this, guidedMode);
+}
+
+void Vehicle::setGuidedModeRadius(uint radius)
+{
+    _guidedModeRadius = radius;
+    QString guidedRadius("GUIDED_RADIUS");
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, guidedRadius))
+    {
+        Fact* paramFact = _parameterManager->getParameter(FactSystem::defaultComponentId, guidedRadius);
+        paramFact->setRawValue(_guidedModeRadius);
+        emit guidedModeRadiusChanged();
+    }
 }
 
 void Vehicle::emergencyStop()
@@ -3890,6 +3942,42 @@ void Vehicle::_setupAutoDisarmSignalling()
         connect(fact, &Fact::rawValueChanged, this, &Vehicle::autoDisarmChanged);
         emit autoDisarmChanged();
     }
+}
+
+void Vehicle::_setupGuidedModeRadius()
+{
+    QString guidedRadius("GUIDED_RADIUS");
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, guidedRadius))
+    {
+        _supportsGuidedRadius = true;        
+        emit supportsGuidedRadiusChanged(_supportsGuidedRadius);
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,guidedRadius);
+        uint  paramGuidedRadius = fact->rawValue().toInt();
+        connect(fact, &Fact::rawValueChanged, this, &Vehicle::guidedModeRadiusChanged);
+
+        if (_guidedModeRadius != paramGuidedRadius )
+        {
+            _guidedModeRadius = paramGuidedRadius;
+            emit guidedModeRadiusChanged();
+        }
+    }
+    else
+    {
+         QString guidedRadius("WP_RADIUS");  //guided radius does not exist on this platform, so set it to wp_radius so the user knows what to expect. disable the control
+         _supportsGuidedRadius = false;
+         emit supportsGuidedRadiusChanged(_supportsGuidedRadius);
+         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,guidedRadius);
+         uint  paramGuidedRadius = fact->rawValue().toInt();
+         connect(fact, &Fact::rawValueChanged, this, &Vehicle::guidedModeRadiusChanged);
+
+         if (_guidedModeRadius != paramGuidedRadius )
+         {
+             _guidedModeRadius = paramGuidedRadius;
+             emit guidedModeRadiusChanged();
+         }
+    }
+
 }
 
 bool Vehicle::autoDisarm()

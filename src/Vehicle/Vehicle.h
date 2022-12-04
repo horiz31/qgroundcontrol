@@ -158,9 +158,17 @@ public:
     };
     Q_ENUM(CheckList)
 
+    //enum for the model of aircraft, which comes from the BRD_SERIAL_NUM param
+    enum Model {
+        Unknown = 0,
+        SuperVolo,
+    };
+    Q_ENUM(Model)
+
     Q_PROPERTY(int                  id                          READ id                                                             CONSTANT)
     Q_PROPERTY(AutoPilotPlugin*     autopilot                   MEMBER _autopilotPlugin                                             CONSTANT)
     Q_PROPERTY(QGeoCoordinate       coordinate                  READ coordinate                                                     NOTIFY coordinateChanged)
+    Q_PROPERTY(QGeoCoordinate       nvTargetCoordinate          READ nvTargetCoordinate                                             NOTIFY nvTargetCoordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition                READ homePosition                                                   NOTIFY homePositionChanged)
     Q_PROPERTY(QGeoCoordinate       armedPosition               READ armedPosition                                                  NOTIFY armedPositionChanged)
     Q_PROPERTY(bool                 armed                       READ armed                      WRITE setArmedShowError             NOTIFY armedChanged)
@@ -259,10 +267,11 @@ public:
     Q_PROPERTY(bool                 requiresGpsFix              READ requiresGpsFix                                                 NOTIFY requiresGpsFixChanged)
     Q_PROPERTY(double               loadProgress                READ loadProgress                                                   NOTIFY loadProgressChanged)
     Q_PROPERTY(bool                 initialConnectComplete      READ isInitialConnectComplete                                       NOTIFY initialConnectComplete)
-
+    Q_PROPERTY(uint                 guidedModeRadius            READ guidedModeRadius            WRITE setGuidedModeRadius          NOTIFY guidedModeRadiusChanged)  //Used to track the guided mode radius, which is supported by the supervolo
+    Q_PROPERTY(bool                 supportsGuidedRadius        READ supportsGuidedRadius                                           NOTIFY supportsGuidedRadiusChanged)
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
-    Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)
+    Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)    
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -274,6 +283,8 @@ public:
     Q_PROPERTY(bool     roiModeSupported        READ roiModeSupported                               CONSTANT)                   ///< Orbit mode is supported by this vehicle
     Q_PROPERTY(bool     takeoffVehicleSupported READ takeoffVehicleSupported                        CONSTANT)                   ///< Guided takeoff supported
     Q_PROPERTY(QString  gotoFlightMode          READ gotoFlightMode                                 CONSTANT)                   ///< Flight mode vehicle is in while performing goto
+    Q_PROPERTY(QGeoCoordinate guidedModeCoordinate  READ guidedModeCoordinate                                                       NOTIFY guidedModeCoordinateChanged)
+    Q_PROPERTY(bool           guidedModeisClockwise READ guidedModeisClockwise                                                      NOTIFY guidedModeisClockwiseChanged)
 
     Q_PROPERTY(ParameterManager*        parameterManager    READ parameterManager   CONSTANT)
     Q_PROPERTY(VehicleLinkManager*      vehicleLinkManager  READ vehicleLinkManager CONSTANT)
@@ -466,6 +477,9 @@ public:
     /// Set Throttle used during Super Volo pre-flight
     Q_INVOKABLE void sendRcOverrideThrottle (int throttle);
 
+    /// Set Guided Mode Radius
+    Q_INVOKABLE void setGuidedModeRadius        (uint radius);
+
 #if !defined(NO_ARDUPILOT_DIALECT)
     Q_INVOKABLE void flashBootloader();
 #endif
@@ -481,12 +495,14 @@ public:
     // Property accessors
 
     QGeoCoordinate coordinate() { return _coordinate; }
-    QGeoCoordinate armedPosition    () { return _armedPosition; }
+    QGeoCoordinate armedPosition    () { return _armedPosition; }    
+    QGeoCoordinate nvTargetCoordinate() { return _nvTargetCoordinate; }
 
     void updateFlightDistance(double distance);
 
     bool joystickEnabled            () const;
     void setJoystickEnabled         (bool enabled);
+
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
     void sendJoystickDataThreadSafe (float roll, float pitch, float yaw, float thrust, quint16 buttons);
@@ -528,6 +544,8 @@ public:
     QStringList extraJoystickFlightModes    ();
     QString flightMode                      () const;
     void setFlightMode                      (const QString& flightMode);
+    uint guidedModeRadius                   () { return _guidedModeRadius; }
+
 
     bool airship() const;
     bool fixedWing() const;
@@ -627,14 +645,14 @@ public:
     bool            orbitActive                 () const { return _orbitActive; }
     int             snapShotStatus              () const { return _snapShotStatus; }
     QString         nvMode                      () const { return _nvMode; }
-    QGCMapCircle*   orbitMapCircle              () { return &_orbitMapCircle; }
+    QGCMapCircle*   orbitMapCircle              () { return &_orbitMapCircle; }       
     bool            readyToFlyAvailable         () const{ return _readyToFlyAvailable; }
     bool            readyToFly                  () const{ return _readyToFly; }
     bool            allSensorsHealthy           () const{ return _allSensorsHealthy; }
     QObject*        sysStatusSensorInfo         () { return &_sysStatusSensorInfo; }
     bool            requiresGpsFix              () const { return static_cast<bool>(_onboardControlSensorsPresent & SysStatusSensorGPS); }
     bool            hilMode                     () const { return _base_mode & MAV_MODE_FLAG_HIL_ENABLED; }
-    Actuators*      actuators                   () const { return _actuators; }
+    Actuators*      actuators                   () const { return _actuators; }   
 
     /// Get the maximum MAVLink protocol version supported
     /// @return the maximum version
@@ -876,9 +894,14 @@ public:
     qreal       gimbalYaw               () const{ return static_cast<qreal>(_curGimbalYaw); }
     bool        gimbalData              () const{ return _haveGimbalData; }
     bool        isROIEnabled            () const{ return _isROIEnabled; }
+    bool        supportsGuidedRadius    () { return _supportsGuidedRadius; }
+
+    QGeoCoordinate guidedModeCoordinate   () { return _guidedModeCoordinate; }
+    bool           guidedModeisClockwise  () { return _guidedModeisClockwise; }
 
     CheckList   checkListState          () { return _checkListState; }
     void        setCheckListState       (CheckList cl)  { _checkListState = cl; emit checkListStateChanged(); }
+
 
     double loadProgress                 () const { return _loadProgress; }
 
@@ -891,6 +914,9 @@ public slots:
     void _offlineVehicleTypeSettingChanged  (QVariant varVehicleType);  // Should only be used by MissionController to set vehicle type from Plan file
 
 signals:
+    void guidedModeCoordinateChanged    (QGeoCoordinate coordinate);
+    void guidedModeisClockwiseChanged   (bool value);
+    void nvTargetCoordinateChanged      (QGeoCoordinate coordinate);
     void coordinateChanged              (QGeoCoordinate coordinate);
     void joystickEnabledChanged         (bool enabled);
     void joystickCamEnabledChanged      (bool enabled);                 /* NextVision */
@@ -899,6 +925,7 @@ signals:
     void armedPositionChanged();
     void armedChanged                   (bool armed);
     void flightModeChanged              (const QString& flightMode);
+    void guidedModeRadiusChanged        ();
     void flyingChanged                  (bool flying);
     void landingChanged                 (bool landing);
     void guidedModeChanged              (bool guidedMode);
@@ -959,6 +986,7 @@ signals:
     void losCoordsChanged               ();
     void snapShotStatusChanged          (int snapShotStatus);
     void nvModeChanged                  (QString nvMode);
+    void supportsGuidedRadiusChanged    (bool value);
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -1098,6 +1126,7 @@ private:
     void _ackMavlinkLogData             (uint16_t sequence);
     void _commonInit                    ();
     void _setupAutoDisarmSignalling     ();
+    void _setupGuidedModeRadius         ();
     void _setCapabilities               (uint64_t capabilityBits);
     void _updateArmed                   (bool armed);
     bool _apmArmingNotRequired          ();
@@ -1139,6 +1168,9 @@ private:
     QGeoCoordinate  _coordinate;
     QGeoCoordinate  _homePosition;
     QGeoCoordinate  _armedPosition;
+    QGeoCoordinate  _nvTargetCoordinate;
+    QGeoCoordinate  _guidedModeCoordinate;
+    bool            _guidedModeisClockwise;
 
     UASInterface*   _mav = nullptr;
     int             _currentMessageCount = 0;
@@ -1181,6 +1213,8 @@ private:
     bool            _readyToFlyAvailable                    = false;
     bool            _readyToFly                             = false;
     bool            _allSensorsHealthy                      = true;
+    uint            _guidedModeRadius                       = 150;
+    bool            _supportsGuidedRadius                   = false;
 
     SysStatusSensorInfo _sysStatusSensorInfo;
 
@@ -1286,6 +1320,7 @@ private:
     QMap<uint8_t, QSharedPointer<EventHandler>> _events; ///< One protocol handler for each component ID
 
     MAVLinkStreamConfig _mavlinkStreamConfig;
+
 
     // Chunked status text support
     typedef struct {

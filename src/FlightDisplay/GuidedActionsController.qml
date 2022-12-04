@@ -33,6 +33,7 @@ Item {
     property var actionLandingList
     property var altitudeSlider
     property var orbitMapCircle
+    property var guidedPlanMapCircle
 
     readonly property string emergencyStopTitle:            qsTr("EMERGENCY STOP")
     readonly property string armTitle:                      qsTr("Arm")
@@ -345,13 +346,14 @@ Item {
     }
 
     // Called when an action is about to be executed in order to confirm
-    function confirmAction(actionCode, actionData, mapIndicator) {
+    function confirmAction(actionCode, actionData, mapIndicator, mapRadiusIndicator) {
         var showImmediate = true
         closeAll()
         confirmDialog.action = actionCode
         confirmDialog.actionData = actionData
         confirmDialog.hideTrigger = true
         confirmDialog.mapIndicator = mapIndicator
+        confirmDialog.mapRadiusIndicator = mapRadiusIndicator
         confirmDialog.optionText = ""
         _actionData = actionData
         switch (actionCode) {
@@ -387,6 +389,9 @@ Item {
             confirmDialog.hideTrigger = Qt.binding(function() { return !showTakeoff })
             altitudeSlider.setToMinimumTakeoff()
             altitudeSlider.setDirectionVisible(false);
+            altitudeSlider.setRadiusVisible(false);
+            altitudeSlider.setRadiusFollowVehicle(true);
+            altitudeSlider.setRadiusInputVisible(false);
             altitudeSlider.visible = true
             break;
         case actionStartMission:
@@ -434,6 +439,9 @@ Item {
             confirmDialog.hideTrigger = Qt.binding(function() { return !showChangeAlt })
             altitudeSlider.reset()
             altitudeSlider.setDirectionVisible(false);
+            altitudeSlider.setRadiusVisible(true);
+            altitudeSlider.setRadiusFollowVehicle(true);
+            altitudeSlider.setRadiusInputVisible(false);
             altitudeSlider.visible = true
             break;
         case actionGoto:
@@ -442,7 +450,12 @@ Item {
             confirmDialog.hideTrigger = Qt.binding(function() { return !showGotoLocation })
             altitudeSlider.reset()
             altitudeSlider.setDirectionVisible(true);
-            altitudeSlider.visible = true
+            altitudeSlider.setRadiusVisible(true);
+            altitudeSlider.setRadiusFollowVehicle(false);
+            altitudeSlider.setRadiusInputVisible(true);
+            altitudeSlider.mapRadiusIndicator = mapRadiusIndicator
+            mapRadiusIndicator.show()
+            altitudeSlider.visible = true            
             break;
         case actionSetWaypoint:
             confirmDialog.title = setWaypointTitle
@@ -454,6 +467,9 @@ Item {
             confirmDialog.hideTrigger = Qt.binding(function() { return !showOrbit })
             altitudeSlider.reset()
             altitudeSlider.setDirectionVisible(false);
+            altitudeSlider.setRadiusVisible(false);
+            altitudeSlider.setRadiusFollowVehicle(false);
+            altitudeSlider.setRadiusInputVisible(false);
             altitudeSlider.visible = true
             break;
         case actionLandAbort:
@@ -467,6 +483,11 @@ Item {
             confirmDialog.hideTrigger = Qt.binding(function() { return !showPause })
             altitudeSlider.reset()            
             altitudeSlider.setDirectionVisible(false);
+            altitudeSlider.setRadiusVisible(true);
+            altitudeSlider.setRadiusFollowVehicle(true);
+            altitudeSlider.setRadiusInputVisible(false);
+            altitudeSlider.mapRadiusIndicator = mapRadiusIndicator
+            mapRadiusIndicator.show()
             altitudeSlider.visible = true
             break;
         case actionMVPause:
@@ -518,7 +539,7 @@ Item {
     }
 
     // Executes the specified action
-    function executeAction(actionCode, actionData, actionAltitudeChange, optionChecked, isClockwise) {
+    function executeAction(actionCode, actionData, actionAltitudeChange, optionChecked, isClockwise, guidedRadius) {
         var i;
         var rgVehicle;
         switch (actionCode) {
@@ -577,8 +598,8 @@ Item {
             _activeVehicle.guidedModeChangeAltitude(actionAltitudeChange, false /* pauseVehicle */)
             break
         case actionGoto:
-            _activeVehicle.guidedModeGotoLocationAndAltitude(actionData, actionAltitudeChange, isClockwise);
-            //_activeVehicle.guidedModeGotoLocation(actionData)
+            _activeVehicle.guidedModeGotoLocationAndAltitude(actionData, actionAltitudeChange, isClockwise);            
+            _activeVehicle.setGuidedModeRadius(guidedRadius);
             break
         case actionSetWaypoint:
             _activeVehicle.setCurrentMissionSequence(actionData)
@@ -590,6 +611,7 @@ Item {
             _activeVehicle.abortLanding(50)     // hardcoded value for climbOutAltitude that is currently ignored
             break
         case actionPause:
+            _activeVehicle.setGuidedModeRadius(guidedRadius);
             _activeVehicle.guidedModeChangeAltitude(actionAltitudeChange, true /* pauseVehicle */)
             break
         case actionMVPause:

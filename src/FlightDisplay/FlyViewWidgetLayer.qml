@@ -276,9 +276,7 @@ Item {
         onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
-        onCenterMap:           { mapControl.zoomLevel = 18; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
-        //onCenterMap:                mapControl.mapFitFunctions.fitMapViewportToMissionItems()
-        //onCenterMap:                mapFitFunctions.fitMapViewportToAllItems()
+        onCenterMap:           { mapControl.zoomLevel = 16; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
         property real leftInset: x + width
     }
 
