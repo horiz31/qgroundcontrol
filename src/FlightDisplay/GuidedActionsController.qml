@@ -481,12 +481,13 @@ Item {
             confirmDialog.title = pauseTitle
             confirmDialog.message = pauseMessage
             confirmDialog.hideTrigger = Qt.binding(function() { return !showPause })
+            altitudeSlider.mapRadiusIndicator = mapRadiusIndicator
+            mapRadiusIndicator.lockOnVehicle()
             altitudeSlider.reset()            
             altitudeSlider.setDirectionVisible(false);
             altitudeSlider.setRadiusVisible(true);
             altitudeSlider.setRadiusFollowVehicle(true);
-            altitudeSlider.setRadiusInputVisible(false);
-            altitudeSlider.mapRadiusIndicator = mapRadiusIndicator
+            altitudeSlider.setRadiusInputVisible(true);
             mapRadiusIndicator.show()
             altitudeSlider.visible = true
             break;

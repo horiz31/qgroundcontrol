@@ -52,6 +52,7 @@ Rectangle {
     property bool   _isGst:                     QGroundControl.videoManager.isGStreamer
     property bool   _isUDP264:                  _isGst && _videoSource === _videoSettings.udp264VideoSource
     property bool   _isUDP265:                  _isGst && _videoSource === _videoSettings.udp265VideoSource
+    property bool   _isMulticastUDP265:         _isGst && _videoSource === _videoSettings.udp265MulticastVideoSource
     property bool   _isRTSP:                    _isGst && _videoSource === _videoSettings.rtspVideoSource
     property bool   _isTCP:                     _isGst && _videoSource === _videoSettings.tcpVideoSource
     property bool   _isMPEGTS:                  _isGst && _videoSource === _videoSettings.mpegtsVideoSource
@@ -249,15 +250,26 @@ Rectangle {
                                 }
 
                                 QGCLabel {
+                                    id:         mcastUrlLabel
+                                    text:       qsTr("Multicast Group")
+                                    visible:    !_videoAutoStreamConfig && _isMulticastUDP265 && _videoSettings.multicastGroup.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings.multicastGroup
+                                    visible:                mcastUrlLabel.visible
+                                }
+
+                                QGCLabel {
                                     id:         udpPortLabel
                                     text:       qsTr("UDP Port")
-                                    visible:    !_videoAutoStreamConfig && (_isUDP264 || _isUDP265 || _isMPEGTS) && _videoSettings.udpPort.visible
+                                    visible:    !_videoAutoStreamConfig && (_isUDP264 || _isUDP265 || _isMPEGTS || _isMulticastUDP265) && _videoSettings.udpPort.visible
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
                                     fact:                   _videoSettings.udpPort
                                     visible:                udpPortLabel.visible
-                                }
+                                }                                
 
                                 QGCLabel {
                                     id:         rtspUrlLabel
@@ -1106,7 +1118,7 @@ Rectangle {
 
                     Item { width: 1; height: _margins }
                     QGCLabel {
-                        text:               qsTr("EchoMav GCS Version").arg(QGroundControl.appName)
+                        text:               qsTr("EchoMav GCS Version")
                         Layout.alignment:   Qt.AlignHCenter
                     }
                     QGCLabel {

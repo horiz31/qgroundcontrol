@@ -540,6 +540,12 @@ FlightMap {
             guidedPlanMapCircle.visible = false
         }
 
+        function lockOnVehicle()
+        {
+            if (_activeVehicle)
+                guidedPlanMapCircle.center = _activeVehicle.coordinate
+        }
+
         Component.onCompleted: globals.guidedControllerFlyView.guidedPlanMapCircle = guidedPlanMapCircle
 
         QGCMapCircle {

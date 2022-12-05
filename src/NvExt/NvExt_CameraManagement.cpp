@@ -527,16 +527,12 @@ void CameraManagement::setSysModePilotCommand()
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,0,0,0,0,0,0);
 
     /* Set the fov after short delay, because we can't stack commands */
-    _delayTimer.setSingleShot(true);
-    _delayTimer.setInterval(500);
-    connect(&_delayTimer, &QTimer::timeout, this, &CameraManagement::setPilotPhaseTwo);
-    _delayTimer.start();
-
+    QTimer::singleShot(500, this, &CameraManagement::setPilotPhaseTwo);
 
 }
 void CameraManagement::setPilotPhaseTwo()
 {
-    //zoom out
+    //zoom out  
     setSysZoomOutCommand();
 }
 
@@ -737,21 +733,17 @@ void CameraManagement::setSysNadirScanCommand(void)
 }
 
 void CameraManagement::setSysObjDetOnCommand(void)
-{
+{     
     /* Set the system object detector on */
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DetectionControl,MavExtCmdArg_DetectorEnDis,1,0,0,0,0);
 }
 
 void CameraManagement::setSysObjDetOnCommandAfterDelay(int delay)
 {
-    /* Set the system object detector after delay */
-    _delayTimer.setSingleShot(true);
-    _delayTimer.setInterval(delay);
-    connect(&_delayTimer, &QTimer::timeout, this, &CameraManagement::setSysObjDetOnCommand);
-    _delayTimer.start();
+    /* Set the system object detector after delay */   
+     QTimer::singleShot(delay, this, &CameraManagement::setSysObjDetOnCommand);
 
 }
-
 
 void CameraManagement::setSysObjDetOffCommand(void)
 {

@@ -713,6 +713,7 @@ Rectangle {
                                 }
                                 else
                                 {
+                                    console.log("setting obj detection to" + _videoStreamSettings.objDetection.enumValues[currentIndex]);
                                     joystickManager.cameraManagement.setSysObjDetSetNetTypeCommand(_videoStreamSettings.objDetection.enumValues[currentIndex])
                                     joystickManager.cameraManagement.setSysObjDetOnCommandAfterDelay(1000);  //turn on object detection after delay
                                 }
@@ -810,6 +811,22 @@ Rectangle {
                         }
                     }
 
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Advanced Modes")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "Nadir"
+                            onClicked: joystickManager.cameraManagement.setSysNadirCommand()
+                        }
+                        QGCButton {
+                            text: "Stow"
+                            onClicked: joystickManager.cameraManagement.setSysModeStowCommand()
+                        }
+                    }
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Video Grid Lines")

@@ -530,6 +530,7 @@ VideoManager::isGStreamer()
     QString videoSource = _videoSettings->videoSource()->rawValue().toString();
     return videoSource == VideoSettings::videoSourceUDPH264 ||
             videoSource == VideoSettings::videoSourceUDPH265 ||
+            videoSource == VideoSettings::videoSourceMulticastUDPH265 ||
             videoSource == VideoSettings::videoSourceRTSP ||
             videoSource == VideoSettings::videoSourceTCP ||
             videoSource == VideoSettings::videoSourceMPEGTS ||
@@ -687,6 +688,10 @@ VideoManager::_updateSettings(unsigned id)
             return settingsChanged;
         }
     }
+    //todo, add a new video source of videoSourceMulticastUDPH265
+    //when this is selected, there will be a group address shown, and we should just that address here
+    //so add videoSourceMulticastUDPH265 and _videoSettings->udpMcastGroup
+    //we can do some checking here to make sure it is a mcast address
     QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDPH264)
         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));

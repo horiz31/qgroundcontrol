@@ -24,6 +24,7 @@ const char* VideoSettings::videoDisabled                = QT_TRANSLATE_NOOP("Vid
 const char* VideoSettings::videoSourceRTSP              = QT_TRANSLATE_NOOP("VideoSettings", "RTSP Video Stream");
 const char* VideoSettings::videoSourceUDPH264           = QT_TRANSLATE_NOOP("VideoSettings", "UDP h.264 Video Stream");
 const char* VideoSettings::videoSourceUDPH265           = QT_TRANSLATE_NOOP("VideoSettings", "UDP h.265 Video Stream");
+const char* VideoSettings::videoSourceMulticastUDPH265  = QT_TRANSLATE_NOOP("VideoSettings", "UDP Multicast h.265 Video Stream");
 const char* VideoSettings::videoSourceTCP               = QT_TRANSLATE_NOOP("VideoSettings", "TCP-MPEG2 Video Stream");
 const char* VideoSettings::videoSourceMPEGTS            = QT_TRANSLATE_NOOP("VideoSettings", "MPEG-TS (h.264) Video Stream");
 const char* VideoSettings::videoSource3DRSolo           = QT_TRANSLATE_NOOP("VideoSettings", "3DR Solo (requires restart)");
@@ -41,6 +42,7 @@ DECLARE_SETTINGGROUP(Video, "Video")
 #ifndef NO_UDP_VIDEO
     videoSourceList.append(videoSourceUDPH264);
     videoSourceList.append(videoSourceUDPH265);
+    videoSourceList.append(videoSourceMulticastUDPH265);
 #endif
     videoSourceList.append(videoSourceTCP);
     videoSourceList.append(videoSourceMPEGTS);
@@ -185,6 +187,15 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, tcpUrl)
     return _tcpUrlFact;
 }
 
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, multicastGroup)
+{
+    if (!_multicastGroupFact) {
+        _multicastGroupFact = _createSettingsFact(multicastGroupName);
+        connect(_multicastGroupFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+    }
+    return _multicastGroupFact;
+}
+
 bool VideoSettings::streamConfigured(void)
 {
 #if !defined(QGC_GST_STREAMING)
@@ -201,7 +212,7 @@ bool VideoSettings::streamConfigured(void)
         return false;
     }
     //-- If UDP, check if port is set
-    if(vSource == videoSourceUDPH264 || vSource == videoSourceUDPH265) {
+    if(vSource == videoSourceUDPH264 || vSource == videoSourceUDPH265 || vSource == videoSourceMulticastUDPH265) {
         qCDebug(VideoManagerLog) << "Testing configuration for UDP Stream:" << udpPort()->rawValue().toInt();
         return udpPort()->rawValue().toInt() != 0;
     }

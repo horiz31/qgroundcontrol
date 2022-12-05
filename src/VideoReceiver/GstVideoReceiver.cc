@@ -20,6 +20,7 @@
 #include <QUrl>
 #include <QDateTime>
 #include <QSysInfo>
+#include <QNetworkInterface>
 
 QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
 
@@ -98,6 +99,8 @@ GstVideoReceiver::start(const QString& uri, unsigned timeout, int buffer)
     _buffer = buffer;
 
     qCDebug(VideoReceiverLog) << "Starting" << _uri << ", buffer" << _buffer;
+
+    qDebug() << "Starting" << _uri << ", buffer" << _buffer;
 
     _endOfStream = false;
 
@@ -727,12 +730,30 @@ GstVideoReceiver::_makeSource(const QString& uri)
                         qCCritical(VideoReceiverLog) << "gst_caps_from_string() failed";
                         break;
                     }
-                } else if (isUdp265) {
+                } else if (isUdp265) {                                                                            
                     if ((caps = gst_caps_from_string("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H265")) == nullptr) {
                         qCCritical(VideoReceiverLog) << "gst_caps_from_string() failed";
                         break;
                     }
                 }
+
+                // Add multicast support caps, looping through all the available interfaces
+                QString ifaceList = "";
+                int counter = 0;
+                foreach(QNetworkInterface iface, QNetworkInterface::allInterfaces())
+                {
+                    if (iface.flags().testFlag(QNetworkInterface::IsUp) && iface.flags().testFlag(QNetworkInterface::CanMulticast) && !iface.flags().testFlag(QNetworkInterface::IsLoopBack))
+                    {
+                        if (counter++ > 0)
+                            ifaceList.append(",");
+                        ifaceList.append(iface.humanReadableName());
+                    }
+                }
+
+                g_object_set(static_cast<gpointer>(source), "auto-multicast", TRUE, nullptr);
+                g_object_set(static_cast<gpointer>(source), "loop", FALSE, nullptr);
+                g_object_set(static_cast<gpointer>(source), "multicast-iface", ifaceList.toUtf8().constData(), nullptr);
+
 
                 if (caps != nullptr) {
                     g_object_set(static_cast<gpointer>(source), "caps", caps, nullptr);

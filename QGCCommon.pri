@@ -82,7 +82,6 @@ linux {
         DEFINES += __STDC_LIMIT_MACROS
         DEFINES += QGC_GST_TAISYNC_ENABLED
         DEFINES += QGC_GST_MICROHARD_ENABLED 
-        DEFINES += QGC_USE_VIRTUAL_KEYBOARD
         QMAKE_CFLAGS -= -Zc:strictStrings
         QMAKE_CFLAGS_RELEASE -= -Zc:strictStrings
         QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO -= -Zc:strictStrings
@@ -258,6 +257,12 @@ installer {
     message(Build Installer)
 }
 
+# virtual keyboard setup
+virtualkeyboard {
+    message("Building with virtual keyboard")
+    DEFINES += QGC_USE_VIRTUAL_KEYBOARD
+}
+
 # Setup our supported build flavors
 
 CONFIG(debug, debug|release) {
@@ -313,5 +318,5 @@ ReleaseBuild {
         # Eliminate duplicate COMDATs
         QMAKE_LFLAGS_RELEASE += /OPT:ICF
         QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO += /OPT:ICF
-    }
+    }    
 }

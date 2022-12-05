@@ -265,6 +265,7 @@ private:
 
     QTimer  _startUpTimer;
     QTimer  _delayTimer;
+    QTimer  _delayTimer2;
 
 private Q_SLOTS:
     void setSDCardReportFrequencyCommand();

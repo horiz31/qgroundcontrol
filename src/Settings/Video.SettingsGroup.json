@@ -19,6 +19,13 @@
     "default":     5600
 },
 {
+    "name":             "multicastGroup",
+    "shortDesc": "Multicast Group Url",
+    "longDesc":  "UDP Url to use for joining a multicast group.",
+    "type":             "string",
+    "default":     "239.9.9.9"
+},
+{
     "name":             "rtspUrl",
     "shortDesc": "Video RTSP Url",
     "longDesc":  "RTSP url address and port to bind to for video stream. Example: rtsp://192.168.42.1:554/live",

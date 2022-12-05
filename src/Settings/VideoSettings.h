@@ -21,6 +21,7 @@ public:
     DEFINE_SETTING_NAME_GROUP()
 
     DEFINE_SETTINGFACT(videoSource)
+    DEFINE_SETTINGFACT(multicastGroup)
     DEFINE_SETTINGFACT(udpPort)
     DEFINE_SETTINGFACT(tcpUrl)
     DEFINE_SETTINGFACT(rtspUrl)
@@ -58,6 +59,7 @@ public:
     Q_PROPERTY(QString  rtspVideoSource         READ rtspVideoSource        CONSTANT)
     Q_PROPERTY(QString  udp264VideoSource       READ udp264VideoSource      CONSTANT)
     Q_PROPERTY(QString  udp265VideoSource       READ udp265VideoSource      CONSTANT)
+    Q_PROPERTY(QString  udp265MulticastVideoSource       READ udp265MulticastVideoSource      CONSTANT)
     Q_PROPERTY(QString  tcpVideoSource          READ tcpVideoSource         CONSTANT)
     Q_PROPERTY(QString  mpegtsVideoSource       READ mpegtsVideoSource      CONSTANT)
     Q_PROPERTY(QString  disabledVideoSource     READ disabledVideoSource    CONSTANT)
@@ -66,6 +68,7 @@ public:
     QString  rtspVideoSource        () { return videoSourceRTSP; }
     QString  udp264VideoSource      () { return videoSourceUDPH264; }
     QString  udp265VideoSource      () { return videoSourceUDPH265; }
+    QString  udp265MulticastVideoSource      () { return videoSourceMulticastUDPH265; }
     QString  tcpVideoSource         () { return videoSourceTCP; }
     QString  mpegtsVideoSource      () { return videoSourceMPEGTS; }
     QString  disabledVideoSource    () { return videoDisabled; }
@@ -74,6 +77,7 @@ public:
     static const char* videoDisabled;
     static const char* videoSourceUDPH264;
     static const char* videoSourceUDPH265;
+    static const char* videoSourceMulticastUDPH265;
     static const char* videoSourceRTSP;
     static const char* videoSourceTCP;
     static const char* videoSourceMPEGTS;
