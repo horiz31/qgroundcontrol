@@ -37,11 +37,37 @@ Item {
 
 
          QGCLabel {             
-             text: _activeVehicle ? (_activeVehicle.brdSerialNumber !== 0 ? " Vehicle " + _activeVehicle.brdSerialNumber + " " : "") : ""
+             text: _activeVehicle ? getName() : ""
              font.pointSize:     ScreenTools.largeFontPointSize
              font.family:        ScreenTools.normalFontFamily
              anchors.verticalCenter: parent.verticalCenter
-
+             function getName(){
+                if (_activeVehicle.vehicleModel === 0)
+                {
+                    if (_activeVehicle.brdSerialNumber !== 0)
+                    {
+                      return " Vehicle " + _activeVehicle.brdSerialNumber + " "
+                    }
+                    else
+                    {
+                       return "";
+                    }
+                }
+                else
+                {
+                    if (_activeVehicle.brdSerialNumber !== 0)
+                    {
+                        if (_activeVehicle.vehicleModel === 0)
+                            return " Vehicle " + _activeVehicle.brdSerialNumber + " "
+                        else if (_activeVehicle.vehicleModel === 1)
+                            return " Maven " + _activeVehicle.brdSerialNumber + " "
+                    }
+                    else
+                    {
+                       return " Maven ";
+                    }
+                }
+            }
          }
     }
 

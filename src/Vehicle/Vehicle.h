@@ -270,6 +270,7 @@ public:
     Q_PROPERTY(uint                 guidedModeRadius            READ guidedModeRadius            WRITE setGuidedModeRadius          NOTIFY guidedModeRadiusChanged)  //Used to track the guided mode radius, which is supported by the supervolo
     Q_PROPERTY(bool                 supportsGuidedRadius        READ supportsGuidedRadius                                           NOTIFY supportsGuidedRadiusChanged)
     Q_PROPERTY(uint                 brdSerialNumber             READ brdSerialNumber                                                NOTIFY brdSerialNumberChanged)  //Used to track the board/aircraft serial number, if supported by the vehicle
+    Q_PROPERTY(Model                vehicleModel                READ vehicleModel                                                   NOTIFY vehicleModelChanged)  //Used to track vehicle model, if supported by the vehicle
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
     Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)    
@@ -896,7 +897,8 @@ public:
     bool        gimbalData              () const{ return _haveGimbalData; }
     bool        isROIEnabled            () const{ return _isROIEnabled; }
     bool        supportsGuidedRadius    () { return _supportsGuidedRadius; }
-    uint         brdSerialNumber         () { return _brdSerialNumber; }
+    uint        brdSerialNumber         () { return _brdSerialNumber; }
+    Model       vehicleModel             () { return _vehicleModel;}
 
     QGeoCoordinate guidedModeCoordinate   () { return _guidedModeCoordinate; }
     bool           guidedModeisClockwise  () { return _guidedModeisClockwise; }
@@ -990,6 +992,7 @@ signals:
     void nvModeChanged                  (QString nvMode);
     void supportsGuidedRadiusChanged    (bool value);
     void brdSerialNumberChanged         ();
+    void vehicleModelChanged            ();
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -1219,6 +1222,7 @@ private:
     bool            _allSensorsHealthy                      = true;
     uint            _guidedModeRadius                       = 150;
     uint            _brdSerialNumber                        = 0;
+    Model           _vehicleModel                           = Unknown;
     bool            _supportsGuidedRadius                   = false;
 
     SysStatusSensorInfo _sysStatusSensorInfo;

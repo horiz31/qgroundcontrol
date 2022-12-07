@@ -3955,13 +3955,21 @@ void Vehicle::_getSystemSerialNumber()
         uint  brdSerialNumber = fact->rawValue().toInt();
         connect(fact, &Fact::rawValueChanged, this, &Vehicle::brdSerialNumberChanged);
 
+        Model vehicleModel = static_cast<Model>((brdSerialNumber & 0xf000) >> 12);
+
+        if (_vehicleModel != vehicleModel )
+        {
+            _vehicleModel = vehicleModel;
+            emit vehicleModelChanged();
+        }
+
         brdSerialNumber &= 0xfff;
         if (_brdSerialNumber != brdSerialNumber)
         {
             _brdSerialNumber = brdSerialNumber;
-            qDebug() << "System Serial Number Found, Value: " << _brdSerialNumber;
             emit brdSerialNumberChanged();
         }
+
     }
 
 }
