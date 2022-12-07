@@ -77,7 +77,7 @@
     "default":     121.92,
     "min":              5.0,
     "units":            "vertical m",
-    "decimalPlaces":    2
+    "decimalPlaces":    0
 },
 {
     "name":             "defaultTransitionAltitude",
@@ -87,7 +87,7 @@
     "default":     76.20,
     "min":              30.0,
     "units":            "vertical m",
-    "decimalPlaces":    2
+    "decimalPlaces":    0
 },
 {
     "name":             "telemetrySave",

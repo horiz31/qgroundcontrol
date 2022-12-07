@@ -21,6 +21,7 @@
         <file alias="SingleBatteryIndicator.qml">src/ui/toolbar/SingleBatteryIndicator.qml</file>
         <file alias="FuelIndicator.qml">src/ui/toolbar/FuelIndicator.qml</file>
         <file alias="NvGimbalIndicator.qml">src/ui/toolbar/NvGimbalIndicator.qml</file>
+        <file alias="SerialNumber.qml">src/ui/toolbar/SerialNumber.qml</file>
     </qresource>
     <qresource prefix="/checklists">
         <file alias="DefaultChecklist.qml">src/FlightDisplay/DefaultChecklist.qml</file>

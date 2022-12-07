@@ -2504,6 +2504,7 @@ void Vehicle::_parametersReady(bool parametersReady)
         disconnect(_parameterManager, &ParameterManager::parametersReadyChanged, this, &Vehicle::_parametersReady);
         _setupAutoDisarmSignalling();
         _setupGuidedModeRadius();
+        _getSystemSerialNumber();
         _initialConnectStateMachine->advance();
 
 
@@ -3944,6 +3945,26 @@ void Vehicle::_setupAutoDisarmSignalling()
     }
 }
 
+void Vehicle::_getSystemSerialNumber()
+{
+    QString brdSerialParam("BRD_SERIAL_NUM");
+
+    if (_parameterManager->parameterExists(FactSystem::defaultComponentId, brdSerialParam))
+    {
+        Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,brdSerialParam);
+        uint  brdSerialNumber = fact->rawValue().toInt();
+        connect(fact, &Fact::rawValueChanged, this, &Vehicle::brdSerialNumberChanged);
+
+        brdSerialNumber &= 0xfff;
+        if (_brdSerialNumber != brdSerialNumber)
+        {
+            _brdSerialNumber = brdSerialNumber;
+            qDebug() << "System Serial Number Found, Value: " << _brdSerialNumber;
+            emit brdSerialNumberChanged();
+        }
+    }
+
+}
 void Vehicle::_setupGuidedModeRadius()
 {
     QString guidedRadius("GUIDED_RADIUS");

@@ -134,7 +134,7 @@ Item {
     property bool showOrbit:            _guidedActionsEnabled && _vehicleFlying && __orbitSupported && !_missionActive
     property bool showROI:              _guidedActionsEnabled && _vehicleFlying && __roiSupported && !_missionActive
     property bool showLandAbort:        _guidedActionsEnabled && _vehicleFlying && _fixedWingOnApproach
-    property bool showGotoLocation:     _guidedActionsEnabled && _vehicleFlying
+    property bool showGotoLocation:     _guidedActionsEnabled && _vehicleArmed //  there are some states with volo where flying cannot be determined  was _vehicleFlying
     property bool showActionList:       _guidedActionsEnabled && (showStartMission || showResumeMission || showChangeAlt || showLandAbort)
     property bool showActionLandingList: _guidedActionsEnabled && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
 

@@ -324,6 +324,7 @@ const QVariantList& FirmwarePlugin::toolIndicators(const Vehicle*)
     //-- Default list of indicators for all vehicles.
     if(_toolIndicatorList.size() == 0) {
         _toolIndicatorList = QVariantList({
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/SerialNumber.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/MessageIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/GPSIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/TelemetryRSSIIndicator.qml")),
@@ -332,7 +333,7 @@ const QVariantList& FirmwarePlugin::toolIndicators(const Vehicle*)
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/SingleBatteryIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/FuelIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/ICEIndicator.qml")),
-            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/NvGimbalIndicator.qml")),
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/NvGimbalIndicator.qml"))
         });
     }
     return _toolIndicatorList;
