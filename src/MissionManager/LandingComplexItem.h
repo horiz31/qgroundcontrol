@@ -28,6 +28,7 @@ public:
     LandingComplexItem(PlanMasterController* masterController, bool flyView);
 
     Q_PROPERTY(Fact*            finalApproachAltitude   READ    finalApproachAltitude                                           CONSTANT)
+    Q_PROPERTY(Fact*            finalApproachAltitudeEntry   READ    finalApproachAltitudeEntry                                 CONSTANT)
     Q_PROPERTY(Fact*            loiterRadius            READ    loiterRadius                                                    CONSTANT)
     Q_PROPERTY(Fact*            landingAltitude         READ    landingAltitude                                                 CONSTANT)
     Q_PROPERTY(Fact*            landingHeading          READ    landingHeading                                                  CONSTANT)
@@ -45,6 +46,7 @@ public:
     Q_INVOKABLE void setLandingHeadingToTakeoffHeading();
 
     const Fact* finalApproachAltitude   (void) const { return _finalApproachAltitude(); }
+    const Fact* finalApproachAltitudeEntry   (void) const { return _finalApproachAltitudeEntry(); }
     const Fact* loiterRadius            (void) const { return _loiterRadius(); }
     const Fact* loiterClockwise         (void) const { return _loiterClockwise(); }
     const Fact* landingAltitude         (void) const { return _landingAltitude(); }
@@ -55,6 +57,7 @@ public:
     const Fact* stopTakingVideo         (void) const { return _stopTakingVideo(); }
 
     Fact* finalApproachAltitude (void) { return const_cast<Fact*>(const_cast<const LandingComplexItem*>(this)->_finalApproachAltitude()); };
+    Fact* finalApproachAltitudeEntry (void) { return const_cast<Fact*>(const_cast<const LandingComplexItem*>(this)->_finalApproachAltitudeEntry()); };
     Fact* loiterRadius          (void) { return const_cast<Fact*>(const_cast<const LandingComplexItem*>(this)->_loiterRadius()); };
     Fact* loiterClockwise       (void) { return const_cast<Fact*>(const_cast<const LandingComplexItem*>(this)->_loiterClockwise()); };
     Fact* landingAltitude       (void) { return const_cast<Fact*>(const_cast<const LandingComplexItem*>(this)->_landingAltitude()); };
@@ -109,6 +112,7 @@ public:
 
     static const char* finalApproachToLandDistanceName;
     static const char* finalApproachAltitudeName;
+    static const char* finalApproachAltitudeEntryName;
     static const char* loiterRadiusName;
     static const char* loiterClockwiseName;
     static const char* landingHeadingName;
@@ -134,6 +138,7 @@ protected slots:
 
 protected:
     virtual const Fact*     _finalApproachAltitude  (void) const = 0;
+    virtual const Fact*     _finalApproachAltitudeEntry  (void) const = 0;
     virtual const Fact*     _loiterRadius           (void) const = 0;
     virtual const Fact*     _loiterClockwise        (void) const = 0;
     virtual const Fact*     _landingAltitude        (void) const = 0;

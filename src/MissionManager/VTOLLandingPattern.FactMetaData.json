@@ -23,19 +23,28 @@
     "default":          270.0
 },
 {
-    "name":             "FinalApproachAltitude",
-    "shortDesc":        "Altitude to begin landing approach from.",
+    "name":             "FinalApproachAltitudeEntry",
+    "shortDesc":        "Altitude to enter the landing approach loiter.",
     "type":             "double",
     "units":            "vertical m",
     "min":              30.0,
-    "decimalPlaces":    1,
+    "decimalPlaces":    0,
+    "default":          121.92
+},
+{
+    "name":             "FinalApproachAltitude",
+    "shortDesc":        "Altitude to exit the landing approach loiter.",
+    "type":             "double",
+    "units":            "vertical m",
+    "min":              30.0,
+    "decimalPlaces":    0,
     "default":          60.96
 },
 {
     "name":             "LoiterRadius",
     "shortDesc":        "Loiter radius.",
     "type":             "double",
-    "decimalPlaces":    1,
+    "decimalPlaces":    0,
     "min":              1,
     "units":            "m",
     "default":          90.0
@@ -51,7 +60,7 @@
     "shortDesc":        "Altitude for approach altitude.",
     "type":             "double",
     "units":            "vertical m",
-    "decimalPlaces":    1,
+    "decimalPlaces":    0,
     "default":          60.96
 },
 {

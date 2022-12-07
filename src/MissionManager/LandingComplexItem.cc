@@ -32,6 +32,7 @@ const char* LandingComplexItem::_jsonStopTakingVideoKey         = "stopVideoPhot
 const char* LandingComplexItem::finalApproachToLandDistanceName = "LandingDistance";
 const char* LandingComplexItem::landingHeadingName              = "LandingHeading";
 const char* LandingComplexItem::finalApproachAltitudeName       = "FinalApproachAltitude";
+const char* LandingComplexItem::finalApproachAltitudeEntryName  = "FinalApproachAltitudeEntry";
 const char* LandingComplexItem::loiterRadiusName                = "LoiterRadius";
 const char* LandingComplexItem::loiterClockwiseName             = "LoiterClockwise";
 const char* LandingComplexItem::landingAltitudeName             = "LandingAltitude";
@@ -79,6 +80,7 @@ void LandingComplexItem::_init(void)
     connect(useLoiterToAlt(),           &Fact::rawValueChanged,                             this, &LandingComplexItem::_recalcFromCoordinateChange);
 
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
+     connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingDistance(),          &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingHeading(),           &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
@@ -97,6 +99,7 @@ void LandingComplexItem::_init(void)
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_amslEntryAltChanged);
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_amslExitAltChanged);
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_amslEntryAltChanged);
+     connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                               this, &LandingComplexItem::_amslEntryAltChanged);
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_amslExitAltChanged);
     connect(this,                       &LandingComplexItem::amslEntryAltChanged,           this, &LandingComplexItem::maxAMSLAltitudeChanged);
     connect(this,                       &LandingComplexItem::amslExitAltChanged,            this, &LandingComplexItem::minAMSLAltitudeChanged);
@@ -112,11 +115,13 @@ void LandingComplexItem::_init(void)
     connect(this,                       &LandingComplexItem::finalApproachCoordinateChanged,this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(this,                       &LandingComplexItem::landingCoordinateChanged,      this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
+     connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                                this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(_missionController,         &MissionController::plannedHomePositionChanged,     this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
 
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_updateFinalApproachCoodinateAltitudeFromFact);
+
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_updateLandingCoodinateAltitudeFromFact);
 }
 

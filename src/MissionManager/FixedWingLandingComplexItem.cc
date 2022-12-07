@@ -34,6 +34,7 @@ FixedWingLandingComplexItem::FixedWingLandingComplexItem(PlanMasterController* m
     , _metaDataMap              (FactMetaData::createMapFromJsonFile(QStringLiteral(":/json/FWLandingPattern.FactMetaData.json"), this))
     , _landingDistanceFact      (settingsGroup, _metaDataMap[finalApproachToLandDistanceName])
     , _finalApproachAltitudeFact(settingsGroup, _metaDataMap[finalApproachAltitudeName])
+    , _finalApproachAltitudeEntryFact(settingsGroup, _metaDataMap[finalApproachAltitudeEntryName])
     , _loiterRadiusFact         (settingsGroup, _metaDataMap[loiterRadiusName])
     , _loiterClockwiseFact      (settingsGroup, _metaDataMap[loiterClockwiseName])
     , _landingHeadingFact       (settingsGroup, _metaDataMap[landingHeadingName])

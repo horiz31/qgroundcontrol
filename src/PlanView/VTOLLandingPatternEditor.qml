@@ -78,7 +78,15 @@ Rectangle {
                 anchors.right:   parent.right
                 columns:         2
 
-                QGCLabel { text: qsTr("Altitude") }
+                QGCLabel { text: qsTr("Entry Altitude") }
+
+                AltitudeFactTextField {
+                    Layout.fillWidth:   true
+                    inputMethodHints:   Qt.ImhDigitsOnly
+                    fact:               missionItem.finalApproachAltitudeEntry
+                    altitudeMode:       _altitudeMode
+                }
+                QGCLabel { text: qsTr("Exit Altitude") }
 
                 AltitudeFactTextField {
                     Layout.fillWidth:   true
