@@ -78,15 +78,21 @@ Rectangle {
                 anchors.right:   parent.right
                 columns:         2
 
-                QGCLabel { text: qsTr("Entry Altitude") }
+                QGCLabel {
+                    visible: missionItem.useLoiterToAlt.rawValue
+                    text: qsTr("Entry Altitude")
+                }
 
                 AltitudeFactTextField {
+                    visible: missionItem.useLoiterToAlt.rawValue
                     Layout.fillWidth:   true
                     inputMethodHints:   Qt.ImhDigitsOnly
                     fact:               missionItem.finalApproachAltitudeEntry
                     altitudeMode:       _altitudeMode
                 }
-                QGCLabel { text: qsTr("Exit Altitude") }
+                QGCLabel {
+                    text: missionItem.useLoiterToAlt.rawValue ? qsTr("Exit Altitude") : qsTr("Altitude")
+                }
 
                 AltitudeFactTextField {
                     Layout.fillWidth:   true

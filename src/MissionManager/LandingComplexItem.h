@@ -154,6 +154,7 @@ protected:
     QPointF         _rotatePoint            (const QPointF& point, const QPointF& origin, double angle);
     MissionItem*    _createDoLandStartItem  (int seqNum, QObject* parent);
     MissionItem*    _createFinalApproachItem(int seqNum, QObject* parent);
+    MissionItem*    _createFinalApproachEntryItem(int seqNum, QObject* parent);
     QJsonObject     _save                   (void);
     bool            _load                   (const QJsonObject& complexObject, int sequenceNumber, const QString& jsonComplexItemTypeValue, bool useDeprecatedRelAltKeys, QString& errorString);
 

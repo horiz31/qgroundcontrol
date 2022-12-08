@@ -80,7 +80,7 @@ void LandingComplexItem::_init(void)
     connect(useLoiterToAlt(),           &Fact::rawValueChanged,                             this, &LandingComplexItem::_recalcFromCoordinateChange);
 
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
-     connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
+    connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingDistance(),          &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
     connect(landingHeading(),           &Fact::valueChanged,                                this, &LandingComplexItem::_setDirty);
@@ -96,10 +96,13 @@ void LandingComplexItem::_init(void)
     connect(stopTakingPhotos(),         &Fact::valueChanged,                                this, &LandingComplexItem::_signalLastSequenceNumberChanged);
     connect(stopTakingVideo(),          &Fact::valueChanged,                                this, &LandingComplexItem::_signalLastSequenceNumberChanged);
 
+    connect(useLoiterToAlt(),           &Fact::valueChanged,                                this, &LandingComplexItem::_amslEntryAltChanged);
+    connect(useLoiterToAlt(),           &Fact::valueChanged,                                this, &LandingComplexItem::_amslExitAltChanged);
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_amslEntryAltChanged);
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_amslExitAltChanged);
     connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_amslEntryAltChanged);
-     connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                               this, &LandingComplexItem::_amslEntryAltChanged);
+    connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                               this, &LandingComplexItem::_amslEntryAltChanged);
+    connect(finalApproachAltitudeEntry(),    &Fact::valueChanged,                               this, &LandingComplexItem::_amslExitAltChanged);
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_amslExitAltChanged);
     connect(this,                       &LandingComplexItem::amslEntryAltChanged,           this, &LandingComplexItem::maxAMSLAltitudeChanged);
     connect(this,                       &LandingComplexItem::amslExitAltChanged,            this, &LandingComplexItem::minAMSLAltitudeChanged);
@@ -120,7 +123,7 @@ void LandingComplexItem::_init(void)
     connect(this,                       &LandingComplexItem::altitudesAreRelativeChanged,   this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
     connect(_missionController,         &MissionController::plannedHomePositionChanged,     this, &LandingComplexItem::_updateFlightPathSegmentsSignal);
 
-    connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_updateFinalApproachCoodinateAltitudeFromFact);
+    connect(finalApproachAltitude(),    &Fact::valueChanged,                                this, &LandingComplexItem::_updateFinalApproachCoodinateAltitudeFromFact);    
 
     connect(landingAltitude(),          &Fact::valueChanged,                                this, &LandingComplexItem::_updateLandingCoodinateAltitudeFromFact);
 }
@@ -324,6 +327,13 @@ void LandingComplexItem::appendMissionItems(QList<MissionItem*>& items, QObject*
         CameraSection::appendStopTakingVideo(items, seqNum, missionItemParent);
     }
 
+    // adding a approach entry wp, which lets us specify an entry altitude (waypoint) before starting the descent loiter
+    // the issue I have is if the use switches to not using loiter by alt, I don't have a way to remove this item
+    if (useLoiterToAlt()->rawValue().toBool()) {
+        item = _createFinalApproachEntryItem(seqNum++, missionItemParent);
+        items.append(item);
+     }
+
     item = _createFinalApproachItem(seqNum++, missionItemParent);
     items.append(item);
 
@@ -345,6 +355,24 @@ MissionItem* LandingComplexItem::_createDoLandStartItem(int seqNum, QObject* par
                            parent);
 }
 
+MissionItem* LandingComplexItem::_createFinalApproachEntryItem(int seqNum, QObject* parent)
+{
+    qDebug() << "creating final approach entry item";
+           return new MissionItem(seqNum,
+                               MAV_CMD_NAV_WAYPOINT,
+                               _altitudesAreRelative ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
+                               0,               // No hold time
+                               0,               // Use default acceptance radius
+                               0,               // Pass through waypoint
+                               qQNaN(),         // Yaw not specified
+                               _finalApproachCoordinate.latitude(),
+                               _finalApproachCoordinate.longitude(),
+                               _finalApproachAltitudeEntry()->rawValue().toFloat(),
+                               true,            // autoContinue
+                               false,           // isCurrentItem
+                               parent);
+
+}
 MissionItem* LandingComplexItem::_createFinalApproachItem(int seqNum, QObject* parent)
 {
     if (useLoiterToAlt()->rawValue().toBool()) {
@@ -380,16 +408,19 @@ MissionItem* LandingComplexItem::_createFinalApproachItem(int seqNum, QObject* p
 
 bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyView, PlanMasterController* masterController, IsLandItemFunc isLandItemFunc, CreateItemFunc createItemFunc)
 {
+    qDebug() << "starting scanforitem in landingcomplexitem";
     qCDebug(LandingComplexItemLog) << "VTOLLandingComplexItem::scanForItem count" << visualItems->count();
 
     if (visualItems->count() < 3) {
         return false;
     }
 
+
     // A valid landing pattern is comprised of the follow commands in this order at the end of the item list:
     //  MAV_CMD_DO_LAND_START - required
     //  Stop taking photos sequence - optional
-    //  Stop taking video sequence - optional
+    //  Stop taking video sequence - optional    
+    //  MAV_CMD_NAV_WAYPONT  //volo edit, this will be used as the entry altitude to the landing pattern
     //  MAV_CMD_NAV_LOITER_TO_ALT or MAV_CMD_NAV_WAYPOINT
     //  MAV_CMD_NAV_LAND or MAV_CMD_NAV_VTOL_LAND
 
@@ -404,19 +435,29 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
     if (!item) {
         return false;
     }
-    MissionItem& missionItemLand = item->missionItem();
+    MissionItem& missionItemLand = item->missionItem();  //checks to make sure the last item is a landing item
     if (!isLandItemFunc(missionItemLand)) {
         return false;
     }
     MAV_FRAME landPointFrame = missionItemLand.frame();
 
-    if (scanIndex < 0 || scanIndex > visualItems->count() - 1) {
+    if (scanIndex < 0 || scanIndex > visualItems->count() - 1) {   //are we out of mission items, if so return
         return false;
     }
-    item = visualItems->value<SimpleMissionItem*>(scanIndex);
+    item = visualItems->value<SimpleMissionItem*>(scanIndex);   //now grab the next one, which we expect to be MAV_CMD_NAV_WAYPONT
     if (!item) {
         return false;
     }
+
+    //the next command will be
+    //if wp followed by loiter to alt, then it useLoiterToAlt is tru
+    //if it is just a single wp then it is not loiter to alt
+
+    //if
+
+
+
+
     bool useLoiterToAlt = true;
     MissionItem& missionItemFinalApproach = item->missionItem();
     if (missionItemFinalApproach.command() == MAV_CMD_NAV_LOITER_TO_ALT) {
@@ -490,6 +531,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
     complexItem->useLoiterToAlt()->setRawValue(useLoiterToAlt);
 
     if (useLoiterToAlt) {
+       // complexItem->finalApproachAltitudeEntry()->setRawValue()
         complexItem->loiterRadius()->setRawValue(qAbs(missionItemFinalApproach.param2()));
         complexItem->loiterClockwise()->setRawValue(missionItemFinalApproach.param2() > 0);
     }
@@ -547,12 +589,20 @@ void LandingComplexItem::setSequenceNumber(int sequenceNumber)
 
 double LandingComplexItem::amslEntryAlt(void) const
 {
-    return finalApproachAltitude()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
+      if (useLoiterToAlt()->rawValue().toBool()) {
+          return finalApproachAltitudeEntry()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
+      }
+      else
+          return finalApproachAltitude()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
 }
 
 double LandingComplexItem::amslExitAlt(void) const
 {
-    return landingAltitude()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
+    if (useLoiterToAlt()->rawValue().toBool()) {
+        return finalApproachAltitude()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
+    }
+    else
+        return landingAltitude()->rawValue().toDouble() + (_altitudesAreRelative ? _missionController->plannedHomePosition().altitude() : 0);
 
 }
 
@@ -562,7 +612,7 @@ void LandingComplexItem::_signalLastSequenceNumberChanged(void)
 }
 
 void LandingComplexItem::_updateFinalApproachCoodinateAltitudeFromFact(void)
-{
+{        
     _finalApproachCoordinate.setAltitude(finalApproachAltitude()->rawValue().toDouble());
     emit finalApproachCoordinateChanged(_finalApproachCoordinate);
     emit coordinateChanged(_finalApproachCoordinate);
