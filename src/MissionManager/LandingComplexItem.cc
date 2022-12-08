@@ -613,6 +613,12 @@ void LandingComplexItem::_signalLastSequenceNumberChanged(void)
 
 void LandingComplexItem::_updateFinalApproachCoodinateAltitudeFromFact(void)
 {        
+
+    //super volo change, the landing altitude should change as well to track the exit approach altitude
+    //we will hide the landing altitude from the UI
+    _landingCoordinate.setAltitude(finalApproachAltitude()->rawValue().toDouble());
+    emit landingCoordinateChanged(_landingCoordinate);
+
     _finalApproachCoordinate.setAltitude(finalApproachAltitude()->rawValue().toDouble());
     emit finalApproachCoordinateChanged(_finalApproachCoordinate);
     emit coordinateChanged(_finalApproachCoordinate);

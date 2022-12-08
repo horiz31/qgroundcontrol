@@ -100,8 +100,6 @@ GstVideoReceiver::start(const QString& uri, unsigned timeout, int buffer)
 
     qCDebug(VideoReceiverLog) << "Starting" << _uri << ", buffer" << _buffer;
 
-    qDebug() << "Starting" << _uri << ", buffer" << _buffer;
-
     _endOfStream = false;
 
     bool running    = false;

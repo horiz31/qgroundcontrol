@@ -229,20 +229,30 @@ Item {
         anchors.right:               parent.right
         anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
         text:                       vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.value).toFixed(0) : "----"   //vehicle.altitudeRelative.value.toFixed(0)
-        color:                      "white"
+        color:                      vehicle ? getAltColor() : "white"
         font.family:        ScreenTools.normalFontFamily
         font.pointSize:     ScreenTools.mediumFontPointSize
+        function getAltColor() {
+            if (!vehicle.flying)
+                return "white"
+            else if (vehicle.altitudeRelative.value < 15.24)
+                return "red"
+            else if (vehicle.altitudeRelative.value < 30.48)
+                return "orange"
+            else
+                return "white"
+        }
     }
 
     QGCColoredImage {
         width:                  height
-        height:                 ScreenTools.defaultFontPixelWidth * 2.5
+        height:                 ScreenTools.defaultFontPixelWidth * 2.2
         sourceSize.height:      height
         source:                 getAirSpeedArrow()
         color:                  qgcPal.text
         anchors.verticalCenter: parent.verticalCenter
         anchors.right:               hudAltitude.left
-        anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth)
+        anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth/3)
         visible:                isAscending()
         function getAirSpeedArrow()
         {

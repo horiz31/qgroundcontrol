@@ -155,7 +155,7 @@ Rectangle {
             wrapMode:               Text.WordWrap
             horizontalAlignment:    Text.AlignHCenter
             text:                   qsTr("Radius:")
-            visible:                _isRadiusInputVisible
+            visible:                _activeVehicle ? (_isRadiusInputVisible && _activeVehicle.supportsGuidedRadius) : false
         }
         QGCTextField {
             id:             guidedRadiusField

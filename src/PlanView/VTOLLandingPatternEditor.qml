@@ -39,6 +39,7 @@ Rectangle {
     property real   _spacer:                    ScreenTools.defaultFontPixelWidth / 2
     property string _setToVehicleHeadingStr:    qsTr("Set to vehicle heading")
     property string _setToVehicleLocationStr:   qsTr("Set to vehicle location")
+    property string _setToVehicleHomeStr:       qsTr("Set to vehicle home")
     property bool   _showCameraSection:         !_missionVehicle.apmFirmware
     property int    _altitudeMode:              missionItem.altitudesAreRelative ? QGroundControl.AltitudeModeRelative : QGroundControl.AltitudeModeAbsolute
 
@@ -134,7 +135,7 @@ Rectangle {
             id:             landingPointSection
             anchors.left:   parent.left
             anchors.right:  parent.right
-            text:           qsTr("Final approach")
+            text:           qsTr("Final approach and land")
         }
 
         Column {
@@ -158,22 +159,34 @@ Rectangle {
                     fact:               missionItem.landingHeading
                 }
 
-                //QGCLabel { text: qsTr("Ground Altitude") }
-                QGCLabel { text: qsTr("Approach Altitude") }  //supervolo firmware expect to use the altitude as the appoach altitude, this is outside current ardupilot specs
-
+                // volo edit, the landing altitude is set based on the final approach altitude
+                // this is because with the volo firmware, the altitude specified in the landingAltitude is actally the altitude the aircraft
+                // uses on the final approach leg, not the specified altitude of the landing spot
+                //QGCLabel { text: qsTr("Approach Altitude") }  //supervolo firmware expect to use the altitude as the appoach altitude, this is outside current ardupilot specs
+/*
                 AltitudeFactTextField {
                     Layout.fillWidth:   true
                     fact:               missionItem.landingAltitude
                     inputMethodHints:   Qt.ImhDigitsOnly
                     altitudeMode:       _altitudeMode
                 }
-
+*/
                 QGCLabel { text: qsTr("Landing Dist") }
 
                 FactTextField {
                     inputMethodHints:   Qt.ImhDigitsOnly                    
                     fact:               missionItem.landingDistance
                     Layout.fillWidth:   true
+                }
+                QGCButton {
+                    text:               _setToVehicleHomeStr
+                    visible:            globals.activeVehicle ? (globals.activeVehicle.homePosition ? true : false) : false
+                    Layout.columnSpan:  2
+                    onClicked:
+                    {
+                        console.log("home location is " + globals.activeVehicle.homePosition + " lat is " + globals.activeVehicle.homePosition.latitude)
+                        missionItem.landingCoordinate = globals.activeVehicle.homePosition
+                    }
                 }
 
                 QGCButton {
@@ -188,7 +201,7 @@ Rectangle {
         Item { width: 1; height: _spacer }
 
         QGCCheckBox {
-            anchors.right:  parent.right
+            anchors.left:  parent.left
             text:           qsTr("Altitudes relative to launch")
             checked:        missionItem.altitudesAreRelative
             visible:        QGroundControl.corePlugin.options.showMissionAbsoluteAltitude || !missionItem.altitudesAreRelative
@@ -299,6 +312,17 @@ Rectangle {
 
                 onClicked: {
                     missionItem.landingCoordinate = globals.activeVehicle.coordinate
+                    missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
+                    missionItem.setLandingHeadingToTakeoffHeading()
+                }
+            }
+            QGCButton {
+                anchors.horizontalCenter:   parent.horizontalCenter
+                text:                       _setToVehicleHomeStr
+                visible:                    globals.activeVehicle.homePosition
+
+                onClicked: {
+                    missionItem.landingCoordinate = globals.activeVehicle.homePosition
                     missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
                     missionItem.setLandingHeadingToTakeoffHeading()
                 }
