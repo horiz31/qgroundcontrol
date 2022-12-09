@@ -128,7 +128,7 @@ Item {
     property bool showLand:             _guidedActionsEnabled && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
     property bool showStartMission:     _guidedActionsEnabled && _missionAvailable && !_missionActive && !_vehicleFlying && _canArm
     property bool showContinueMission:  _guidedActionsEnabled && _missionAvailable && !_missionActive && _vehicleArmed && _vehicleFlying && (_currentMissionIndex < _missionItemCount - 1)
-    property bool showLandInMission:    _guidedActionsEnabled && _missionAvailable && _vehicleArmed && _vehicleFlying && doesMissionContainDoLandStart()// figure out if mission contains do_start_land
+    property bool showLandInMission:    _guidedActionsEnabled && _missionAvailable && _vehicleArmed && _missionController.doesContainLanding  //doesMissionContainDoLandStart()// figure out if mission contains do_start_land
     property bool showPause:            _guidedActionsEnabled && _vehicleArmed && _activeVehicle.pauseVehicleSupported && _vehicleFlying && !_vehiclePaused && !_fixedWingOnApproach
     property bool showChangeAlt:        _guidedActionsEnabled && _vehicleFlying && _activeVehicle.guidedModeSupported && _vehicleArmed && !_missionActive
     property bool showOrbit:            _guidedActionsEnabled && _vehicleFlying && __orbitSupported && !_missionActive
@@ -174,16 +174,26 @@ Item {
     property bool __flightMode:             _flightMode
 
     function doesMissionContainDoLandStart() {
+        return _missionController.doesContainLanding
+        /*
         if (_activeVehicle.fixedWing || _activeVehicle.vtol)
         {
+            return _missionController.
+
+           // console.log( "mission controller has " + _missionController.visualItems.count + "items")
             for (var i = 1; i < _missionController.visualItems.count; i++) {
                 var missionItem = _missionController.visualItems.get(i)
+
+                console.log("mission item " + missionItem.command)
                 if (missionItem.command === 189) {  //MAV_CMD_DO_LAND_START
+                   //console.log( "mission does contain do_land_start")
                    return true;
                 }
             }
         }
+        console.log("mission does NOT contain do_land_start")
         return false;
+        */
     }
 
     function _outputState() {
@@ -551,6 +561,12 @@ Item {
             _activeVehicle.guidedModeLand()  //guided land does not work for a vtol or FW on Ardupilot, two cases below handle it for SuperVolo
             break
         case actionMissionLand:
+           if (_missionController.doesContainLanding)
+           {
+                _activeVehicle.setCurrentMissionSequence(_missionController.startLandingSequenceNumber)
+                _activeVehicle.startMission()
+           }
+            /*
             for (var j = 1; j < _missionController.visualItems.count; j++) {
                 var missionItem = _missionController.visualItems.get(j)
                 if (missionItem.command === 189) {  //MAV_CMD_DO_LAND_START
@@ -558,6 +574,7 @@ Item {
                    _activeVehicle.startMission()
                 }
             }
+            */
             break
         case actionLandQLand:
             _activeVehicle.flightMode = "QuadPlane Land"  //or QuadPlane Land

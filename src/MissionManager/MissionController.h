@@ -108,10 +108,10 @@ public:
     Q_PROPERTY(bool                 flyThroughCommandsAllowed       MEMBER _flyThroughCommandsAllowed   NOTIFY flyThroughCommandsAllowedChanged)
     Q_PROPERTY(double               minAMSLAltitude                 MEMBER _minAMSLAltitude             NOTIFY minAMSLAltitudeChanged)          ///< Minimum altitude associated with this mission. Used to calculate percentages for terrain status.
     Q_PROPERTY(double               maxAMSLAltitude                 MEMBER _maxAMSLAltitude             NOTIFY maxAMSLAltitudeChanged)          ///< Maximum altitude associated with this mission. Used to calculate percentages for terrain status.
-
+    Q_PROPERTY(bool                 doesContainLanding              READ doesContainLanding             NOTIFY doesContainLandingChanged)
     Q_PROPERTY(QGroundControlQmlGlobal::AltMode globalAltitudeMode         READ globalAltitudeMode         WRITE setGlobalAltitudeMode NOTIFY globalAltitudeModeChanged)
-    Q_PROPERTY(QGroundControlQmlGlobal::AltMode globalAltitudeModeDefault  READ globalAltitudeModeDefault  NOTIFY globalAltitudeModeChanged)                               ///< Default to use for newly created items
-
+    Q_PROPERTY(QGroundControlQmlGlobal::AltMode globalAltitudeModeDefault  READ globalAltitudeModeDefault  NOTIFY globalAltitudeModeChanged) ///< Default to use for newly created items
+    Q_PROPERTY(int                   startLandingSequenceNumber            READ startLandingSequenceNumber NOTIFY startLandingSequenceNumberChanged)
     Q_INVOKABLE void removeVisualItem(int viIndex);
 
     /// Add a new simple mission item to the list
@@ -231,6 +231,8 @@ public:
     QString             surveyComplexItemName       (void) const;
     QString             corridorScanComplexItemName (void) const;
     QString             structureScanComplexItemName(void) const;
+    int                 startLandingSequenceNumber  (void) const {return _startLandingSequenceNumber;}
+    bool                doesContainLanding          (void) const { return _doesContainLanding; }
     bool                isInsertTakeoffValid        (void) const;
     double              minAMSLAltitude             (void) const { return _minAMSLAltitude; }
     double              maxAMSLAltitude             (void) const { return _maxAMSLAltitude; }
@@ -284,6 +286,7 @@ signals:
     void currentPlanViewItemChanged         (void);
     void takeoffMissionItemChanged          (void);
     void missionBoundingCubeChanged         (void);
+    void doesContainLandingChanged          (void);
     void missionItemCountChanged            (int missionItemCount);
     void onlyInsertTakeoffValidChanged      (void);
     void isInsertTakeoffValidChanged        (void);
@@ -294,6 +297,7 @@ signals:
     void previousCoordinateChanged          (void);
     void minAMSLAltitudeChanged             (double minAMSLAltitude);
     void maxAMSLAltitudeChanged             (double maxAMSLAltitude);
+    void startLandingSequenceNumberChanged  (void);
     void recalcTerrainProfile               (void);
     void _recalcMissionFlightStatusSignal   (void);
     void _recalcFlightPathSegmentsSignal    (void);
@@ -354,6 +358,7 @@ private:
     FlightPathSegment*      _createFlightPathSegmentWorker      (VisualItemPair& pair, bool mavlinkTerrainFrame);
     void                    _allItemsRemoved                    (void);
     void                    _firstItemAdded                     (void);
+    void                    _searchForLandingPattern             (void);
 
     static double           _calcDistanceToHome                 (VisualMissionItem* currentItem, VisualMissionItem* homeItem);
     static double           _normalizeLat                       (double lat);
@@ -379,10 +384,12 @@ private:
     MissionFlightStatus_t       _missionFlightStatus;
     AppSettings*                _appSettings =                  nullptr;
     double                      _progressPct =                  0;
+    int                         _startLandingSequenceNumber;
     int                         _currentPlanViewSeqNum =        -1;
     int                         _currentPlanViewVIIndex =       -1;
     VisualMissionItem*          _currentPlanViewItem =          nullptr;
     TakeoffMissionItem*         _takeoffMissionItem =           nullptr;
+    bool                        _doesContainLanding =           false;
     QTimer                      _updateTimer;
     QGCGeoBoundingCube          _travelBoundingCube;
     QGeoCoordinate              _takeoffCoordinate;

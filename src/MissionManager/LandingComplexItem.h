@@ -172,6 +172,7 @@ protected:
     bool            _ignoreRecalcSignals        = false;
     bool            _altitudesAreRelative       = true;
 
+
     static const char* _jsonFinalApproachCoordinateKey;
     static const char* _jsonLoiterRadiusKey;
     static const char* _jsonLoiterClockwiseKey;

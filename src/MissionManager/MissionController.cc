@@ -206,6 +206,8 @@ void MissionController::_newMissionItemsAvailableFromVehicle(bool removeAllReque
 
         MissionController::_scanForAdditionalSettings(_visualItems, _masterController);
 
+        MissionController::_searchForLandingPattern();
+
         _initAllVisualItems();
         _updateContainsItems();
         emit newItemsFromVehicle();
@@ -241,6 +243,7 @@ void MissionController::sendToVehicle(void)
             sendItemsToVehicle(_managerVehicle, _visualItems);
         }
         setDirty(false);
+        MissionController::_searchForLandingPattern();
     }
 }
 
@@ -847,7 +850,7 @@ bool MissionController::_loadJsonMissionFileV2(const QJsonObject& json, QmlObjec
                 qCDebug(MissionControllerLog) << "FW Landing Pattern load complete: nextSequenceNumber" << nextSequenceNumber;
                 visualItems->append(landingItem);
             } else if (complexItemType == VTOLLandingComplexItem::jsonComplexItemTypeValue) {
-                qCDebug(MissionControllerLog) << "Loading VTOL Landing Pattern: nextSequenceNumber" << nextSequenceNumber;
+                qDebug() << "Loading VTOL Landing Pattern: nextSequenceNumber" << nextSequenceNumber;
                 VTOLLandingComplexItem* landingItem = new VTOLLandingComplexItem(_masterController, _flyView);
                 if (!landingItem->load(itemObject, nextSequenceNumber++, errorString)) {
                     return false;
@@ -2202,7 +2205,7 @@ void MissionController::_scanForAdditionalSettings(QmlObjectListModel* visualIte
 {
     // First we look for a Landing Patterns which are at the end
     if (!FixedWingLandingComplexItem::scanForItem(visualItems, _flyView, masterController)) {
-        qDebug() << "vtol scan for item";
+        //qDebug() << "vtol scan for item";
         VTOLLandingComplexItem::scanForItem(visualItems, _flyView, masterController);
     }
 
@@ -2366,6 +2369,72 @@ bool MissionController::_isROICancelItem(SimpleMissionItem* simpleItem)
              static_cast<int>(simpleItem->missionItem().param1()) == MAV_ROI_NONE);
 }
 
+void MissionController::_searchForLandingPattern()
+{
+    bool foundLand = false;
+    for (int viIndex=0; viIndex<_visualItems->count(); viIndex++)
+    {
+        VisualMissionItem*  pVI =        qobject_cast<VisualMissionItem*>(_visualItems->get(viIndex));
+        SimpleMissionItem*  simpleItem = qobject_cast<SimpleMissionItem*>(pVI);
+
+        if (simpleItem) {
+            switch (simpleItem->mavCommand()) {
+            case MAV_CMD_NAV_LAND:
+            case MAV_CMD_NAV_VTOL_LAND:
+            case MAV_CMD_DO_LAND_START:
+            case MAV_CMD_NAV_RETURN_TO_LAUNCH:
+                foundLand = true;
+                break;
+            default:
+                break;
+            }
+        } else {
+            FixedWingLandingComplexItem* fwLanding = qobject_cast<FixedWingLandingComplexItem*>(pVI);
+            if (fwLanding) {
+               foundLand = true;
+               if (fwLanding->sequenceNumber()!=_startLandingSequenceNumber)
+               {
+                   _startLandingSequenceNumber = fwLanding->sequenceNumber();
+                   emit startLandingSequenceNumberChanged();
+               }
+               break;
+            }
+            VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(pVI);
+            if (vtolLanding){
+                foundLand = true;
+                qDebug() << "found vtol landing complex item at sequence" << vtolLanding->sequenceNumber();
+                if (vtolLanding->sequenceNumber()!=_startLandingSequenceNumber)
+                {
+                    _startLandingSequenceNumber = vtolLanding->sequenceNumber();
+                    emit startLandingSequenceNumberChanged();
+                }
+                break;
+            }
+            LandingComplexItem* otherLanding = qobject_cast<LandingComplexItem*>(pVI);
+            if (otherLanding){
+                qDebug() << "found genric landing complex item";
+                foundLand = true;
+                if (otherLanding->sequenceNumber()!=_startLandingSequenceNumber)
+                {
+                    _startLandingSequenceNumber = otherLanding->sequenceNumber();
+                    emit startLandingSequenceNumberChanged();
+                }
+                break;
+
+            }
+        }
+    }
+
+    qDebug() << "done looking for land, the result is " <<foundLand;
+
+    if (foundLand != _doesContainLanding)
+    {
+        qDebug() << "UPDATING LAND ITEM" << foundLand << "..... emitting found land in mission plan";
+        _doesContainLanding = foundLand;
+        emit doesContainLandingChanged();
+    }
+}
+
 void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
 {
     if (_visualItems && (force || sequenceNumber != _currentPlanViewSeqNum)) {
@@ -2420,6 +2489,12 @@ void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
                 } else {
                     FixedWingLandingComplexItem* fwLanding = qobject_cast<FixedWingLandingComplexItem*>(pVI);
                     if (fwLanding) {
+                        foundLand = true;
+                        landSeqNum = currentSeqNumber;
+                    }
+                    VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(pVI);
+                    if (vtolLanding){
+                        qDebug() << "found vtol landing complex item";
                         foundLand = true;
                         landSeqNum = currentSeqNumber;
                     }
@@ -2518,6 +2593,7 @@ void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
                 _flyThroughCommandsAllowed = false;
             }
         }
+
 
         // These are not valid when only takeoff is allowed
         _isInsertLandValid =            _isInsertLandValid && !_onlyInsertTakeoffValid;
