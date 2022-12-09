@@ -2202,6 +2202,7 @@ void MissionController::_scanForAdditionalSettings(QmlObjectListModel* visualIte
 {
     // First we look for a Landing Patterns which are at the end
     if (!FixedWingLandingComplexItem::scanForItem(visualItems, _flyView, masterController)) {
+        qDebug() << "vtol scan for item";
         VTOLLandingComplexItem::scanForItem(visualItems, _flyView, masterController);
     }
 

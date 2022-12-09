@@ -357,20 +357,20 @@ MissionItem* LandingComplexItem::_createDoLandStartItem(int seqNum, QObject* par
 
 MissionItem* LandingComplexItem::_createFinalApproachEntryItem(int seqNum, QObject* parent)
 {
-    qDebug() << "creating final approach entry item";
-           return new MissionItem(seqNum,
-                               MAV_CMD_NAV_WAYPOINT,
-                               _altitudesAreRelative ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
-                               0,               // No hold time
-                               0,               // Use default acceptance radius
-                               0,               // Pass through waypoint
-                               qQNaN(),         // Yaw not specified
-                               _finalApproachCoordinate.latitude(),
-                               _finalApproachCoordinate.longitude(),
-                               _finalApproachAltitudeEntry()->rawValue().toFloat(),
-                               true,            // autoContinue
-                               false,           // isCurrentItem
-                               parent);
+    // Entry altitude loiter
+    return new MissionItem(seqNum,
+                           MAV_CMD_NAV_LOITER_TO_ALT,
+                           _altitudesAreRelative ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
+                           1.0,             // Heading required = true
+                           loiterRadius()->rawValue().toDouble() * (_loiterClockwise()->rawValue().toBool() ? 1.0 : -1.0),
+                           0.0,             // param 3 - unused
+                           1.0,             // Exit crosstrack - tangent of loiter to land point
+                           _finalApproachCoordinate.latitude(),
+                           _finalApproachCoordinate.longitude(),
+                           _finalApproachAltitudeEntry()->rawValue().toFloat(),
+                           true,            // autoContinue
+                           false,           // isCurrentItem
+                           parent);
 
 }
 MissionItem* LandingComplexItem::_createFinalApproachItem(int seqNum, QObject* parent)
@@ -420,7 +420,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
     //  MAV_CMD_DO_LAND_START - required
     //  Stop taking photos sequence - optional
     //  Stop taking video sequence - optional    
-    //  MAV_CMD_NAV_WAYPONT  //volo edit, this will be used as the entry altitude to the landing pattern
+    //  MAV_CMD_NAV_LOITER_TO_ALT  //volo edit, this will be used as the entry altitude to the landing pattern
     //  MAV_CMD_NAV_LOITER_TO_ALT or MAV_CMD_NAV_WAYPOINT
     //  MAV_CMD_NAV_LAND or MAV_CMD_NAV_VTOL_LAND
 
@@ -433,48 +433,79 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
     }
     SimpleMissionItem* item = visualItems->value<SimpleMissionItem*>(scanIndex--);
     if (!item) {
+        qDebug() << "returning false 1";
         return false;
     }
+
+    //Start working the mission items backwards
     MissionItem& missionItemLand = item->missionItem();  //checks to make sure the last item is a landing item
     if (!isLandItemFunc(missionItemLand)) {
+        qDebug() << "returning false 2";
         return false;
     }
     MAV_FRAME landPointFrame = missionItemLand.frame();
 
-    if (scanIndex < 0 || scanIndex > visualItems->count() - 1) {   //are we out of mission items, if so return
+    if (scanIndex < 0 || scanIndex > visualItems->count() - 1) {   //are we out of mission items, if so return false
+        qDebug() << "returning false 3";
         return false;
     }
-    item = visualItems->value<SimpleMissionItem*>(scanIndex);   //now grab the next one, which we expect to be MAV_CMD_NAV_WAYPONT
+
+    item = visualItems->value<SimpleMissionItem*>(scanIndex);   //now grab the next one, which we expect to be MAV_CMD_NAV_LOITER_TO_ALT or NAV_WAYPOINT
     if (!item) {
+        qDebug() << "returning false 4";
         return false;
     }
 
-    //the next command will be
-    //if wp followed by loiter to alt, then it useLoiterToAlt is tru
-    //if it is just a single wp then it is not loiter to alt
-
-    //if
-
-
-
-
-    bool useLoiterToAlt = true;
+    bool useLoiterToAlt = true;    
     MissionItem& missionItemFinalApproach = item->missionItem();
     if (missionItemFinalApproach.command() == MAV_CMD_NAV_LOITER_TO_ALT) {
-        if (missionItemFinalApproach.frame() != landPointFrame ||
-                missionItemFinalApproach.param1() != 1.0 || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 1.0) {
+        //if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param1() != 1.0 || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 1.0)
+        if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 1.0)
+        {
+            qDebug() << "returning false 5" << missionItemFinalApproach.frame() << missionItemFinalApproach.param1() << missionItemFinalApproach.param3() << missionItemFinalApproach.param4();
             return false;
         }
-    } else if (missionItemFinalApproach.command() == MAV_CMD_NAV_WAYPOINT) {
-        if (missionItemFinalApproach.frame() != landPointFrame ||
-                missionItemFinalApproach.param1() != 0 || missionItemFinalApproach.param2() != 0 || missionItemFinalApproach.param3() != 0 ||
-                !qIsNaN(missionItemFinalApproach.param4()) ||
-                qIsNaN(missionItemFinalApproach.param5()) || qIsNaN(missionItemFinalApproach.param6()) || qIsNaN(missionItemFinalApproach.param6())) {
+    }
+    else if (missionItemFinalApproach.command() == MAV_CMD_NAV_WAYPOINT)
+    {
+        //if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param1() != 0 || missionItemFinalApproach.param2() != 0 || missionItemFinalApproach.param3() != 0 || !qIsNaN(missionItemFinalApproach.param4()) || qIsNaN(missionItemFinalApproach.param5()) || qIsNaN(missionItemFinalApproach.param6()) || qIsNaN(missionItemFinalApproach.param7()))
+        if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param1() != 0 || missionItemFinalApproach.param2() != 0 || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 0 || qIsNaN(missionItemFinalApproach.param5()) || qIsNaN(missionItemFinalApproach.param6()) || qIsNaN(missionItemFinalApproach.param7()))
+        {
+            qDebug() << "returning false 6" << landPointFrame << missionItemFinalApproach.frame();
             return false;
         }
         useLoiterToAlt = false;
-    } else {
+    }
+    else {
+        qDebug() << "returning false 7";
         return false;
+    }
+
+    MissionItem& missionItemFinalApproachEntry = item->missionItem();
+    if (useLoiterToAlt)
+    {
+        //we expect another loiter to alt in this case
+        scanIndex--;
+
+        if (scanIndex < 0 || scanIndex > visualItems->count() - 1) {   //are we out of mission items, if so return false
+            qDebug() << "returning false 8";
+            return false;
+        }
+
+        item = visualItems->value<SimpleMissionItem*>(scanIndex);   //now grab the next one, which we expect to be MAV_CMD_NAV_LOITER_TO_ALT or NAV_WAYPOINT
+        if (!item) {
+            qDebug() << "returning false 9";
+            return false;
+        }
+        if (missionItemFinalApproachEntry.command() == MAV_CMD_NAV_LOITER_TO_ALT) {
+            //if (missionItemFinalApproachEntry.frame() != landPointFrame || missionItemFinalApproachEntry.param1() != 1.0 || missionItemFinalApproachEntry.param3() != 0 || missionItemFinalApproachEntry.param4() != 1.0)
+            if (missionItemFinalApproachEntry.frame() != landPointFrame || missionItemFinalApproachEntry.param3() != 0 || missionItemFinalApproachEntry.param4() != 1.0)
+            {
+                qDebug() << "returning false 10";
+                return false;
+            }
+        }
+
     }
 
     scanIndex -= CameraSection::stopTakingVideoCommandCount();
@@ -498,16 +529,28 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
         return false;
     }
     MissionItem& missionItemDoLandStart = item->missionItem();
+    /*
+     * //Edited because mission uploaded did not have fram of MAV_FRAME_MISSION
     if (missionItemDoLandStart.command() != MAV_CMD_DO_LAND_START ||
             missionItemDoLandStart.frame() != MAV_FRAME_MISSION ||
             missionItemDoLandStart.param1() != 0 || missionItemDoLandStart.param2() != 0 || missionItemDoLandStart.param3() != 0 || missionItemDoLandStart.param4() != 0 ||
-            missionItemDoLandStart.param5() != 0 || missionItemDoLandStart.param6() != 0 || missionItemDoLandStart.param7() != 0) {
+            missionItemDoLandStart.param5() != 0 || missionItemDoLandStart.param6() != 0 || missionItemDoLandStart.param7() != 0) */
+    if (missionItemDoLandStart.command() != MAV_CMD_DO_LAND_START ||
+            missionItemDoLandStart.param1() != 0 || missionItemDoLandStart.param2() != 0 || missionItemDoLandStart.param3() != 0 || missionItemDoLandStart.param4() != 0 ||
+            missionItemDoLandStart.param5() != 0 || missionItemDoLandStart.param6() != 0 || missionItemDoLandStart.param7() != 0)
+    {
+        qDebug() << "returning false 11";
         return false;
     }
 
     // We made it this far so we do have a Fixed Wing Landing Pattern item at the end of the mission.
     // Since we have scanned it we need to remove the items for it fromt the list
     int deleteCount = 3;
+    if (useLoiterToAlt)
+    {
+        qDebug() << "setting delete count to 4";
+        deleteCount = 4;  //because of the additional loiter
+    }
     if (stopTakingPhotos) {
         deleteCount += CameraSection::stopTakingPhotosCommandCount();
     }
@@ -526,12 +569,12 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
     complexItem->_ignoreRecalcSignals = true;
 
     complexItem->_altitudesAreRelative = landPointFrame == MAV_FRAME_GLOBAL_RELATIVE_ALT;
-    complexItem->setFinalApproachCoordinate(QGeoCoordinate(missionItemFinalApproach.param5(), missionItemFinalApproach.param6()));
+    complexItem->setFinalApproachCoordinate(QGeoCoordinate(missionItemFinalApproach.param5(), missionItemFinalApproach.param6()));   
     complexItem->finalApproachAltitude()->setRawValue(missionItemFinalApproach.param7());
     complexItem->useLoiterToAlt()->setRawValue(useLoiterToAlt);
 
-    if (useLoiterToAlt) {
-       // complexItem->finalApproachAltitudeEntry()->setRawValue()
+    if (useLoiterToAlt) {       
+        complexItem->finalApproachAltitudeEntry()->setRawValue(missionItemFinalApproachEntry.param7());
         complexItem->loiterRadius()->setRawValue(qAbs(missionItemFinalApproach.param2()));
         complexItem->loiterClockwise()->setRawValue(missionItemFinalApproach.param2() > 0);
     }
@@ -552,6 +595,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
 
     visualItems->append(complexItem);
 
+    qDebug() << "scan for item complete";
     return true;
 }
 
@@ -741,7 +785,7 @@ bool LandingComplexItem::_load(const QJsonObject& complexObject, int sequenceNum
 
     if (!JsonHelper::loadGeoCoordinate(complexObject[_jsonLandingCoordinateKey], true /* altitudeRequired */, coordinate, errorString)) {
         return false;
-    }
+    }    
     _landingCoordinate = coordinate;
     landingAltitude()->setRawValue(coordinate.altitude());
 

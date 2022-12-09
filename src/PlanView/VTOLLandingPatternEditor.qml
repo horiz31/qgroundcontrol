@@ -42,6 +42,7 @@ Rectangle {
     property string _setToVehicleHomeStr:       qsTr("Set to vehicle home")
     property bool   _showCameraSection:         !_missionVehicle.apmFirmware
     property int    _altitudeMode:              missionItem.altitudesAreRelative ? QGroundControl.AltitudeModeRelative : QGroundControl.AltitudeModeAbsolute
+    property int    _warningLandingDistance:    190
 
 
     Column {
@@ -171,24 +172,42 @@ Rectangle {
                     altitudeMode:       _altitudeMode
                 }
 */
-                QGCLabel { text: qsTr("Landing Dist") }
+                QGCLabel {
+                    text: qsTr("Landing Dist")
+                }
 
                 FactTextField {
                     inputMethodHints:   Qt.ImhDigitsOnly                    
                     fact:               missionItem.landingDistance
                     Layout.fillWidth:   true
                 }
+                QGCLabel {
+                    id:         distanceWarning
+                    text:       qsTr("Warning, Landing distance is shorter than recommended!")
+                    Layout.alignment: Qt.AlignLeft
+                    Layout.fillWidth: true
+                    wrapMode:               Text.WordWrap
+                    color:                  qgcPal.warningText
+                    font.pointSize:         ScreenTools.smallFontPointSize
+                    Layout.columnSpan:  2
+                    visible:     false
+                }
                 QGCButton {
                     text:               _setToVehicleHomeStr
                     visible:            globals.activeVehicle ? (globals.activeVehicle.homePosition ? true : false) : false
                     Layout.columnSpan:  2
-                    onClicked:
-                    {
-                        console.log("home location is " + globals.activeVehicle.homePosition + " lat is " + globals.activeVehicle.homePosition.latitude)
-                        missionItem.landingCoordinate = globals.activeVehicle.homePosition
-                    }
+                    onClicked:          missionItem.landingCoordinate = globals.activeVehicle.homePosition
                 }
 
+                Connections {
+                    target:             missionItem.landingDistance
+                    onRawValueChanged:  {
+                        if (missionItem.landingDistance.rawValue < _warningLandingDistance)
+                            distanceWarning.visible = true
+                        else
+                            distanceWarning.visible = false
+                        }
+                }
                 QGCButton {
                     text:               _setToVehicleLocationStr
                     visible:            globals.activeVehicle
@@ -319,8 +338,7 @@ Rectangle {
             QGCButton {
                 anchors.horizontalCenter:   parent.horizontalCenter
                 text:                       _setToVehicleHomeStr
-                visible:                    globals.activeVehicle.homePosition
-
+                visible:                    globals.activeVehicle ? globals.activeVehicle.homePosition : false
                 onClicked: {
                     missionItem.landingCoordinate = globals.activeVehicle.homePosition
                     missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue

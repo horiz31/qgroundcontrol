@@ -139,20 +139,26 @@ void VTOLLandingComplexItem::_updateFlightPathSegmentsDontCallDirectly(void)
 
     _flightPathSegments.beginReset();
     _flightPathSegments.clearAndDeleteContents();
-    if (useLoiterToAlt()->rawValue().toBool()) {
+    if (useLoiterToAlt()->rawValue().toBool()) {        
         //segment between
         _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),        amslEntryAlt());
-        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),  amslExitAlt()); // Best we can do to simulate loiter circle terrain profile
+        //good_appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),  amslExitAlt()); // Best we can do to simulate loiter circle terrain profile
+        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),  amslExitAlt()); // Best we can do to simulate loiter circle terrain profile
         //_appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),  amslEntryAlt()); // Best we can do to simulate loiter circle terrain profile
         _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslExitAlt(), landingCoordinate(),        amslExitAlt());
+        //_appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslExitAlt(), landingCoordinate(),        _missionController->plannedHomePosition().altitude());
         //_appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslEntryAlt(), landingCoordinate(),        amslEntryAlt());
 
     } else {
-        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), landingCoordinate(),        amslEntryAlt());
-        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), landingCoordinate(),        amslEntryAlt());
+        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, finalApproachCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),        amslEntryAlt());
+        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslEntryAlt(), loiterTangentCoordinate(),        amslExitAlt());
+        _appendFlightPathSegment(FlightPathSegment::SegmentTypeGeneric, loiterTangentCoordinate(), amslExitAlt(), landingCoordinate(),        amslExitAlt());
     }
-    _appendFlightPathSegment(FlightPathSegment::SegmentTypeLand, landingCoordinate(), amslEntryAlt(), landingCoordinate(), amslExitAlt());
+    //_appendFlightPathSegment(FlightPathSegment::SegmentTypeLand, landingCoordinate(), amslEntryAlt(), landingCoordinate(), amslExitAlt());
+    //_appendFlightPathSegment(FlightPathSegment::SegmentTypeLand, landingCoordinate(), amslExitAlt(), landingCoordinate(), amslExitAlt());
+    _appendFlightPathSegment(FlightPathSegment::SegmentTypeLand, landingCoordinate(), amslExitAlt(), landingCoordinate(), _missionController->plannedHomePosition().altitude());
     _flightPathSegments.endReset();
+
 
     if (_cTerrainCollisionSegments != 0) {
         emit terrainCollisionChanged(true);
