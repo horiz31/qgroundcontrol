@@ -2438,7 +2438,7 @@ void MissionController::_searchForLandingPattern()
 void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
 {
     if (_visualItems && (force || sequenceNumber != _currentPlanViewSeqNum)) {
-        //qDebug() << "setCurrentPlanViewSeqNum";
+        qDebug() << "setCurrentPlanViewSeqNum" << sequenceNumber;
         bool    foundLand =             false;
         int     takeoffSeqNum =         -1;
         int     landSeqNum =            -1;

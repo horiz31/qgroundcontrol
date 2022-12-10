@@ -39,8 +39,15 @@ Rectangle {
     property bool _isRadiusFollowVehicle: false
 
     function reset() {
-        altSlider.value = 0
-        guidedRadiusField.text = _activeVehicle.guidedModeRadius.toString()
+        altSlider.value = 0        
+        if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+        {
+            var convertedRadius = _activeVehicle.guidedModeRadius * 3.28084
+            guidedRadiusField.text = convertedRadius.toFixed(0).toString()  //convert from meters to feet for display
+        }
+        else
+            guidedRadiusField.text = _activeVehicle.guidedModeRadius.toFixed(0).toString()
+
         guidedDir.currentIndex = 0
 
     }
@@ -92,7 +99,9 @@ Rectangle {
     //this is grabed by the action controller prior to setting the command
     function guidedRadius()
     {
-        return QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(Number(guidedRadiusField.text));
+        if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")  //we can assume the displayed value is the horizontal distance units
+            return Number(guidedRadiusField.text) * 0.3048  //convert from ft to meters
+        return Number(guidedRadiusField.text);
     }
 
     function log10(value) {
@@ -159,7 +168,7 @@ Rectangle {
         }
         QGCTextField {
             id:             guidedRadiusField
-            text:           _activeVehicle ? _activeVehicle.guidedModeRadius.toString() : ""
+            text:           _activeVehicle ? radiusConverted() : ""
             visible:        _activeVehicle ? (_isRadiusInputVisible && _activeVehicle.supportsGuidedRadius) : false
             showUnits:      true
             unitsLabel:     QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString
@@ -169,10 +178,29 @@ Rectangle {
             validator: IntValidator {bottom: 20; top: 10000;}
             onEditingFinished: {               
                 if (_root.mapRadiusIndicator)
-                    _root.mapRadiusIndicator.setRadius(Number(guidedRadiusField.text))
+                {
+                    //need to convert this to meters
+                    var convertedRadius = Number(guidedRadiusField.text)
+                    if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+                        convertedRadius *= 0.3048  //covert from ft to meters for proper ui display
+
+                     console.log("sending " + convertedRadius + " radius");
+                     _root.mapRadiusIndicator.setRadius(convertedRadius)
+                }
                 altSlider.forceActiveFocus()
             }
             onAccepted: {                
+            }
+            function radiusConverted()
+            {
+                if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+                {
+                    console.log("guided radius is " + _activeVehicle.guidedModeRadius)
+                    return (_activeVehicle.guidedModeRadius * 3.28084).toString()
+                }
+                else
+                    return _activeVehicle.guidedModeRadius.toString()
+
             }
         }
 

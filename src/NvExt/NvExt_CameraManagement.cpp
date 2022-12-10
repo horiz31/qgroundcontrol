@@ -54,7 +54,9 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
 void CameraManagement::_flightModeChanged()
 {
     if ((this->activeVehicle->flightMode() == "FBW A" || this->activeVehicle->flightMode() == "FBW B") && qgcApp()->toolbox()->settingsManager()->videoSettings()->pilotViewOnFBW()->rawValue().toBool() == true)
-        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Stow,0,0,0,0,0);
+
+    //    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
 }
 
 void CameraManagement::_activeCamJoystickChanged(Joystick* activeCamJoystick)
@@ -254,8 +256,9 @@ void CameraManagement::doCamAction(QString buttonAction, bool pressed, int butto
     }else if(buttonAction =="Pilot"){
         /* Pilot */
         if (doAction)
+            sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Stow,0,0,0,0,0);
             //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
-            sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
+            //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
     }else if(buttonAction =="Retract"){
          /* Retract */
         if (doAction)
@@ -524,7 +527,9 @@ void CameraManagement::setSysModePilotCommand()
 {
     /* Sending the Pilot command */
     //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Pilot,0,0,0,0,0);
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,0,0,0,0,0,0);
+    //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,0,0,0,0,0,0);
+    //using stow, because it stays forward looking without lag
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Stow,0,0,0,0,0);
 
     /* Set the fov after short delay, because we can't stack commands */
     QTimer::singleShot(500, this, &CameraManagement::setPilotPhaseTwo);

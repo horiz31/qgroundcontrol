@@ -465,15 +465,19 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
         return false;
     }
 
-    bool useLoiterToAlt = true;    
+    bool useLoiterToAlt = true;
+    float altitudeExit = 0;
     MissionItem& missionItemFinalApproach = item->missionItem();
     if (missionItemFinalApproach.command() == MAV_CMD_NAV_LOITER_TO_ALT) {
         //if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param1() != 1.0 || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 1.0)
         if (missionItemFinalApproach.frame() != landPointFrame || missionItemFinalApproach.param3() != 0 || missionItemFinalApproach.param4() != 1.0)
         {
         //    qDebug() << "returning false 5" << missionItemFinalApproach.frame() << missionItemFinalApproach.param1() << missionItemFinalApproach.param3() << missionItemFinalApproach.param4();
+
             return false;
         }
+        qDebug() << "seting final approach altitude"<< missionItemFinalApproach.param7();
+        altitudeExit = missionItemFinalApproach.param7();
     }
     else if (missionItemFinalApproach.command() == MAV_CMD_NAV_WAYPOINT)
     {
@@ -490,7 +494,8 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
         return false;
     }
 
-   MissionItem& missionItemFinalApproachEntry = item->missionItem();  //placeholder, if useloitertoalt this will be updated below
+    float altitudeEntry = 0;
+    MissionItem& missionItemFinalApproachEntry = item->missionItem();  //placeholder, if useloitertoalt this will be updated below
     if (useLoiterToAlt)
     {
         //we expect another loiter to alt in this case
@@ -516,6 +521,8 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
                 return false;
             }
         }
+        qDebug() << "seting final approach entry altitude"<< missionItemFinalApproachEntry.param7();
+        altitudeEntry = missionItemFinalApproachEntry.param7();
 
     }
 
@@ -583,13 +590,15 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
 
     complexItem->_altitudesAreRelative = landPointFrame == MAV_FRAME_GLOBAL_RELATIVE_ALT;
     complexItem->setFinalApproachCoordinate(QGeoCoordinate(missionItemFinalApproach.param5(), missionItemFinalApproach.param6()));
-    qDebug() << "seting final approach altitude"<< missionItemFinalApproach.param7();
-    complexItem->finalApproachAltitude()->setRawValue(missionItemFinalApproach.param7());
+    //qDebug() << "seting final approach altitude"<< missionItemFinalApproach.param7();
+    //complexItem->finalApproachAltitude()->setRawValue(missionItemFinalApproach.param7());
+    complexItem->finalApproachAltitude()->setRawValue(altitudeExit);
     complexItem->useLoiterToAlt()->setRawValue(useLoiterToAlt);
 
     if (useLoiterToAlt) {       
-        qDebug() << "seting final approach entry altitude" << missionItemFinalApproachEntry.param7();
-        complexItem->finalApproachAltitudeEntry()->setRawValue(missionItemFinalApproachEntry.param7());
+        //qDebug() << "seting final approach entry altitude" << missionItemFinalApproachEntry.param7();
+        //complexItem->finalApproachAltitudeEntry()->setRawValue(missionItemFinalApproachEntry.param7());
+        complexItem->finalApproachAltitudeEntry()->setRawValue(altitudeEntry);
         complexItem->loiterRadius()->setRawValue(qAbs(missionItemFinalApproach.param2()));
         complexItem->loiterClockwise()->setRawValue(missionItemFinalApproach.param2() > 0);
     }

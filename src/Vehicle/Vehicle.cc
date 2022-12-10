@@ -3021,7 +3021,7 @@ void Vehicle::setGuidedMode(bool guidedMode)
     return _firmwarePlugin->setGuidedMode(this, guidedMode);
 }
 
-void Vehicle::setGuidedModeRadius(uint radius)
+void Vehicle::setGuidedModeRadius(float radius)
 {
     _guidedModeRadius = radius;
     QString guidedRadius("GUIDED_RADIUS");

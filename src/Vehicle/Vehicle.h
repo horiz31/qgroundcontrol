@@ -267,7 +267,7 @@ public:
     Q_PROPERTY(bool                 requiresGpsFix              READ requiresGpsFix                                                 NOTIFY requiresGpsFixChanged)
     Q_PROPERTY(double               loadProgress                READ loadProgress                                                   NOTIFY loadProgressChanged)
     Q_PROPERTY(bool                 initialConnectComplete      READ isInitialConnectComplete                                       NOTIFY initialConnectComplete)
-    Q_PROPERTY(uint                 guidedModeRadius            READ guidedModeRadius            WRITE setGuidedModeRadius          NOTIFY guidedModeRadiusChanged)  //Used to track the guided mode radius, which is supported by the supervolo
+    Q_PROPERTY(float                guidedModeRadius            READ guidedModeRadius            WRITE setGuidedModeRadius          NOTIFY guidedModeRadiusChanged)  //Used to track the guided mode radius, which is supported by the supervolo
     Q_PROPERTY(bool                 supportsGuidedRadius        READ supportsGuidedRadius                                           NOTIFY supportsGuidedRadiusChanged)
     Q_PROPERTY(uint                 brdSerialNumber             READ brdSerialNumber                                                NOTIFY brdSerialNumberChanged)  //Used to track the board/aircraft serial number, if supported by the vehicle
     Q_PROPERTY(Model                vehicleModel                READ vehicleModel                                                   NOTIFY vehicleModelChanged)  //Used to track vehicle model, if supported by the vehicle
@@ -480,7 +480,7 @@ public:
     Q_INVOKABLE void sendRcOverrideThrottle (int throttle);
 
     /// Set Guided Mode Radius
-    Q_INVOKABLE void setGuidedModeRadius        (uint radius);
+    Q_INVOKABLE void setGuidedModeRadius        (float radius);
 
 #if !defined(NO_ARDUPILOT_DIALECT)
     Q_INVOKABLE void flashBootloader();
@@ -546,7 +546,7 @@ public:
     QStringList extraJoystickFlightModes    ();
     QString flightMode                      () const;
     void setFlightMode                      (const QString& flightMode);
-    uint guidedModeRadius                   () { return _guidedModeRadius; }
+    float guidedModeRadius                   () { return _guidedModeRadius; }
 
 
     bool airship() const;
@@ -1220,7 +1220,7 @@ private:
     bool            _readyToFlyAvailable                    = false;
     bool            _readyToFly                             = false;
     bool            _allSensorsHealthy                      = true;
-    uint            _guidedModeRadius                       = 150;
+    float            _guidedModeRadius                       = 150.0;
     uint            _brdSerialNumber                        = 0;
     Model           _vehicleModel                           = Unknown;
     bool            _supportsGuidedRadius                   = false;
