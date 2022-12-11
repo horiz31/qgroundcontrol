@@ -405,6 +405,8 @@ private:
     double                      _minAMSLAltitude =              0;
     double                      _maxAMSLAltitude =              0;
     bool                        _missionContainsVTOLTakeoff =   false;
+    bool                        _speakOneShot1 =                 true;
+    bool                        _speakOneShot2 =                 true;
 
     QGroundControlQmlGlobal::AltMode _globalAltMode = QGroundControlQmlGlobal::AltitudeModeRelative;
 

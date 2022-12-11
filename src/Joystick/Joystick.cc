@@ -1591,8 +1591,8 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
             _assignableButtonActions.append(new AssignableButtonAction(this, mode));
         }
     }
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLFixedWing));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLMultiRotor));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLFixedWing));
+  //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionVTOLMultiRotor));
   //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomIn, true));
   //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionContinuousZoomOut, true));
   //  _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionStepZoomIn,  true));

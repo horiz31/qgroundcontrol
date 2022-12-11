@@ -2178,6 +2178,32 @@ void MissionController::_currentMissionIndexChanged(int sequenceNumber)
         for (int i=0; i<_visualItems->count(); i++) {
             VisualMissionItem* item = qobject_cast<VisualMissionItem*>(_visualItems->get(i));
             item->setIsCurrentItem(item->sequenceNumber() == sequenceNumber);
+
+            //we also needed to look at complex items, because we want those to show as active items too
+            VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(_visualItems->get(i));
+            if (vtolLanding){
+                if (sequenceNumber == vtolLanding->sequenceNumber()+1 && _speakOneShot1)
+                {
+                        vtolLanding->setIsCurrentItem(true);
+                        //_controllerVehicle->say("Starting Landing Approach");
+                        _speakOneShot1 = false;
+                }
+                else if (sequenceNumber == vtolLanding->lastSequenceNumber() && _speakOneShot2)
+                {
+                    vtolLanding->setIsCurrentItem(true);
+                    //_controllerVehicle->say("Final Approach");
+                    _speakOneShot2 = false;
+                }
+                else if (sequenceNumber >= vtolLanding->sequenceNumber() && sequenceNumber <= vtolLanding->lastSequenceNumber())
+                    vtolLanding->setIsCurrentItem(true);
+                else
+                    vtolLanding->setIsCurrentItem(false);
+            }
+            else
+            {
+                 _speakOneShot1 = true;
+                 _speakOneShot2 = true;
+            }
         }
         emit currentMissionIndexChanged(currentMissionIndex());
     }
@@ -2438,7 +2464,7 @@ void MissionController::_searchForLandingPattern()
 void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
 {
     if (_visualItems && (force || sequenceNumber != _currentPlanViewSeqNum)) {
-        qDebug() << "setCurrentPlanViewSeqNum" << sequenceNumber;
+        //qDebug() << "setCurrentPlanViewSeqNum 2" << sequenceNumber;
         bool    foundLand =             false;
         int     takeoffSeqNum =         -1;
         int     landSeqNum =            -1;

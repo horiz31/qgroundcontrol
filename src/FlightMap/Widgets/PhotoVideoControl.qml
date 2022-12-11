@@ -440,7 +440,7 @@ Rectangle {
                         showBorder:     true
                         font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
                         pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        highlight:      ((_currentNvMode === "Pilot") || (_currentNvMode === "Local Pos")) ? true : false
+                        highlight:      ((_currentNvMode === "Stow") || (_currentNvMode === "Local Pos")) ? true : false
                         text:           qsTr("PILOT")
                         leftPadding:    ScreenTools.defaultFontPixelWidth * .5
                         rightPadding:   ScreenTools.defaultFontPixelWidth * .5

@@ -540,7 +540,7 @@ public:
     void setArmed           (bool armed, bool showError);
     void setArmedShowError  (bool armed) { setArmed(armed, true); }
 
-    void say                (const QString& text) { _say(text); }
+    Q_INVOKABLE void say                (const QString& text) { _say(text); }
     bool flightModeSetAvailable             ();
     QStringList flightModes                 ();
     QStringList extraJoystickFlightModes    ();

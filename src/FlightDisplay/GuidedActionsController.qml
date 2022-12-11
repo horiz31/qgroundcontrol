@@ -613,6 +613,7 @@ Item {
             _activeVehicle.emergencyStop()
             break
         case actionChangeAlt:
+            _activeVehicle.say("Changing Altitude")
             _activeVehicle.guidedModeChangeAltitude(actionAltitudeChange, false /* pauseVehicle */)
             break
         case actionGoto:
