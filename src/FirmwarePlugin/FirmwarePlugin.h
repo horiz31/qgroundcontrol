@@ -75,6 +75,9 @@ public:
     /// Called when Vehicle is first created to perform any firmware specific setup.
     virtual void initializeVehicle(Vehicle* vehicle);
 
+    /// Called when we wish to request data streams.
+    virtual void requestDataStreams(Vehicle* vehicle);
+
     /// @return true: Firmware supports all specified capabilites
     virtual bool isCapable(const Vehicle *vehicle, FirmwareCapabilities capabilities);
 

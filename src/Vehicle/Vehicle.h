@@ -1142,6 +1142,7 @@ private:
     void _flightTimerStart              ();
     void _flightTimerStop               ();
     void _chunkedStatusTextTimeout      (void);
+    void _requestStreamRatesTick        (void);
     void _chunkedStatusTextCompleted    (uint8_t compId);
     void _setMessageInterval            (int messageId, int rate);
     EventHandler& _eventHandler         (uint8_t compid);
@@ -1339,6 +1340,8 @@ private:
     } ChunkedStatusTextInfo_t;
     QMap<uint8_t /* compId */, ChunkedStatusTextInfo_t> _chunkedStatusTextInfoMap;
     QTimer _chunkedStatusTextTimer;
+
+    QTimer _requestStreamRateTimer;
 
     /// Callback for waitForMavlinkMessage
     ///     @param resultHandleData     Opaque data passed in to waitForMavlinkMessage call

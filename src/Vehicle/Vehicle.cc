@@ -273,6 +273,12 @@ Vehicle::Vehicle(LinkInterface*             link,
     _chunkedStatusTextTimer.setInterval(1000);
     connect(&_chunkedStatusTextTimer, &QTimer::timeout, this, &Vehicle::_chunkedStatusTextTimeout);
 
+    // Periodic request stream timer
+    _requestStreamRateTimer.setSingleShot(false);
+    _requestStreamRateTimer.setInterval(20 * 1000);  //every 20s
+    _requestStreamRateTimer.start();
+    connect(&_requestStreamRateTimer, &QTimer::timeout, this, &Vehicle::_requestStreamRatesTick);
+
     _mav = uas();
 
     // Listen for system messages
@@ -286,6 +292,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     }
 
     _firmwarePlugin->initializeVehicle(this);
+
     for(auto& factName: factNames()) {
         _firmwarePlugin->adjustMetaData(vehicleType, getFact(factName)->metaData());
     }
@@ -1024,6 +1031,11 @@ void Vehicle::_handleCameraImageCaptured(const mavlink_message_t& message)
     if (feedback.capture_result == 1) {
         _cameraTriggerPoints.append(new QGCQGeoCoordinate(imageCoordinate, this));
     }
+}
+
+void Vehicle::_requestStreamRatesTick(void)
+{
+    _firmwarePlugin->requestDataStreams(this);
 }
 
 void Vehicle::_chunkedStatusTextTimeout(void)

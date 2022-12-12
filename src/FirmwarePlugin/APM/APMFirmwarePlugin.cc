@@ -340,7 +340,7 @@ bool APMFirmwarePlugin::adjustIncomingMavlinkMessage(Vehicle* vehicle, mavlink_m
 
     // If we lose BATTERY_STATUS/HOME_POSITION for reinitStreamsTimeoutSecs seconds we re-initialize stream rates
     const int reinitStreamsTimeoutSecs = 10;
-    if (instanceData && (instanceData->lastBatteryStatusTime.secsTo(QTime::currentTime()) > reinitStreamsTimeoutSecs || instanceData->lastHomePositionTime.secsTo(QTime::currentTime()) > reinitStreamsTimeoutSecs)) {
+    if (instanceData && (instanceData->lastBatteryStatusTime.secsTo(QTime::currentTime()) > reinitStreamsTimeoutSecs || instanceData->lastHomePositionTime.secsTo(QTime::currentTime()) > reinitStreamsTimeoutSecs)) {        
         initializeStreamRates(vehicle);
     }
 
@@ -456,6 +456,47 @@ void APMFirmwarePlugin::initializeStreamRates(Vehicle* vehicle)
     vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HOME_POSITION, 1000000 /* 1 second interval in usec */);
 
     instanceData->lastBatteryStatusTime = instanceData->lastHomePositionTime = QTime::currentTime();
+}
+
+void APMFirmwarePlugin::requestDataStreams(Vehicle* vehicle)
+{
+
+    if (qgcApp()->toolbox()->settingsManager()->appSettings()->apmStartMavlinkStreams()->rawValue().toBool()) {
+
+        APMMavlinkStreamRateSettings* streamRates = qgcApp()->toolbox()->settingsManager()->apmMavlinkStreamRateSettings();
+
+        struct StreamInfo_s {
+            MAV_DATA_STREAM mavStream;
+            int             streamRate;
+        };
+
+        StreamInfo_s rgStreamInfo[] = {
+            { MAV_DATA_STREAM_RAW_SENSORS,      streamRates->streamRateRawSensors()->rawValue().toInt() },
+            { MAV_DATA_STREAM_EXTENDED_STATUS,  streamRates->streamRateExtendedStatus()->rawValue().toInt() },
+            { MAV_DATA_STREAM_RC_CHANNELS,      streamRates->streamRateRCChannels()->rawValue().toInt() },
+            { MAV_DATA_STREAM_POSITION,         streamRates->streamRatePosition()->rawValue().toInt() },
+            { MAV_DATA_STREAM_EXTRA1,           streamRates->streamRateExtra1()->rawValue().toInt() },
+            { MAV_DATA_STREAM_EXTRA2,           streamRates->streamRateExtra2()->rawValue().toInt() },
+            { MAV_DATA_STREAM_EXTRA3,           streamRates->streamRateExtra3()->rawValue().toInt() },
+        };
+
+        for (size_t i=0; i<sizeof(rgStreamInfo)/sizeof(rgStreamInfo[0]); i++) {
+            const StreamInfo_s& streamInfo = rgStreamInfo[i];
+
+            if (streamInfo.streamRate >= 0) {
+                vehicle->requestDataStream(streamInfo.mavStream, static_cast<uint16_t>(streamInfo.streamRate));
+            }
+        }
+    }
+
+    // ArduPilot only sends home position on first boot and then when it arms. It does not stream the position.
+    // This means that depending on when QGC connects to the vehicle it may not have home position.
+    // This can cause various features to not be available. So we request home position streaming ourselves.
+    // The MAV_CMD_SET_MESSAGE_INTERVAL command is only supported on newer firmwares. So we set showError=false.
+    // Which also means than on older firmwares you may be left with some missing features.
+    vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HOME_POSITION, 1000000 /* 1 second interval in usec */);
+
+
 }
 
 

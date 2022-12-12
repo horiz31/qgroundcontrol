@@ -174,6 +174,13 @@ void FirmwarePlugin::initializeVehicle(Vehicle* vehicle)
     // Generic Flight Stack is by definition "generic", so no extra work
 }
 
+void FirmwarePlugin::requestDataStreams(Vehicle* vehicle)
+{
+    Q_UNUSED(vehicle);
+
+    // Generic Flight Stack is by definition "generic", so no extra work
+}
+
 bool FirmwarePlugin::sendHomePositionToVehicle(void)
 {
     // Generic stack does not want home position sent in the first position.

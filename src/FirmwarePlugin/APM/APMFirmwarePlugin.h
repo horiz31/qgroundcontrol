@@ -68,6 +68,7 @@ public:
     bool                adjustIncomingMavlinkMessage    (Vehicle* vehicle, mavlink_message_t* message) override;
     void                adjustOutgoingMavlinkMessageThreadSafe(Vehicle* vehicle, LinkInterface* outgoingLink, mavlink_message_t* message) override;
     virtual void        initializeStreamRates           (Vehicle* vehicle);
+    virtual void        requestDataStreams              (Vehicle* vehicle) override;
     void                initializeVehicle               (Vehicle* vehicle) override;
     bool                sendHomePositionToVehicle       (void) override;
     QString             missionCommandOverrides         (QGCMAVLink::VehicleClass_t vehicleClass) const override;

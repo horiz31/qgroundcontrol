@@ -27,18 +27,16 @@ Item {
 
     property bool showIndicator: true
     property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle  
-    property var _batteryRemaining: _activeVehicle ? _activeVehicle.svBattPercentRemaining.value.toFixed(0) : undefined
-    property var  battery: _activeVehicle ? getBatteryID0() : undefined  //the used capacity comes from battery_status id = 0
+    property var _batteryRemaining: _activeVehicle ? _activeVehicle.svBattPercentRemaining.value.toFixed(0) : undefined  
+    property var battery: _activeVehicle && _activeVehicle.batteries.count > 0  ? _activeVehicle.batteries.get(0) : undefined  //the one containing current_consumed is battery 0
+    property int _batteryCount: _activeVehicle ? _activeVehicle.batteries.count : 0
 
-    function getBatteryID0()
+    on_BatteryCountChanged:
     {
-        for( var i = 0; i < _activeVehicle.batteries.rowCount(); i++ ) {
-            if (_activeVehicle.batteries.get(i).id.value === 0)
-            {
-                return _activeVehicle.batteries.get(i);
-            }
+        if (_activeVehicle.batteries.count > 0)
+        {
+            battery = _activeVehicle.batteries.get(0)
         }
-        return undefined;
     }
 
     Component {
@@ -79,7 +77,7 @@ Item {
                     QGCLabel { text: qsTr("Current:") }
                     QGCLabel { text: _activeVehicle ? (_activeVehicle.svBattCurrent.value.toFixed(1) + " A") : "--.- A" }
                     QGCLabel { text: qsTr("Used Capacity:") }
-                    QGCLabel { text: _activeVehicle ? battery.mahConsumed ? "---- mA" : battery.mahConsumed.value.toFixed(0) + " mA" : "---- mA" }
+                    QGCLabel { text: _activeVehicle ? (battery.mahConsumed ? battery.mahConsumed.value.toFixed(0) + " mA" : "---- mA") : "---- mA" }
 
                 }
             }

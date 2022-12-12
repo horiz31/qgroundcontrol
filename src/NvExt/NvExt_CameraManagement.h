@@ -194,6 +194,7 @@ public:
     void _flightModeChanged();
 
     Q_INVOKABLE void pointToCoordinate(float lat,float lon);
+    Q_INVOKABLE void pointToCoordinateAndHold(float lat,float lon);
     Q_INVOKABLE void trackOnPosition(float posX,float posY, int chan);
     Q_INVOKABLE void setSysModeObsCommand(void);
     Q_INVOKABLE void setSysModeGrrCommand(void);

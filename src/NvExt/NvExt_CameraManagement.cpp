@@ -461,6 +461,12 @@ void CameraManagement::getAltAtCoord(float lat,float lon)
     }
 }
 
+void CameraManagement::pointToCoordinateAndHold(float lat, float lon)
+{
+    pointToCoordinate(lat, lon);
+    QTimer::singleShot(7000, this, &CameraManagement::setSysModeHoldCommand);
+}
+
 void CameraManagement::pointToCoordinate(float lat,float lon)
 {
     double terrainAltitude;

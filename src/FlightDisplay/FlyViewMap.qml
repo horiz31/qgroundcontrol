@@ -833,6 +833,20 @@ FlightMap {
 
                             }
                         }
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            backRadius:         4
+                            text:               qsTr("Point at location, then Hold")
+                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                hideDialog()
+                                nvPTCLocationItem.show(mapMouseArea.clickCoord)
+                                if(_activeVehicle)
+                                    joystickManager.cameraManagement.pointToCoordinateAndHold(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
+
+                            }
+                        }
                         Rectangle {
                             Layout.fillWidth:   true
                             color:              qgcPal.text
@@ -928,22 +942,29 @@ FlightMap {
 
                         QGCLabel {
                             Layout.fillWidth:       true
+
                             text:                   mapMouseArea.clickCoord ? qsTr("Lat,Lon: ") + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7) : ""
                             //horizontalAlignment:    Text.AlignHCenter
                             visible:                true
                         }
+
                         QGCLabel {
+
                             Layout.fillWidth:       true
                             text:                   mapMouseArea.clickCoord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)  : ""
                             //horizontalAlignment:    Text.AlignHCenter
                             visible:                true
                         }
+
                         QGCLabel {
+
                             Layout.fillWidth:       true
                             text:                   mapMouseArea.clickCoord ? qsTr("Range: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  : ""
                             visible:                true
                         }
+
                         QGCLabel {
+                            Layout.topMargin: 1
                             Layout.fillWidth:       true
                             text:                   mapMouseArea.clickCoord ? qsTr("Bearing: ") + _activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °" : ""
                             visible:                true

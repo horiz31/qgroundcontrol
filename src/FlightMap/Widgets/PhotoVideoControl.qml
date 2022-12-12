@@ -27,6 +27,8 @@ Rectangle {
     height:     mainLayout.height + (_margins * 2)
     color:      "#80000000"
     radius:     _margins
+    border.width: 2
+    border.color: "#80000000"
     visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
     z:      QGroundControl.zOrderTopMost
     MouseArea {
