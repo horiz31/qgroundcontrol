@@ -583,7 +583,7 @@ Item {
             _activeVehicle.guidedModeTakeoff(actionAltitudeChange)
             break
         case actionQRTLLand:
-            _activeVehicle.flightMode = "QuadPlane RTL"
+            _activeVehicle.flightMode = "QuadPlane Rally"
             break
         case actionResumeMission:
         case actionResumeMissionUploadFail:

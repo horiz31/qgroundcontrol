@@ -2438,7 +2438,7 @@ void MissionController::_searchForLandingPattern()
             }
             LandingComplexItem* otherLanding = qobject_cast<LandingComplexItem*>(pVI);
             if (otherLanding){
-                qDebug() << "found genric landing complex item";
+                qDebug() << "found generic landing complex item";
                 foundLand = true;
                 if (otherLanding->sequenceNumber()!=_startLandingSequenceNumber)
                 {
@@ -2451,11 +2451,9 @@ void MissionController::_searchForLandingPattern()
         }
     }
 
-    qDebug() << "done looking for land, the result is " <<foundLand;
-
     if (foundLand != _doesContainLanding)
     {
-        qDebug() << "UPDATING LAND ITEM" << foundLand << "..... emitting found land in mission plan";
+
         _doesContainLanding = foundLand;
         emit doesContainLandingChanged();
     }

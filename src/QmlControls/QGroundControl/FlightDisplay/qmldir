@@ -35,6 +35,7 @@ PreFlightSensorsHealthCheck     1.0 PreFlightSensorsHealthCheck.qml
 PreFlightAirSpeedHealthCheck    1.0 PreFlightAirSpeedHealthCheck.qml
 PreFlightICEHealthCheck         1.0 PreFlightICEHealthCheck.qml
 PreFlightMissionCheck           1.0 PreFlightMissionCheck.qml
+PreFlightJoystickCheck          1.0 PreFlightJoystickCheck.qml
 PreFlightMultiRotorHealthCheck  1.0 PreFlightMultiRotorHealthCheck.qml
 PreFlightIMUTempCheck           1.0 PreFlightIMUTempCheck.qml
 PreFlightSoundCheck             1.0 PreFlightSoundCheck.qml
