@@ -131,7 +131,7 @@ Rectangle {
             onPopout: {
                 var windowedPage = windowedAnalyzePage.createObject(mainWindow)
                 windowedPage.title = panelLoader.title
-                windowedPage.source = panelLoader.source
+                windowedPage.source = panelLoader.source                
                 _root.popout()
             }
         }

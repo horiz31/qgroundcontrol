@@ -273,7 +273,17 @@ Item {
         maxHeight:              parent.height - y - parentToolInsets.bottomEdgeLeftInset - _toolsMargin
         visible:                !QGroundControl.videoManager.fullScreen
 
-        onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
+        //onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
+        onDisplayPreFlightChecklist:
+        {
+            //var popupWindow = preFlightChecklistPopup.createObject(preflightRoot)
+            //popupWindow.show()
+
+            var windowedPage = preFlightChecklistPopup.createObject(mainWindow)
+           // windowedPage.title = "PreFlight Checklist"
+            console.log("popping out");
+            windowedPage.show()
+        }
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
         onCenterMap:           { mapControl.zoomLevel = 16; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
@@ -310,10 +320,36 @@ Item {
 
         property real centerInset: visible ? parent.height - y : 0
     }
+//
+//   Component {
+//        id: preFlightChecklistPopup
+//        FlyViewPreFlightChecklistPopup {
+//            id: preflightRoot
+//        }
+//    }
 
     Component {
         id: preFlightChecklistPopup
-        FlyViewPreFlightChecklistPopup {
+
+        Window {
+            width:      ScreenTools.defaultFontPixelWidth  * 100
+            height:     ScreenTools.defaultFontPixelHeight * 40
+            visible:    true
+
+
+            Rectangle {
+                color:          QGroundControl.globalPalette.window
+                anchors.fill:   parent
+
+                FlyViewPreFlightChecklistPopup {
+                            id: preflightRoot
+                }
+            }
+
+            onClosing: {
+                visible = false
+            }
         }
+
     }
 }
