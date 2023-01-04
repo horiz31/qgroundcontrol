@@ -18,15 +18,15 @@ import QtQuick.Controls         2.12
 import QGroundControl.ScreenTools   1.0
 
 PreFlightCheckButton {    
-    name:               qsTr("Joystick and Mode Check")
-    telemetryFailure:   joysticksDisabled() || notAcceptableMode()  //this causes the button to go yellow/red
-    allowTelemetryFailureOverride: false
+    name:               qsTr("Actuator Check")
+    telemetryFailure:   true  //this causes the button to go yellow/red
+    allowTelemetryFailureOverride: true
 
     specifiedBottomPadding: getPadding()
     property var    _activeVehicle:         globals.activeVehicle
     property var    _planMasterController:  globals.planMasterControllerFlyView
     property var    _missionController:     _planMasterController.missionController
-    property var    _buttonLabel:   qsTr("Set Mode to QHover")
+    property var    _buttonLabel:   qsTr("Set Mode to FBWA")
 
     Button {
         id: modeButton
@@ -41,7 +41,7 @@ PreFlightCheckButton {
 
         function setMode()
         {
-            _activeVehicle.flightMode = "QuadPlane Hover"
+            _activeVehicle.flightMode = "FBW A"
         }
 
     }
@@ -56,42 +56,43 @@ PreFlightCheckButton {
         }
     }
 
+
     function getPadding()
     {
-        if (notAcceptableMode() && joysticksDisabled())
+        if (notAcceptableMode())
             return (Math.round(ScreenTools.defaultFontPixelHeight / 2) + modeButton.height + spacer.height + Math.round(ScreenTools.defaultFontPixelHeight / 2))
         else
             return Math.round(ScreenTools.defaultFontPixelHeight / 2)
     }
 
-    function joysticksDisabled()
-    {
-        if (joystickManager.activeJoystick && _activeVehicle.joystickEnabled)
-        {
-            return false
-        }
-        else
-            return true
-    }
     function notAcceptableMode()
     {
-        if (_activeVehicle.flightMode === "QuadPlane Loiter" || _activeVehicle.flightMode === "QuadPlane Hover")
+        if (_activeVehicle.flightMode === "FBW A")
             return false
         return true
     }
 
     Component.onCompleted: updateTelemetryTextFailure()
 
-    function updateTelemetryTextFailure() {      
-        if(joysticksDisabled()) {
-            telemetryTextFailure = qsTr("Failure. No joystick found or it is disabled. It is not recommended to operate the aircraft without a functional joystick.")
-            return
-         }
+    Connections {
+        target: _activeVehicle
+        onFlightModeChanged: updateTelemetryTextFailure()
+    }
 
+
+    function updateTelemetryTextFailure() {      
         if (notAcceptableMode())
         {
-            telemetryTextFailure = qsTr("Failure. Set the aircraft to either QHOVER or QLOITER for initial takeoff.")
+            telemetryTextFailure = qsTr("Pick up the aircraft move it, ensuring the control surfaces respond to input. Recommend to put the aircraft in FBWA mode for this check to ensure surfaces respond appropriately.")
+            return
         }
+        else
+        {
+            telemetryTextFailure = qsTr("Pick up the aircraft move it, ensuring the control surfaces respond to input.")
+            return
+        }
+
+
     }
 }
 

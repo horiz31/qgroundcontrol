@@ -62,7 +62,7 @@ QGCButton {
                                           _pendingColor :
                                           _failedColor))
 
-    width:          60 * ScreenTools.defaultFontPixelWidth
+    width:          100 * ScreenTools.defaultFontPixelWidth
     topPadding:     _verticalPadding
     bottomPadding:  specifiedBottomPadding
     leftPadding:    (_horizontalPadding * 2) + _stateFlagWidth
@@ -108,13 +108,27 @@ QGCButton {
         }
         if (telemetryFailure && allowTelemetryFailureOverride && _telemetryState !== _statePassed) {
             // User is allowed to proceed past this failure
+            console.log("user clicked approve")
             _telemetryState = _statePassed
             return
         }
+        else if (telemetryFailure && allowTelemetryFailureOverride && _telemetryState === _statePassed)
+        {
+            _telemetryState = _statePending
+            return
+        }
+
         if (manualText !== "" && _manualState !== _statePassed) {
             // User is confirming a manual check
+            console.log("user clicked manual approved")
             _manualState = _statePassed
         }
+        else if (manualText !== "" && _manualState === _statePassed)
+        {
+            //revert back to pending state
+             _manualState = _statePending
+        }
+
     }
 
     onPassedChanged: callButtonPassedChanged()

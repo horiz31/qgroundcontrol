@@ -56,7 +56,7 @@ Rectangle {
 
     Column {
         id:                     mainColumn
-        width:                  40*ScreenTools.defaultFontPixelWidth
+        width:                  60*ScreenTools.defaultFontPixelWidth
         spacing:                0.8*ScreenTools.defaultFontPixelWidth
         anchors.left:           parent.left
         anchors.top:            parent.top

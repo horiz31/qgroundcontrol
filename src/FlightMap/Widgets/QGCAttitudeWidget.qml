@@ -348,7 +348,7 @@ Item {
                             if (vehicle)
                                 {
                                 var temp = QGroundControl.unitsConversion.appSettingsSpeedUnitsToMetersPerSecond(targetAirspeed.text);       //convert to m/s first
-                                if(temp  > 20 && temp < 33.5)
+                                if(temp  >= 20 && temp <= 33.6)
                                      return true
                                 return false
                             }

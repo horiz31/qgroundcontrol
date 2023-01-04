@@ -301,6 +301,7 @@
         <file alias="QGroundControl/FlightDisplay/MapClickActionDialog.qml">src/FlightDisplay/MapClickActionDialog.qml</file>
         <file alias="QGroundControl/FlightDisplay/CenterMap.qml">src/FlightDisplay/CenterMap.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightJoystickCheck.qml">src/FlightDisplay/PreFlightJoystickCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightActuatorCheck.qml">src/FlightDisplay/PreFlightActuatorCheck.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

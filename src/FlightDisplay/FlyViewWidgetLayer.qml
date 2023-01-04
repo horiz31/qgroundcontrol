@@ -52,9 +52,25 @@ Item {
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
     property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 22
+    property bool   _isCheckListWindowVisible: false
+    property var    _checkListWindow
+    property real   _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
 
-    property real _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
-
+    //Create the pre-flight checklist after vehicle created and params loaded. Then the checklist stays in memory and its state is preserved
+    Connections {
+        target:             QGroundControl.multiVehicleManager
+        onParameterReadyVehicleAvailableChanged:  {
+            if (QGroundControl.multiVehicleManager.parameterReadyVehicleAvailable) {
+                if (_checkListWindow)
+                {
+                    _checkListWindow.destroy()
+                }
+                _checkListWindow = preFlightChecklistPopup.createObject(mainWindow)
+                _checkListWindow.title = qsTr("Pre-Flight Checklist")
+                _checkListWindow.close()
+            }
+        }
+    }
 
     QGCToolInsets {
         id:                     _totalToolInsets
@@ -273,16 +289,13 @@ Item {
         maxHeight:              parent.height - y - parentToolInsets.bottomEdgeLeftInset - _toolsMargin
         visible:                !QGroundControl.videoManager.fullScreen
 
-        //onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
         onDisplayPreFlightChecklist:
         {
-            //var popupWindow = preFlightChecklistPopup.createObject(preflightRoot)
-            //popupWindow.show()
+            if (!_isCheckListWindowVisible && _checkListWindow)
+            {
+                _checkListWindow.show()
+            }
 
-            var windowedPage = preFlightChecklistPopup.createObject(mainWindow)
-           // windowedPage.title = "PreFlight Checklist"
-            console.log("popping out");
-            windowedPage.show()
         }
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
@@ -332,21 +345,33 @@ Item {
         id: preFlightChecklistPopup
 
         Window {
+            id:         preFlightChecklistWindow
             width:      ScreenTools.defaultFontPixelWidth  * 100
+            maximumWidth: width
+            minimumWidth: width
             height:     ScreenTools.defaultFontPixelHeight * 40
             visible:    true
+            color:      QGroundControl.globalPalette.window
+            flags:      Qt.Dialog
 
-
-            Rectangle {
-                color:          QGroundControl.globalPalette.window
-                anchors.fill:   parent
+            QGCFlickable {
+                clip:               true
+                anchors.fill:       parent
+                contentHeight:      preflightRoot.height
+                contentWidth:       preflightRoot.width
 
                 FlyViewPreFlightChecklistPopup {
                             id: preflightRoot
                 }
+
+            }
+
+            onVisibilityChanged: {
+                _isCheckListWindowVisible = visible
             }
 
             onClosing: {
+                _isCheckListWindowVisible = false
                 visible = false
             }
         }

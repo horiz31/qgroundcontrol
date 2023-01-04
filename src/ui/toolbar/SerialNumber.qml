@@ -60,11 +60,11 @@ Item {
                         if (_activeVehicle.vehicleModel === 0)
                             return " Vehicle " + _activeVehicle.brdSerialNumber + " "
                         else if (_activeVehicle.vehicleModel === 1)
-                            return " Maven " + _activeVehicle.brdSerialNumber + " "
+                            return " MK1 " + _activeVehicle.brdSerialNumber + " "
                     }
                     else
                     {
-                       return " Maven ";
+                       return " MK1 ";
                     }
                 }
             }
