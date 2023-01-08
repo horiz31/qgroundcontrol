@@ -38,13 +38,14 @@ PreFlightCheckButton {
         visible:        true
         enabled:        true
         onClicked:      startMotorTest()
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenter: parent.horizontalCenter    
+        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 3
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Math.round(ScreenTools.defaultFontPixelHeight / 2)
 
         function startMotorTest()
-        {          
-            mainWindow.showPopupDialogFromComponent(motorTestComponent)
+        {
+            preFlightChecklistWindow.showPopupDialogFromComponent(motorTestComponent)
         }
     }
 

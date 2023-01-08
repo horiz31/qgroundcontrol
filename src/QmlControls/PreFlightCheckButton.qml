@@ -108,7 +108,6 @@ QGCButton {
         }
         if (telemetryFailure && allowTelemetryFailureOverride && _telemetryState !== _statePassed) {
             // User is allowed to proceed past this failure
-            console.log("user clicked approve")
             _telemetryState = _statePassed
             return
         }
@@ -120,7 +119,6 @@ QGCButton {
 
         if (manualText !== "" && _manualState !== _statePassed) {
             // User is confirming a manual check
-            console.log("user clicked manual approved")
             _manualState = _statePassed
         }
         else if (manualText !== "" && _manualState === _statePassed)

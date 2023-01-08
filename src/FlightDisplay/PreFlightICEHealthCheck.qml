@@ -47,13 +47,13 @@ PreFlightCheckButton {
         enabled:        true
         onClicked:      startEngineTest()
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 2
+        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 3
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Math.round(ScreenTools.defaultFontPixelHeight / 2)
 
         function startEngineTest()
         {          
-            mainWindow.showPopupDialogFromComponent(iceMotorTestComponent)
+            preFlightChecklistWindow.showPopupDialogFromComponent(iceMotorTestComponent)
             engineRunupController.connectJoystick()
         }
     }
@@ -209,7 +209,6 @@ PreFlightCheckButton {
                                     //if not cancelled
                                     if (!_cancelTest)
                                     {
-                                        //console.log("starting runup after delay")
                                         iceMotorJoystickRunupLabel.text = qsTr("Engine running, release to stop...")
                                         timer1.stop()
                                         startRunup(true)
@@ -244,13 +243,11 @@ PreFlightCheckButton {
             }
             function startRunup(fromJoystick)
             {
-                //TBD, put start up logic here
                 if(globals.activeVehicle)
                     globals.activeVehicle.setEngineRunUp(true)  //indicator that this is running, used to prevent system level activity which could interfere
 
                 // remember current mode
                  _modeInitialState = globals.activeVehicle.flightMode
-                //console.log("mode is currently " + _modeInitialState)
                 //remember joystick state
                 if(globals.activeVehicle && joystickManager.activeJoystick) {
                     if(globals.activeVehicle.joystickEnabled) {
@@ -268,19 +265,15 @@ PreFlightCheckButton {
                 }
 
                 //if this was initiated with joystick click, then I want to leave them enabled, but only disable the throttle
-                //console.log("joystick is currently " + _joyStickInitialState)
                 //if enabled, disable joysticks
                 if (_joyStickInitialState && globals.activeVehicle && fromJoystick===false)
                 {
-                    //console.log("disabling the joystick")
                     globals.activeVehicle.joystickEnabled = false
                 }
 
-                //console.log("changing mode to manual")
                 globals.activeVehicle.flightMode = "Manual"
 
                 _joyValue = (iceMotorThrottle.value * 10) + 1000  //scale slider to 1000-2000
-                //console.log("sending joystick throttle value of " + _joyValue)
                 globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 1000 to 2000
                 iceRunUpTimer.start()  //this is needed to send rc override periodically
 
@@ -303,7 +296,6 @@ PreFlightCheckButton {
                      globals.activeVehicle.flightMode = _modeInitialState
                     if (_joyStickInitialState && globals.activeVehicle && fromJoystick===false)
                     {
-                        //console.log("re-enabling the joystick")
                         globals.activeVehicle.joystickEnabled = true
                     }
                     //set virtual joystick back if it was used

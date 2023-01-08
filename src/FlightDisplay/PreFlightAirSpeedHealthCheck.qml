@@ -41,7 +41,7 @@ PreFlightCheckButton {
         enabled:        true
         onClicked:      calibrateAirSpeed()
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 2
+        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 3
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Math.round(ScreenTools.defaultFontPixelHeight / 2)
 

@@ -366,6 +366,12 @@ Item {
 
             }
 
+            function showPopupDialogFromComponent(component, properties) {
+                var dialog = popupDialogContainerComponent.createObject(preFlightChecklistWindow, { dialogComponent: component, dialogProperties: properties })
+                dialog.open()
+                return dialog
+            }
+
             onVisibilityChanged: {
                 _isCheckListWindowVisible = visible
             }

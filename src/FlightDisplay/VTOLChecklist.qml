@@ -101,6 +101,9 @@ Item {
                 allowTelemetryFailureOverride:    false
             }
 
+            PreFlightQHoverCheck {
+            }
+
         }
 
         PreFlightCheckGroup {

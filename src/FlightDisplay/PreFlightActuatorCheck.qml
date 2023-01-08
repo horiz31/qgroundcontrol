@@ -31,11 +31,11 @@ PreFlightCheckButton {
     Button {
         id: modeButton
         text:           _buttonLabel
-        visible:        notAcceptableMode()
+        visible:        notAcceptableMode() && (_telemetryState !== _statePassed)
         enabled:        true
         onClicked:      setMode()
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 2
+        anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 3
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Math.round(ScreenTools.defaultFontPixelHeight / 2)
 
@@ -59,7 +59,7 @@ PreFlightCheckButton {
 
     function getPadding()
     {
-        if (notAcceptableMode())
+        if (notAcceptableMode() && (_telemetryState !== _statePassed))
             return (Math.round(ScreenTools.defaultFontPixelHeight / 2) + modeButton.height + spacer.height + Math.round(ScreenTools.defaultFontPixelHeight / 2))
         else
             return Math.round(ScreenTools.defaultFontPixelHeight / 2)
