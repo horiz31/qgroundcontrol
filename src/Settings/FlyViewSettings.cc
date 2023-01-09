@@ -18,6 +18,7 @@ DECLARE_SETTINGGROUP(FlyView, "FlyView")
 }
 
 DECLARE_SETTINGSFACT(FlyViewSettings, guidedMinimumAltitude)
+DECLARE_SETTINGSFACT(FlyViewSettings, fbwMinThrottle)
 DECLARE_SETTINGSFACT(FlyViewSettings, guidedMaximumAltitude)
 DECLARE_SETTINGSFACT(FlyViewSettings, showLogReplayStatusBar)
 DECLARE_SETTINGSFACT(FlyViewSettings, alternateInstrumentPanel)

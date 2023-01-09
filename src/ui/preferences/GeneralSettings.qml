@@ -181,7 +181,7 @@ Rectangle {
 
                                 property Fact _showDumbCameraControl: QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl
                             }
-*/
+*/                        
                             GridLayout {
                                 columns: 2
 

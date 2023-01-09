@@ -37,36 +37,43 @@ Item {
             checked:            _activeJoystick ? _activeJoystick.throttleMode === 1 : false
             onClicked:          _activeJoystick.throttleMode = 1
             Layout.columnSpan:  2
+            visible:    false  //volo edit
         }
         QGCRadioButton {
             text:               qsTr("Center stick is zero throttle")
             checked:            _activeJoystick ? _activeJoystick.throttleMode === 0 : false
             onClicked:          _activeJoystick.throttleMode = 0
             Layout.columnSpan:  2
+            visible:    false  //volo edit
         }
         //-------------------------------------------------------------
         QGCLabel {
             text:               qsTr("Spring loaded throttle smoothing")
-            visible:            _activeJoystick ? _activeJoystick.throttleMode === 0 : false
+            //visible:            _activeJoystick ? _activeJoystick.throttleMode === 0 : false
             Layout.alignment:   Qt.AlignVCenter
             Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 36
+            visible:    false  //volo edit
         }
         QGCCheckBox {
             checked:            _activeJoystick ? _activeJoystick.accumulator : false
-            visible:            _activeJoystick ? _activeJoystick.throttleMode === 0 : false
+            //visible:            _activeJoystick ? _activeJoystick.throttleMode === 0 : false
             onClicked:          _activeJoystick.accumulator = checked
+            visible:    false  //volo edit
         }
         //-------------------------------------------------------------
         QGCLabel {
             text:               qsTr("Allow negative Thrust")
-            visible:            globals.activeVehicle.supportsNegativeThrust
+            //visible:            globals.activeVehicle.supportsNegativeThrust
             Layout.alignment:   Qt.AlignVCenter
+            visible:    false  //volo edit
         }
         QGCCheckBox {
-            visible:            globals.activeVehicle.supportsNegativeThrust
+            //visible:            globals.activeVehicle.supportsNegativeThrust
+            visible:            false  //volo edit
             enabled:            globals.activeVehicle.supportsNegativeThrust
             checked:            _activeJoystick ? _activeJoystick.negativeThrust : false
             onClicked:          _activeJoystick.negativeThrust = checked
+
         }
         //---------------------------------------------------------------------
         QGCLabel {
@@ -102,6 +109,25 @@ Item {
                     globals.activeVehicle.joystickMode = 0
                 }
             }
+        }
+        //-----------------------------------------------------------------
+        //-- Minimum Throttle in FBW Modes
+        QGCLabel {
+            text:               qsTr("Min. Throttle in FBW (%):")
+            Layout.alignment:   Qt.AlignVCenter
+            visible:            advancedSettings.checked
+        }
+        QGCTextField {
+            text:               _activeJoystick.minThrottleFBW
+            enabled:            advancedSettings.checked
+            validator:          DoubleValidator { bottom: 0.0; top: 30.0; }
+            inputMethodHints:   Qt.ImhFormattedNumbersOnly
+            Layout.alignment:   Qt.AlignVCenter
+            onEditingFinished: {
+                console.log("text is " + text)
+                _activeJoystick.minThrottleFBW = parseFloat(text)
+            }
+            visible:            advancedSettings.checked
         }
         //-----------------------------------------------------------------
         //-- Axis Message Frequency

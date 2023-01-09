@@ -36,6 +36,7 @@ const char* Joystick::_accumulatorSettingsKey =         "Accumulator";
 const char* Joystick::_deadbandSettingsKey =            "Deadband";
 const char* Joystick::_circleCorrectionSettingsKey =    "Circle_Correction";
 const char* Joystick::_axisFrequencySettingsKey =       "AxisFrequency";
+const char* Joystick::_minThrottleFBWSettingsKey =      "MinFBWThrottle";
 const char* Joystick::_buttonFrequencySettingsKey =     "ButtonFrequency";
 const char* Joystick::_txModeSettingsKey =              nullptr;
 const char* Joystick::_fixedWingTXModeSettingsKey =     "TXMode_FixedWing";
@@ -110,6 +111,9 @@ const float Joystick::_minAxisFrequencyHz       = 0.25f;
 const float Joystick::_maxAxisFrequencyHz       = 200.0f;
 const float Joystick::_minButtonFrequencyHz     = 0.25f;
 const float Joystick::_maxButtonFrequencyHz     = 50.0f;
+
+
+
 
 AssignedButtonAction::AssignedButtonAction(QObject* parent, const QString name)
     : QObject(parent)
@@ -292,6 +296,7 @@ void Joystick::_loadSettings()
     _accumulator        = settings.value(_accumulatorSettingsKey,       false).toBool();
     _deadband           = settings.value(_deadbandSettingsKey,          false).toBool();
     _axisFrequencyHz    = settings.value(_axisFrequencySettingsKey,     _defaultAxisFrequencyHz).toFloat();
+    _minThrottleFBW     = settings.value(_minThrottleFBWSettingsKey,    25.0).toFloat();
     _buttonFrequencyHz  = settings.value(_buttonFrequencySettingsKey,   _defaultButtonFrequencyHz).toFloat();
     _circleCorrection   = settings.value(_circleCorrectionSettingsKey,  false).toBool();
     _negativeThrust     = settings.value(_negativeThrustSettingsKey,    false).toBool();
@@ -425,6 +430,7 @@ void Joystick::_saveSettings()
     settings.setValue(_accumulatorSettingsKey,      _accumulator);
     settings.setValue(_deadbandSettingsKey,         _deadband);
     settings.setValue(_axisFrequencySettingsKey,    _axisFrequencyHz);
+    settings.setValue(_minThrottleFBWSettingsKey,   _minThrottleFBW);
     settings.setValue(_buttonFrequencySettingsKey,  _buttonFrequencyHz);
     settings.setValue(_throttleModeSettingsKey,     _throttleMode);
     settings.setValue(_negativeThrustSettingsKey,   _negativeThrust);
@@ -961,10 +967,14 @@ void Joystick::_handleAxis()
             }
 
             if (_accumulator) {
-                static float throttle_accu = 0.f;
-                throttle_accu += throttle * (40 / 1000.f); //for throttle to change from min to max it will take 1000ms (40ms is a loop time)
-                throttle_accu = std::max(static_cast<float>(-1.f), std::min(throttle_accu, static_cast<float>(1.f)));
-                throttle = throttle_accu;
+                //static float throttle_accu = 0.f;
+                _throttle_accu += throttle * (40 / 1000.f); //for throttle to change from min to max it will take 1000ms (40ms is a loop time)
+                _throttle_accu = std::max(static_cast<float>(-1.f), std::min(_throttle_accu, static_cast<float>(1.f)));
+                //qDebug() << "throttle is " << _throttle_accu;
+                float mimimumThrottle = _minThrottleFBW * 1.0e-2;
+                //qDebug() << "min throttle is " << mimimumThrottle;
+                _throttle_accu = std::max(mimimumThrottle, _throttle_accu);
+                throttle = _throttle_accu;
             }
 
             if (_circleCorrection) {
@@ -1341,7 +1351,10 @@ int Joystick::throttleMode()
 {
     return _throttleMode;
 }
-
+void Joystick::setThrottleAccumulatorValue(float value)
+{
+    _throttle_accu = value;
+}
 void Joystick::setThrottleMode(int mode)
 {
     if (mode < 0 || mode >= ThrottleModeMax) {
@@ -1417,7 +1430,17 @@ void Joystick::setCircleCorrection(bool circleCorrection)
     _saveSettings();
     emit circleCorrectionChanged(_circleCorrection);
 }
-
+void Joystick::setMinThrottleFBW(float val)
+{
+    qDebug() << "setting min throttle fbw to " << val;
+    if (val < 0)
+        val = 0.0f;
+    if (val > 30)
+        val = 30.0f;
+    _minThrottleFBW = val;
+    _saveSettings();
+    emit minThrottleFBWChanged();
+}
 void Joystick::setAxisFrequency(float val)
 {
     //-- Arbitrary limits

@@ -192,6 +192,16 @@ Item {
         z:          QGroundControl.zOrderTopMost
     }
 
+    FlyViewThrottleIndicator {
+        id:                 throttlePanel
+        anchors.top:                parent.top
+        anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 1.5
+        anchors.horizontalCenter:   parent.horizontalCenter
+        z:                          QGroundControl.zOrderWidgets
+        visible:                    _activeVehicle ? (((_activeVehicle.flightMode == "FBW A") || (_activeVehicle.flightMode == "FBW B")) ? true : false) : false
+
+    }
+
 
     TelemetryValuesBar {
         id:                 telemetryPanel

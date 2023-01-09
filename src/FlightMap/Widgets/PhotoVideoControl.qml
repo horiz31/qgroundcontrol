@@ -25,10 +25,11 @@ import QGroundControl.FactControls      1.0
 
 Rectangle {
     height:     mainLayout.height + (_margins * 2)
-    color:      "#80000000"
+    //color:      "#80000000"
+    color:      qgcPal.window
     radius:     _margins
     border.width: 2
-    border.color: "#80000000"
+    border.color: qgcPal.window
     visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
     z:      QGroundControl.zOrderTopMost
     MouseArea {
@@ -43,7 +44,7 @@ Rectangle {
             if (!value)
                 border.color = qgcPal.colorBlue
             else
-                border.color = "#80000000"
+                border.color = qgcPal.window //"#80000000"
         }
     }
     Connections {

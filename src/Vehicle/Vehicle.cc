@@ -2233,6 +2233,8 @@ void Vehicle::_startJoystick(bool start)
             joystick->stopPolling();
             joystick->wait(500);
         }
+
+        _setupAccumulatorJoystick();
     }
 }
 
@@ -2703,10 +2705,43 @@ QString Vehicle::_vehicleIdSpeech()
     }
 }
 
+void Vehicle::_setupAccumulatorJoystick()
+{
+     //only applicable for fixedwind or vtol or if not flying
+     if (!vtol() && !fixedWing() && flying()) {
+         return;
+     }
+
+     QString currentMode = _firmwarePlugin->flightMode(_base_mode, _custom_mode);
+     if ((currentMode == "FBW A" || currentMode == "FBW B"))
+     {
+         if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+         {
+             qDebug() << "setting up joystick for fbw a";
+              _toolbox->joystickManager()->activeJoystick()->setThrottleMode(0);
+              _toolbox->joystickManager()->activeJoystick()->setAccumulator(true);
+              _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.5);
+         }
+     }
+     else
+     {
+         if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+         {
+             qDebug() << "setting up joystick for other modes";
+             _toolbox->joystickManager()->activeJoystick()->setThrottleMode(1);  //this also sets accumulator false
+             _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.0);
+         }
+     }
+}
+
 void Vehicle::_handleFlightModeChanged(const QString& flightMode)
 {
     _say(tr("%1 %2 flight mode").arg(_vehicleIdSpeech()).arg(flightMode));
     emit guidedModeChanged(_firmwarePlugin->isGuidedMode(this));
+
+    _setupAccumulatorJoystick();
+
+
 }
 
 void Vehicle::_announceArmedChanged(bool armed)

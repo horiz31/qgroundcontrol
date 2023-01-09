@@ -140,7 +140,7 @@ Rectangle {
                 height: slider.height * 0.75
                 width:  height
                 radius: height / 2
-                color:  qgcPal.primaryButton
+                color:  qgcPal.colorBlue
 
                 QGCColoredImage {
                     anchors.margins:    parent.height / 4

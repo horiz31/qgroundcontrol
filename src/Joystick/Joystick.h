@@ -103,6 +103,7 @@ public:
 
     Q_PROPERTY(int      throttleMode            READ throttleMode           WRITE setThrottleMode       NOTIFY throttleModeChanged)
     Q_PROPERTY(float    axisFrequencyHz         READ axisFrequencyHz        WRITE setAxisFrequency      NOTIFY axisFrequencyHzChanged)
+    Q_PROPERTY(float    minThrottleFBW          READ minThrottleFBW         WRITE setMinThrottleFBW      NOTIFY minThrottleFBWChanged)
     Q_PROPERTY(float    minAxisFrequencyHz      MEMBER _minAxisFrequencyHz                              CONSTANT)
     Q_PROPERTY(float    maxAxisFrequencyHz      MEMBER _minAxisFrequencyHz                              CONSTANT)
     Q_PROPERTY(float    buttonFrequencyHz       READ buttonFrequencyHz      WRITE setButtonFrequency    NOTIFY buttonFrequencyHzChanged)
@@ -190,6 +191,8 @@ public:
     int   throttleMode      ();
     void  setThrottleMode   (int mode);
 
+    void  setThrottleAccumulatorValue (float value);
+
     bool  negativeThrust    () const;
     void  setNegativeThrust (bool allowNegative);
 
@@ -216,6 +219,9 @@ public:
     /// Set joystick message rate (in Hz)
     void  setAxisFrequency  (float val);
 
+    float minThrottleFBW         () const{ return _minThrottleFBW; }
+    void setMinThrottleFBW      (float val);
+
     /// Get joystick button repeat rate (in Hz)
     float buttonFrequencyHz   () const{ return _buttonFrequencyHz; }
     /// Set joystick button repeat rate (in Hz)
@@ -237,6 +243,7 @@ signals:
     void axisValues                 (float roll, float pitch, float yaw, float throttle);
 
     void axisFrequencyHzChanged     ();
+    void minThrottleFBWChanged      ();
     void buttonFrequencyHzChanged   ();
     void startContinuousZoom        (int direction);
     void stopContinuousZoom         ();
@@ -333,6 +340,7 @@ protected:
     ThrottleMode_t _throttleMode    = ThrottleModeDownZero;
     bool    _negativeThrust         = false;
     float   _exponential            = 0;
+    float   _throttle_accu          = 0;
     bool    _accumulator            = false;
     bool    _deadband               = false;
     bool    _circleCorrection       = true;
@@ -340,6 +348,7 @@ protected:
     bool    _rollPitchEnabled       = true;
     float   _axisFrequencyHz        = _defaultAxisFrequencyHz;
     float   _buttonFrequencyHz      = _defaultButtonFrequencyHz;
+    float   _minThrottleFBW         = 25.0f;
     Vehicle* _activeVehicle         = nullptr;
 
     bool    _pollingStartedForCalibration = false;
@@ -382,6 +391,7 @@ private:
     static const char* _deadbandSettingsKey;
     static const char* _circleCorrectionSettingsKey;
     static const char* _axisFrequencySettingsKey;
+    static const char* _minThrottleFBWSettingsKey;
     static const char* _buttonFrequencySettingsKey;
     static const char* _txModeSettingsKey;
     static const char* _fixedWingTXModeSettingsKey;

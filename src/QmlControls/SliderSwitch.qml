@@ -38,7 +38,7 @@ Rectangle {
         height:     _diameter
         width:      _diameter
         radius:     _diameter / 2
-        color:      qgcPal.primaryButton
+        color:      qgcPal.colorBlue
 
         QGCColoredImage {
             anchors.centerIn:       parent

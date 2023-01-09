@@ -303,6 +303,7 @@
         <file alias="QGroundControl/FlightDisplay/PreFlightJoystickCheck.qml">src/FlightDisplay/PreFlightJoystickCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightActuatorCheck.qml">src/FlightDisplay/PreFlightActuatorCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightQHoverCheck.qml">src/FlightDisplay/PreFlightQHoverCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/FlyViewThrottleIndicator.qml">src/FlightDisplay/FlyViewThrottleIndicator.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>
