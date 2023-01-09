@@ -2716,8 +2716,7 @@ void Vehicle::_setupAccumulatorJoystick()
      if ((currentMode == "FBW A" || currentMode == "FBW B"))
      {
          if (_toolbox->joystickManager()->activeJoystick() != nullptr)
-         {
-             qDebug() << "setting up joystick for fbw a";
+         {           
               _toolbox->joystickManager()->activeJoystick()->setThrottleMode(0);
               _toolbox->joystickManager()->activeJoystick()->setAccumulator(true);
               _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.5);
@@ -2727,7 +2726,6 @@ void Vehicle::_setupAccumulatorJoystick()
      {
          if (_toolbox->joystickManager()->activeJoystick() != nullptr)
          {
-             qDebug() << "setting up joystick for other modes";
              _toolbox->joystickManager()->activeJoystick()->setThrottleMode(1);  //this also sets accumulator false
              _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.0);
          }

@@ -198,7 +198,7 @@ Item {
         anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 1.5
         anchors.horizontalCenter:   parent.horizontalCenter
         z:                          QGroundControl.zOrderWidgets
-        visible:                    _activeVehicle ? (((_activeVehicle.flightMode == "FBW A") || (_activeVehicle.flightMode == "FBW B")) ? true : false) : false
+        visible:                    _activeVehicle ? ((((_activeVehicle.flightMode == "FBW A") || (_activeVehicle.flightMode == "FBW B")) && _activeVehicle.flying) ? true : false) : false
 
     }
 

@@ -113,7 +113,7 @@ Item {
         //-----------------------------------------------------------------
         //-- Minimum Throttle in FBW Modes
         QGCLabel {
-            text:               qsTr("Min. Throttle in FBW (%):")
+            text:               qsTr("Min. Throttle in FBW (0-30 %):")
             Layout.alignment:   Qt.AlignVCenter
             visible:            advancedSettings.checked
         }
@@ -124,7 +124,6 @@ Item {
             inputMethodHints:   Qt.ImhFormattedNumbersOnly
             Layout.alignment:   Qt.AlignVCenter
             onEditingFinished: {
-                console.log("text is " + text)
                 _activeJoystick.minThrottleFBW = parseFloat(text)
             }
             visible:            advancedSettings.checked
