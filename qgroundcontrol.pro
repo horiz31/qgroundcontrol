@@ -61,11 +61,11 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "EchoMav GCS"
-QGC_ORG_NAME        = "EchoMav"
-QGC_ORG_DOMAIN      = "echomav.com"
-QGC_APP_DESCRIPTION = "EchoMav GCS"
-QGC_APP_COPYRIGHT   = "Copyright (C) 2022 EchoMav. All Rights Reserved."
+QGC_APP_NAME        = "UVDL GCS"
+QGC_ORG_NAME        = "UVDL"
+QGC_ORG_DOMAIN      = "ornl.gov"
+QGC_APP_DESCRIPTION = "UVDL GCS"
+QGC_APP_COPYRIGHT   = "Copyright (C) 2023 ORNL. All Rights Reserved."
 
 WindowsBuild {
     QGC_INSTALLER_SCRIPT        = "$$SOURCE_DIR\\deploy\\windows\\nullsoft_installer.nsi"

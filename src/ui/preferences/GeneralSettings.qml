@@ -1118,7 +1118,7 @@ Rectangle {
 
                     Item { width: 1; height: _margins }
                     QGCLabel {
-                        text:               qsTr("EchoMav GCS Version")
+                        text:               qsTr("UVDL GCS Version")
                         Layout.alignment:   Qt.AlignHCenter
                     }
                     QGCLabel {
