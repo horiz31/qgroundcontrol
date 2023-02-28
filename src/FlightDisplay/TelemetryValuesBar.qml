@@ -16,19 +16,58 @@ import QGroundControl.Vehicle       1.0
 import QGroundControl.Controls      1.0
 import QGroundControl.Palette       1.0
 
+
+
+
 Rectangle {
     id:                 telemetryPanel
     height:             telemetryLayout.height + (_toolsMargin * 2)
     width:              telemetryLayout.width + (_toolsMargin * 2)
     color:              qgcPal.window
+    opacity:            0.95
     radius:             ScreenTools.defaultFontPixelWidth / 2
 
-    property bool       bottomMode: true
-    property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+    property bool    bottomMode: true
+    property var     _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+    property bool    _nvRecording: _activeVehicle? _activeVehicle.nvGimbal.isRecording.value === 1 : false
+    property string  _targetLatitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°"
+    property string  _targetLongitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°"
+    property string  _targetAltitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.rawValue === 10000)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) + " MSL" : "----"
+    property string  _slantRange:_activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : _activeVehicle.nvGimbal.slantRange.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----"
+    property string  _fov: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.fov.value) ? "--°" : _activeVehicle.nvGimbal.fov.value.toFixed(0) + "°") : "--°"
+    property string  _azimuth: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.azimuth.value) ? "--°" : _activeVehicle.nvGimbal.azimuth.value.toFixed(0) + "°") : "--°"
+    property bool    _nvPresent:  _activeVehicle ? (_activeVehicle.nvGimbal.mode.value !== "" ? true : false) : false
 
-    DeadMouseArea { anchors.fill: parent }
+
+    //DeadMouseArea { anchors.fill: parent }
 
 
+    function toggleNvPanel()
+    {
+        if (!nvTelemGrid.visible && _nvPresent)
+        {
+            nvTelemGrid.visible = true
+            nvTitle.visible = true
+        }
+        else {
+            nvTelemGrid.visible = false
+            nvTitle.visible = false
+        }
+    }
+    MouseArea {
+           anchors.fill: parent
+           onClicked: {
+             toggleNvPanel()
+           }
+    }
+
+    Connections {
+        target: _activeVehicle
+        onNvShowQuickPanelChanged:
+        {
+            toggleNvPanel()
+        }
+    }
     ColumnLayout {
         id:                 telemetryLayout
         anchors.margins:    _toolsMargin
@@ -88,7 +127,7 @@ Rectangle {
                 }
             }
         }
-
+/*
         QGCMouseArea {
             id:                         mouseArea
             x:                          telemetryLayout.x
@@ -98,6 +137,152 @@ Rectangle {
             hoverEnabled:               true
             propagateComposedEvents:    true
         }
+*/
+
+
+         RowLayout
+         {
+             id: nvTitle
+             visible: false
+             Item {
+                 Layout.fillWidth: true
+             }
+
+             QGCColoredImage {
+                 Layout.alignment:  Qt.AlignLeft
+                 source:             "/res/target.svg"
+                 mipmap:             true
+                 width:              ScreenTools.defaultFontPixelHeight
+                 height:             width
+                 sourceSize.width:   width
+                 color:              qgcPal.text
+                 fillMode:           Image.PreserveAspectFit
+            }
+            QGCLabel { text: qsTr("Gimbal Target Information")
+                font.family:        ScreenTools.demiboldFontFamily
+                font.pointSize:     ScreenTools.mediumFontPointSize
+                Layout.alignment: Qt.AlignHCenter
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+         }
+
+        // NextVision Tracking Value Panel
+        GridLayout {
+
+            id: nvTelemGrid
+            visible: false
+            Layout.fillWidth: true
+            rowSpacing:     ScreenTools.defaultFontPixelHeight
+            columnSpacing:  ScreenTools.defaultFontPixelWidth * 2
+            rows: 4
+            columns: 2
+            Layout.bottomMargin: ScreenTools.defaultFontPixelHeight * .5
+
+
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                    RowLayout{
+                    QGCLabel { text: qsTr("Target Latitude: ") + _targetLatitude
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.mediumFontPointSize
+                        Layout.fillWidth: false
+
+                    }
+                    QGCColoredImage {
+                        Layout.alignment:  Qt.AlignLeft
+                        source:             "/res/content_copy.svg"
+                        mipmap:             true
+                        width:              ScreenTools.defaultFontPixelHeight
+                        height:             width
+                        sourceSize.width:   width
+                        color:              qgcPal.text
+                        fillMode:           Image.PreserveAspectFit
+                        QGCMouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape:  Qt.PointingHandCursor
+                            onClicked:    {
+                                textEdit.text = _targetLatitude + ", " + _targetLongitude
+                                textEdit.selectAll()
+                                textEdit.copy()
+                            }
+                            TextEdit {
+                                   id: textEdit
+                                   visible: false
+                            }
+                        }
+                   }
+                    Item {
+                        Layout.fillWidth: true
+                    }
+                }
+
+
+
+                QGCLabel { text: qsTr("Target Longitude: ") + _targetLongitude
+                    font.family:        ScreenTools.demiboldFontFamily
+                    font.pointSize:     ScreenTools.mediumFontPointSize
+                    Layout.fillWidth: true
+                    QGCMouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape:  Qt.PointingHandCursor
+                        onClicked:    {
+                            textEdit2.text = _targetLatitude + ", " + _targetLongitude
+                            textEdit2.selectAll()
+                            textEdit2.copy()
+                        }
+                        TextEdit {
+                               id: textEdit2
+                               visible: false
+                        }
+                    }
+                }
+                QGCLabel { text: qsTr("Target Altitude: ") + _targetAltitude
+                    font.family:        ScreenTools.demiboldFontFamily
+                    font.pointSize:     ScreenTools.mediumFontPointSize
+                    Layout.fillWidth: true
+                }
+
+
+            }
+            ColumnLayout {
+                Layout.alignment: Qt.AlignRight
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Item {
+                        width: recIndicator.implicitWidth
+                        height: recIndicator.implicitHeight
+                        QGCLabel { text: _nvRecording ? qsTr("Recording to SD: YES") : qsTr("Recording to SD: NO")
+                            id: recIndicator
+                            color: _nvRecording ? qgcPal.colorRed : qgcPal.text
+                            font.family:        ScreenTools.demiboldFontFamily
+                            font.pointSize:     ScreenTools.mediumFontPointSize
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                        }
+                    }
+
+                QGCLabel { text: qsTr("Slant Range: ") + _slantRange
+                    font.family:        ScreenTools.demiboldFontFamily
+                    font.pointSize:     ScreenTools.mediumFontPointSize
+                    Layout.fillWidth: true
+                }
+
+                QGCLabel { text: qsTr("Azimuth: ") + _azimuth
+                    font.family:        ScreenTools.demiboldFontFamily
+                    font.pointSize:     ScreenTools.mediumFontPointSize
+                    Layout.fillWidth: true
+                }
+
+            }
+
+
+        }
+
 
         //Super Volo Telemetry Value Panel
 
@@ -198,6 +383,7 @@ Rectangle {
         }
 
         GuidedActionConfirm {
+            opacity: 1.0
             Layout.fillWidth:   true
             guidedController:   _guidedController
             altitudeSlider:     _guidedAltSlider

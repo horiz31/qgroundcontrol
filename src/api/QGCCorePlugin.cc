@@ -113,7 +113,7 @@ QGCCorePlugin::~QGCCorePlugin()
 QGCCorePlugin::QGCCorePlugin(QGCApplication *app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
     , _showTouchAreas(false)
-    , _showAdvancedUI(true)
+    , _showAdvancedUI(false)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     _p = new QGCCorePlugin_p;
@@ -284,7 +284,7 @@ void QGCCorePlugin::paletteOverride(QString /*colorName*/, QGCPalette::PaletteCo
 QString QGCCorePlugin::showAdvancedUIMessage() const
 {
     return tr("WARNING: You are about to enter Advanced Mode. "
-              "If used incorrectly, this may cause your vehicle to malfunction thus voiding your warranty. "
+              "This will give you acess to advanced vehicle settings. If used incorrectly, this may cause your vehicle to malfunction thus voiding your warranty. "
               "You should do so only if instructed by customer support. "
               "Are you sure you want to enable Advanced Mode?");
 }

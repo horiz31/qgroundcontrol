@@ -13,9 +13,10 @@ FlyViewToolStripActionList      1.0 FlyViewToolStripActionList.qml
 FlyViewVideo                    1.0 FlyViewVideo.qml
 FlyViewWidgetLayer              1.0 FlyViewWidgetLayer.qml
 FlyViewThrottleIndicator        1.0 FlyViewThrottleIndicator.qml
+ChecklistWarningIndicator       1.0 ChecklistWarningIndicator.qml
 MapClickActionDialog            1.0 MapClickActionDialog.qml
 GuidedActionActionList          1.0 GuidedActionActionList.qml
-GuidedActionActionLandingList          1.0 GuidedActionActionLandingList.qml
+GuidedActionActionLandingList   1.0 GuidedActionActionLandingList.qml
 GuidedActionLandingList         1.0 GuidedActionLandingList.qml
 GuidedActionConfirm             1.0 GuidedActionConfirm.qml
 GuidedActionsController         1.0 GuidedActionsController.qml

@@ -355,6 +355,8 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
 
                     //get slant range crossing
                     emit nvSlantRangeChanged(gnd_crs_report.slant_range);
+
+
                 }
                 else if(gnd_crs_report.report_type == MavExtReport_LOS)
                 {
@@ -395,6 +397,12 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                        QList<QGeoCoordinate> emptyCoords ;
                        emit lineOfSightChanged(emptyCoords);
                    }
+
+                   mavlink_nvext_los_report_t los_report;
+                   mavlink_nvext_los_report_decode(&_message,&los_report);
+
+                   //get azimuth
+                   emit nvAzimuthChanged(los_report.los_azimuth);
                 }
                 else if(gnd_crs_report.report_type == MavExtReport_System)
                 {
@@ -430,6 +438,8 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
 
                     //get the current fov
                     emit nvFovChanged(system_report.fov);
+
+
 
                     //get is recording
                     uint8_t recording_status = system_report.recording_status & 0x0f;  //first nibble is channel 0, which is all we care about for now

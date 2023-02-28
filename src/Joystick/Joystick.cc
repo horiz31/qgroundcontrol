@@ -968,7 +968,7 @@ void Joystick::_handleAxis()
 
             if (_accumulator) {
                 //static float throttle_accu = 0.f;
-                _throttle_accu += throttle * (40 / 1000.f); //for throttle to change from min to max it will take 1000ms (40ms is a loop time)
+                _throttle_accu += throttle * (40 / 3000.f); //for throttle to change from min to max it will take 3000ms (40ms is a loop time)
                 _throttle_accu = std::max(static_cast<float>(-1.f), std::min(_throttle_accu, static_cast<float>(1.f)));
                 //qDebug() << "throttle is " << _throttle_accu;
                 float mimimumThrottle = _minThrottleFBW * 1.0e-2;

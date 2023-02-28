@@ -158,6 +158,8 @@ signals:
     void nvGrounndCrossingAltChanged(float groundCrossingAlt);
     /** emitting every time the nextvision slant range changes */
     void nvSlantRangeChanged(float slantRange);
+    /** emitting every time the nextvision los azimuth changes */
+    void nvAzimuthChanged(float azimuth);
     /** emitting every time the nextvision sd total capacity changes */
     void nvSdTotalCapacityChanged(float sdTotalCapacity);
     /** emitting every time the nextvision sd available capacity changes */

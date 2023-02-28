@@ -83,12 +83,12 @@ PreFlightCheckButton {
     function updateTelemetryTextFailure() {      
         if (notAcceptableMode())
         {
-            telemetryTextFailure = qsTr("Pick up the aircraft move it, ensuring the control surfaces respond to input. Recommend to put the aircraft in FBWA mode for this check to ensure surfaces respond appropriately.")
+            telemetryTextFailure = qsTr("Pick up the aircraft and move it, ensuring the control surfaces respond to changes in roll/pitch. Recommend to put the aircraft in FBWA mode for this check to ensure surfaces respond appropriately.")
             return
         }
         else
         {
-            telemetryTextFailure = qsTr("Pick up the aircraft move it, ensuring the control surfaces respond to input.")
+            telemetryTextFailure = qsTr("Pick up the aircraft and move it, ensuring the control surfaces respond to changes in roll/pitch.")
             return
         }
 

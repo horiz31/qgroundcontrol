@@ -179,6 +179,7 @@ public:
         MavExtCmd_GeoMapControl,
         MavExtCmd_StreamControl,
         MavExtCmd_VMDControl,
+        MavExtCmd_ResetCamera = 66,
     }MavlinkExtCmd;
 
     explicit CameraManagement(QObject *parent = nullptr,MultiVehicleManager *multiVehicleManager = nullptr, JoystickManager *joystickManager = nullptr);
@@ -209,6 +210,7 @@ public:
     Q_INVOKABLE void setSysZoomOutCommand(void);
     Q_INVOKABLE void setSysSensorToggleCommand(void);
     Q_INVOKABLE void setSysSensorDayCommand(void);
+    Q_INVOKABLE void setSysResetCommand(void);
     Q_INVOKABLE void setSysSensorIrCommand(void);
     Q_INVOKABLE void setSysIrPolarityToggleCommand(void);
     Q_INVOKABLE void setSysIrPolarityWHCommand(void);

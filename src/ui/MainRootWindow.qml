@@ -374,6 +374,7 @@ ApplicationWindow {
                         text:               qsTr("Vehicle Setup")
                         imageColor:         qgcPal.text
                         imageResource:      "/qmlimages/Gears.svg"
+                        visible:            QGroundControl.corePlugin.showAdvancedUI
                         onClicked: {
                             if (!mainWindow.preventViewSwitch()) {
                                 toolSelectDialog.hideDialog()
@@ -403,7 +404,7 @@ ApplicationWindow {
                         height:             _toolButtonHeight
                         Layout.fillWidth:   true
                         text:               qsTr("Application Settings")
-                        imageResource:      "/res/QGCLogoFull"
+                        imageResource:      "/res/QGCLogoFullecho"
                         imageColor:         "transparent"
                         visible:            !QGroundControl.corePlugin.options.combineSettingsAndSetup
                         onClicked: {
@@ -434,23 +435,44 @@ ApplicationWindow {
                             wrapMode:               QGCLabel.WrapAnywhere
                             Layout.maximumWidth:    parent.width
                             Layout.alignment:       Qt.AlignHCenter
+                        }
+                        QGCLabel {
+                            text:                   qsTr("Click to Toggle Advanced Mode")
+                            font.pointSize:         ScreenTools.smallFontPointSize
+                            font.underline:         true
+                            wrapMode:               QGCLabel.WrapAnywhere
+                            Layout.maximumWidth:    parent.width
+                            Layout.alignment:       Qt.AlignHCenter
+
 
                             QGCMouseArea {
                                 id:                 easterEggMouseArea
                                 anchors.topMargin:  -versionLabel.height
                                 anchors.fill:       parent
+                                hoverEnabled:       true
 
                                 onClicked: {
                                     if (mouse.modifiers & Qt.ControlModifier) {
                                         QGroundControl.corePlugin.showTouchAreas = !QGroundControl.corePlugin.showTouchAreas
-                                    } else if (mouse.modifiers & Qt.ShiftModifier) {
+                                    }
+
+                                    if(!QGroundControl.corePlugin.showAdvancedUI) {
+                                        advancedModeConfirmation.open()
+                                    } else {
+                                        QGroundControl.corePlugin.showAdvancedUI = false
+                                    }
+
+
+                                    //old way requires shift, which is not easy on touchscreen
+                                    /*
+                                    else if (mouse.modifiers & Qt.ShiftModifier) {
                                         if(!QGroundControl.corePlugin.showAdvancedUI) {
                                             advancedModeConfirmation.open()
                                         } else {
                                             QGroundControl.corePlugin.showAdvancedUI = false
                                         }
-                                    }
-                                }
+                                    }*/
+                                }                              
 
                                 MessageDialog {
                                     id:                 advancedModeConfirmation

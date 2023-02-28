@@ -194,7 +194,7 @@
                 "label":            "Radius",
                 "units":            "m",
                 "default":          150.0,
-                "decimalPlaces":    2
+                "decimalPlaces":    0
             },
             "param4": {
                 "label":            "Exit loiter from",

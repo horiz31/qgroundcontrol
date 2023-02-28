@@ -89,7 +89,7 @@ PreFlightCheckButton {
                                     //if not cancelled
                                     if (!cancelTest)
                                     {
-                                        multiDelayButton.startMotorTest(2);
+                                        sliderMotorTest.startMotorTest(2);
                                         timer2.setTimeout(function(){}, _testDelayDurationSec * 1000);
                                     }
 
@@ -109,7 +109,7 @@ PreFlightCheckButton {
                                     //if not cancelled
                                     if (!cancelTest)
                                     {
-                                        multiDelayButton.startMotorTest(3);
+                                        sliderMotorTest.startMotorTest(3);
                                         timer3.setTimeout(function(){}, _testDelayDurationSec * 1000);
                                     }
                                 });
@@ -129,7 +129,7 @@ PreFlightCheckButton {
                                     //if not cancelled
                                     if (!cancelTest)
                                     {
-                                        multiDelayButton.startMotorTest(4);
+                                        sliderMotorTest.startMotorTest(4);
                                         timer4.setTimeout(function(){}, _testDelayDurationSec * 1000);
                                     }
 
@@ -146,12 +146,40 @@ PreFlightCheckButton {
                                 timer4.triggered.connect(function release () {
                                     timer4.triggered.disconnect(cb);
                                     timer4.triggered.disconnect(release);
-                                    multiDelayButton.finishMotorTest();
+                                    sliderMotorTest.finishMotorTest();
                                    });
                                 timer4.start();
                             }
                         }
 
+                        SliderSwitch {
+                            id:                     sliderMotorTest
+                            confirmText:            qsTr("Slide to Start Motor Test")
+                            Layout.minimumWidth:    Math.max(implicitWidth, ScreenTools.defaultFontPixelWidth * 30)
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            onAccept: {
+                                visible = false
+                                cancelTest = false
+                                startMotorTest(1)
+                                timer1.setTimeout(function(){}, _testDelayDurationSec * 1000);
+                            }
+                            function startMotorTest(motor)
+                            {
+                                motorTestStatus.text= qsTr("Test Running! (Motor "+ motor + ")")
+
+                                console.log("Starting motor test for motor " + motor);
+                                globals.activeVehicle.motorTest(motor, _motorTestThrottle, _motorTestDurationSec, true)
+                            }
+                            function finishMotorTest()
+                            {
+                                cancelTest = false
+                                motorTestStatus.text =""
+                                visible = true
+                                _manualState = _statePassed  //mark check as passed
+                            }
+                        }
+/*
                         DelayButton {
                             id: multiDelayButton
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -182,14 +210,15 @@ PreFlightCheckButton {
                                 _manualState = _statePassed  //mark check as passed
                             }
                         }
+                        */
                         QGCButton {
                             text:               qsTr("Cancel the test")
                             anchors.horizontalCenter: parent.horizontalCenter
-                            visible: !multiDelayButton.visible
+                            visible: !sliderMotorTest.visible
                             onClicked: {
                                 cancelTest = true;
                                 motorTestStatus.text =""
-                                multiDelayButton.visible = true
+                                sliderMotorTest.visible = true
                                }
                         }
                         Item {

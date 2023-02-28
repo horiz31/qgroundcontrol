@@ -47,7 +47,7 @@
     "decimalPlaces":    0,
     "min":              1,
     "units":            "m",
-    "default":          90.0
+    "default":          120.0
 },
 {
     "name":         "LoiterClockwise",

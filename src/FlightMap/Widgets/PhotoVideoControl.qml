@@ -24,6 +24,7 @@ import QGroundControl.FactSystem        1.0
 import QGroundControl.FactControls      1.0
 
 Rectangle {
+    id: nvMainPanel
     height:     mainLayout.height + (_margins * 2)
     //color:      "#80000000"
     color:      qgcPal.window
@@ -119,7 +120,7 @@ Rectangle {
     property bool   _nvIRMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 1 : false
     property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
     property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
-    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"    
 
     function setCameraMode(photoMode) {
         _videoStreamInPhotoMode = photoMode
@@ -232,6 +233,28 @@ Rectangle {
     QGCColoredImage {
         anchors.margins:    _margins
         anchors.top:        parent.top
+        anchors.left:      parent.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
+        anchors.topMargin:  ScreenTools.defaultFontPixelWidth
+        source:             "/res/target.svg"
+        mipmap:             true
+        height:             ScreenTools.defaultFontPixelHeight * 1.3
+        width:              height
+        sourceSize.height:  height
+        color:              qgcPal.text
+        fillMode:           Image.PreserveAspectFit
+        visible:            _nextVisionGimbalAvailable
+
+        QGCMouseArea {
+            fillItem:   parent
+            onClicked:  {
+                _activeVehicle.showNvQuickPanel()
+            }
+        }
+    }
+    QGCColoredImage {
+        anchors.margins:    _margins
+        anchors.top:        parent.top
         anchors.right:      parent.right
         anchors.rightMargin: ScreenTools.defaultFontPixelWidth
         anchors.topMargin:  ScreenTools.defaultFontPixelWidth
@@ -246,7 +269,9 @@ Rectangle {
 
         QGCMouseArea {
             fillItem:   parent
-            onClicked:  mainWindow.showPopupDialogFromComponent(settingsDialogComponent)
+            onClicked:  {
+                mainWindow.showPopupDialogFromComponent(settingsDialogComponent)
+            }
         }
     }
 
@@ -557,41 +582,85 @@ Rectangle {
                             text:               qsTr("Active Sensor");
                             visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
             }
-            QGCButton {
-                id:             irButton
+            GridLayout {
+                columns:            2
+                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
+                rowSpacing:         ScreenTools.defaultFontPixelHeight
                 Layout.alignment:   Qt.AlignHCenter
-                backRadius:     4
-                showBorder:     true
-                font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                text:           qsTr("IR")
-                visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
-                leftPadding:    10
-                rightPadding:   10
-                hoverEnabled:   false
-                SequentialAnimation {
-                            id: animIrButton
-                            // Expand the button
-                            PropertyAnimation {
-                                target: irButton
-                                property: "scale"
-                                to: 1.2
-                                duration: 200
-                                easing.type: Easing.InOutQuad
-                            }
+                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
 
-                            // Shrink back to normal
-                            PropertyAnimation {
-                                target: irButton
-                                property: "scale"
-                                to: 1.0
-                                duration: 200
-                                easing.type: Easing.InOutQuad
+                QGCButton {
+                    id:             irButton
+                    Layout.alignment:   Qt.AlignHCenter
+                    backRadius:     4
+                    showBorder:     true
+                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                    text:           qsTr("IR")
+                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
+                    leftPadding:    10
+                    rightPadding:   10
+                    hoverEnabled:   false
+                    SequentialAnimation {
+                                id: animIrButton
+                                // Expand the button
+                                PropertyAnimation {
+                                    target: irButton
+                                    property: "scale"
+                                    to: 1.2
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                // Shrink back to normal
+                                PropertyAnimation {
+                                    target: irButton
+                                    property: "scale"
+                                    to: 1.0
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
                             }
-                        }
-                onClicked: {
-                    animIrButton.start()
-                    joystickManager.cameraManagement.setSysSensorIrCommand()
+                    onClicked: {
+                        animIrButton.start()
+                        joystickManager.cameraManagement.setSysSensorIrCommand()
+                    }
+                }
+                QGCButton {
+                    id:             resetCamButton
+                    backRadius:     4
+                    showBorder:     true
+                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
+                    text:           qsTr("RST")
+                    leftPadding:    7
+                    rightPadding:   7
+                    hoverEnabled:   false
+                    SequentialAnimation {
+                                id: animResetButton
+                                // Expand the button
+                                PropertyAnimation {
+                                    target: resetCamButton
+                                    property: "scale"
+                                    to: 1.2
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                // Shrink back to normal
+                                PropertyAnimation {
+                                    target: resetCamButton
+                                    property: "scale"
+                                    to: 1.0
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                    onClicked: {
+                        animResetButton.start()
+                        joystickManager.cameraManagement.setSysResetCommand()
+                    }
                 }
             }
             GridLayout {

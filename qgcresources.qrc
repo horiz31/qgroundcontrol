@@ -63,6 +63,9 @@
         <file alias="distance-to-wp.svg">resources/distance-to-wp.svg</file>
         <file alias="distance-to-home.svg">resources/distance-to-home.svg</file>
         <file alias="gimbal.svg">resources/gimbal.svg</file>
+        <file alias="QGCLogoFullecho.svg">resources/QGCLogoFullecho.svg</file>
+        <file alias="target.svg">resources/target.svg</file>
+        <file alias="content_copy.svg">resources/content_copy.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

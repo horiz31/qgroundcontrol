@@ -595,6 +595,12 @@ void CameraManagement::setSysSensorDayCommand(void)
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSensor,MavExtCmdArg_DaySensor,0,0,0,0,0);
 }
 
+void CameraManagement::setSysResetCommand(void)
+{
+    /* Set the system sensor */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ResetCamera,0,0,0,0,0,0);
+}
+
 void CameraManagement::setSysSensorIrCommand(void)
 {
     /* Set the system sensor */

@@ -18,12 +18,13 @@ class VehicleGimbalFactGroup : public FactGroup
 public:
     VehicleGimbalFactGroup(QObject* parent = nullptr);
 
-    Q_PROPERTY(Fact* mode                   READ mode               CONSTANT)
+    Q_PROPERTY(Fact* mode                   READ mode                CONSTANT)
     Q_PROPERTY(Fact* groundCrossingLat      READ groundCrossingLat   CONSTANT)
     Q_PROPERTY(Fact* groundCrossingLon      READ groundCrossingLon   CONSTANT)
     Q_PROPERTY(Fact* groundCrossingAlt      READ groundCrossingAlt   CONSTANT)
     Q_PROPERTY(Fact* slantRange             READ slantRange          CONSTANT)
     Q_PROPERTY(Fact* fov                    READ fov                 CONSTANT)
+    Q_PROPERTY(Fact* azimuth                READ azimuth             CONSTANT)
     Q_PROPERTY(Fact* activeSensor           READ activeSensor        CONSTANT)
     Q_PROPERTY(Fact* isRecording            READ isRecording         CONSTANT)
     Q_PROPERTY(Fact* isSnapshot             READ isSnapshot          CONSTANT)
@@ -41,6 +42,7 @@ public:
     Fact* groundCrossingAlt     () { return &_groundCrossingAltFact; }
     Fact* slantRange            () { return &_slantRangeFact; }
     Fact* fov                   () { return &_fovFact; }
+     Fact* azimuth              () { return &_azimuthFact; }
     Fact* activeSensor          () { return &_activeSensorFact; }
     Fact* isRecording           () { return &_isRecordingFact; }
     Fact* isSnapshot            () { return &_isSnapshotFact; }
@@ -58,6 +60,7 @@ public:
     static const char* _groundCrossingAltFactName;
     static const char* _slantRangeFactName;
     static const char* _fovFactName;
+    static const char* _azimuthFactName;
     static const char* _activeSensorFactName;
     static const char* _isRecordingFactName;
     static const char* _isSnapshotFactName;
@@ -78,6 +81,7 @@ private:
     Fact        _groundCrossingAltFact;
     Fact        _slantRangeFact;
     Fact        _fovFact;
+    Fact        _azimuthFact;
     Fact        _activeSensorFact;
     Fact        _isRecordingFact;
     Fact        _isSnapshotFact;

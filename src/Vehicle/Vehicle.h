@@ -361,6 +361,7 @@ public:
     Q_PROPERTY(QVariantList  losCoords              READ losCoords                  NOTIFY losCoordsChanged)
     Q_PROPERTY(int  snapShotStatus                  READ snapShotStatus             NOTIFY snapShotStatusChanged)
     Q_PROPERTY(QString  nvMode                      READ nvMode                     NOTIFY nvModeChanged)
+    Q_PROPERTY(QString  nvShowQuickPanel            READ nvShowQuickPanel           NOTIFY nvShowQuickPanelChanged)
 
     /// Resets link status counters
     Q_INVOKABLE void resetCounters  ();
@@ -475,6 +476,8 @@ public:
 
     /// Trigger camera using MAV_CMD_DO_DIGICAM_CONTROL command
     Q_INVOKABLE void triggerSimpleCamera(void);
+
+    Q_INVOKABLE void showNvQuickPanel(void);
 
     /// Set Throttle used during Super Volo pre-flight
     Q_INVOKABLE void sendRcOverrideThrottle (int throttle);
@@ -647,6 +650,7 @@ public:
     bool            orbitActive                 () const { return _orbitActive; }
     int             snapShotStatus              () const { return _snapShotStatus; }
     QString         nvMode                      () const { return _nvMode; }
+    bool            nvShowQuickPanel            () const { return _nvQuickPanel; }
     QGCMapCircle*   orbitMapCircle              () { return &_orbitMapCircle; }       
     bool            readyToFlyAvailable         () const{ return _readyToFlyAvailable; }
     bool            readyToFly                  () const{ return _readyToFly; }
@@ -993,6 +997,7 @@ signals:
     void supportsGuidedRadiusChanged    (bool value);
     void brdSerialNumberChanged         ();
     void vehicleModelChanged            ();
+    void nvShowQuickPanelChanged        (bool nvShowQuickPanel);
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -1043,6 +1048,7 @@ private slots:
     void _updateNvGroundCrossingLonChange   (float value);
     void _updateNvGroundCrossingAltChange   (float value);
     void _updateNvSlantRangeChange          (float value);
+    void _updateNvAzimuthChange             (float value);
     void _updateNvFovChange                 (float value);
     void _updateNvActiveSensorChange        (int value);
     void _updateNvIsRecordingChange         (int value);
@@ -1324,6 +1330,7 @@ private:
     bool            _orbitActive = false;
     int             _snapShotStatus = 0;
     QString         _nvMode;
+    bool            _nvQuickPanel;
     QGCMapCircle    _orbitMapCircle;
     QTimer          _orbitTelemetryTimer;
     static const int _orbitTelemetryTimeoutMsecs = 3000; // No telemetry for this amount and orbit will go inactive

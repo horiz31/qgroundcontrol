@@ -55,6 +55,10 @@ Item {
     property bool   _isCheckListWindowVisible: false
     property var    _checkListWindow
     property real   _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
+    property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+    property bool   _enforceChecklist:          _useChecklist && QGroundControl.settingsManager.appSettings.enforceChecklist.rawValue
+    property bool   _checklistFailed: _activeVehicle ? (_useChecklist ? (_enforceChecklist ? (_activeVehicle.checkListState !== Vehicle.CheckListPassed ? true : false) : false) : false) : false
+    property bool   _isDisarmed: _activeVehicle ? _activeVehicle.armed === false : true
 
     //Create the pre-flight checklist after vehicle created and params loaded. Then the checklist stays in memory and its state is preserved
     Connections {
@@ -202,6 +206,15 @@ Item {
 
     }
 
+    ChecklistWarningIndicator {
+        id:                 checklistPanel
+        anchors.top:                parent.top
+        anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 1.5
+        anchors.horizontalCenter:   parent.horizontalCenter
+        z:                          throttlePanel.z + 1
+        visible:                    _checklistFailed && _isDisarmed
+
+    }
 
     TelemetryValuesBar {
         id:                 telemetryPanel

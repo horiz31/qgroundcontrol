@@ -160,7 +160,7 @@ Rectangle {
 
                             FactCheckBox {
                                 text:       qsTr("Show additional heading indicators on Compass")
-                                visible:    _showAdditionalIndicatorsCompass.visible
+                                visible:    false//_showAdditionalIndicatorsCompass.visible
                                 fact:       _showAdditionalIndicatorsCompass
 
                                 property Fact _showAdditionalIndicatorsCompass: QGroundControl.settingsManager.flyViewSettings.showAdditionalIndicatorsCompass
@@ -409,6 +409,7 @@ Rectangle {
                             FactCheckBox {
                                 text:   qsTr("Use MAV_CMD_CONDITION_GATE for pattern generation")
                                 fact:   QGroundControl.settingsManager.planViewSettings.useConditionGate
+                                visible: false //echomav
                             }
 
                             FactCheckBox {
@@ -859,17 +860,17 @@ Rectangle {
                         }
                     }
 
-                    Item { width: 1; height: _margins; visible: rtkSectionLabel.visible }
+                    Item { width: 1; height: _margins; visible: false }  //rtkSectionLabel.visible
                     QGCLabel {
                         id:         rtkSectionLabel
                         text:       qsTr("RTK GPS")
-                        visible:    QGroundControl.settingsManager.rtkSettings.visible
+                        visible:    false//QGroundControl.settingsManager.rtkSettings.visible
                     }
                     Rectangle {
                         Layout.preferredHeight: rtkGrid.height + (_margins * 2)
                         Layout.preferredWidth:  rtkGrid.width + (_margins * 2)
                         color:                  qgcPal.windowShade
-                        visible:                rtkSectionLabel.visible
+                        visible:                false//rtkSectionLabel.visible
                         Layout.fillWidth:       true
 
                         GridLayout {

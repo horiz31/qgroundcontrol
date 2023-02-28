@@ -265,7 +265,7 @@
     "shortDesc": "Preflight checklist must pass before arming",
     "longDesc":  "If this option is enabled the preflight checklist must pass before arming.",
     "type":             "bool",
-    "default":     false
+    "default":     true
 },
 {
     "name":                 "appFontPointSize",

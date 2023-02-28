@@ -210,6 +210,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvGrounndCrossingLonChanged,  this, &Vehicle::_updateNvGroundCrossingLonChange);
     connect(_mavlink, &MAVLinkProtocol::nvGrounndCrossingAltChanged,  this, &Vehicle::_updateNvGroundCrossingAltChange);
     connect(_mavlink, &MAVLinkProtocol::nvSlantRangeChanged,          this, &Vehicle::_updateNvSlantRangeChange);
+    connect(_mavlink, &MAVLinkProtocol::nvAzimuthChanged,             this, &Vehicle::_updateNvAzimuthChange);
     connect(_mavlink, &MAVLinkProtocol::nvModeChanged,                this, &Vehicle::_updateNvModeChange);
     connect(_mavlink, &MAVLinkProtocol::nvFovChanged,                 this, &Vehicle::_updateNvFovChange);
     connect(_mavlink, &MAVLinkProtocol::nvSensorChanged,              this, &Vehicle::_updateNvActiveSensorChange);
@@ -729,6 +730,10 @@ void Vehicle::_updateNvFovChange(float value)
 void Vehicle::_updateNvSlantRangeChange(float value)
 {
     _gimbalFactGroup.slantRange()->setRawValue(value);
+}
+void Vehicle::_updateNvAzimuthChange(float value)
+{
+    _gimbalFactGroup.azimuth()->setRawValue(value);
 }
 void Vehicle::_updateNvActiveSensorChange(int value)
 {
@@ -4596,4 +4601,9 @@ void Vehicle::triggerSimpleCamera()
                    true,                        // show errors
                    0.0, 0.0, 0.0, 0.0,          // param 1-4 unused
                    1.0);                        // trigger camera
+}
+
+void Vehicle::showNvQuickPanel()
+{
+    emit nvShowQuickPanelChanged(true);
 }

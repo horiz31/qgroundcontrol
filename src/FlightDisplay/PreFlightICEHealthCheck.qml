@@ -148,10 +148,11 @@ PreFlightCheckButton {
                             anchors.right: parent.right
                             anchors.margins: 20
 
-                            text: qsTr("Push and Hold To Start Engine")
+                            text: qsTr("Push and Hold To Start Engine")                            
                             palette {
                                    button: "red"
                                }
+                            palette.buttonText: "white"
                             delay: 1500
                             onActivated: {
                                 startRunup(false)

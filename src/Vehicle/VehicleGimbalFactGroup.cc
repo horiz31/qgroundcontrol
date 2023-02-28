@@ -19,6 +19,7 @@ const char* VehicleGimbalFactGroup::_groundCrossingLonFactName =         "ground
 const char* VehicleGimbalFactGroup::_groundCrossingAltFactName =         "groundCrossingAlt";
 const char* VehicleGimbalFactGroup::_slantRangeFactName =                "slantRange";
 const char* VehicleGimbalFactGroup::_fovFactName =                       "fov";
+const char* VehicleGimbalFactGroup::_azimuthFactName =                   "azimuth";
 const char* VehicleGimbalFactGroup::_activeSensorFactName =              "activeSensor";
 const char* VehicleGimbalFactGroup::_isRecordingFactName =               "isRecording";
 const char* VehicleGimbalFactGroup::_isSnapshotFactName =                "isSnapshot";
@@ -41,6 +42,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     , _groundCrossingAltFact     (0, _groundCrossingAltFactName,    FactMetaData::valueTypeDouble)
     , _slantRangeFact            (0, _slantRangeFactName,           FactMetaData::valueTypeDouble)
     , _fovFact                   (0, _fovFactName,                  FactMetaData::valueTypeDouble)
+    , _azimuthFact               (0, _azimuthFactName,              FactMetaData::valueTypeDouble)
     , _activeSensorFact          (0, _activeSensorFactName,         FactMetaData::valueTypeUint8)
     , _isRecordingFact           (0, _isRecordingFactName,          FactMetaData::valueTypeUint8)
     , _isSnapshotFact            (0, _isSnapshotFactName,           FactMetaData::valueTypeUint8)
@@ -58,6 +60,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _addFact(&_groundCrossingAltFact,   _groundCrossingAltFactName);
     _addFact(&_slantRangeFact,          _slantRangeFactName);
     _addFact(&_fovFact,                 _fovFactName);
+    _addFact(&_azimuthFact,                 _azimuthFactName);
     _addFact(&_activeSensorFact,        _activeSensorFactName);
     _addFact(&_isRecordingFact,         _isRecordingFactName);
     _addFact(&_isSnapshotFact,          _isSnapshotFactName);
@@ -76,6 +79,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _groundCrossingAltFact.setRawValue  (qQNaN());
     _slantRangeFact.setRawValue         (qQNaN());
     _fovFact.setRawValue                (qQNaN());
+    _azimuthFact.setRawValue            (qQNaN());
     _activeSensorFact.setRawValue       (qQNaN());
     _isRecordingFact.setRawValue        (qQNaN());
     _isSnapshotFact.setRawValue         (qQNaN());

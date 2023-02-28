@@ -114,7 +114,7 @@ Item {
                 manualText:      qsTr("Move the aircraft to the desired launch location.")
             }
             PreFlightCheckButton {
-                name:        qsTr("Ensrure safe flight area")
+                name:        qsTr("Ensure safe flight area")
                 manualText:  qsTr("Ensure the launch area and takeoff path free of obstacles and non-essential people.")
             }
 

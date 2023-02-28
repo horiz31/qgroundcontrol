@@ -258,6 +258,7 @@ Rectangle {
                         Layout.fillWidth:   true
                         enabled:            !object.readOnly
                     }
+
                 }
 
                 Repeater {
