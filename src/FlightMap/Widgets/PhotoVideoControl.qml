@@ -579,7 +579,7 @@ Rectangle {
                             Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                             Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
                             Layout.alignment:   Qt.AlignHCenter
-                            text:               qsTr("Active Sensor");
+                            text:               qsTr("Sensor");
                             visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
             }
             GridLayout {
