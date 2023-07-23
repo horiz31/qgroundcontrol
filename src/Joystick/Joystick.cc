@@ -1475,7 +1475,8 @@ void Joystick::setCalibrationMode(bool calibrating)
 
 
 void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
-{
+{   
+
     if (!_activeVehicle || !_activeVehicle->joystickEnabled() || action == _buttonActionNone) {
         return;
     }
@@ -1490,7 +1491,11 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
     } else if (action == _buttonActionVTOLMultiRotor) {
         if (buttonDown) emit setVtolInFwdFlight(false);
     } else if (_activeVehicle->flightModes().contains(action) || _activeVehicle->extraJoystickFlightModes().contains(action)) {
-        if (buttonDown) emit setFlightMode(action);
+        if (buttonDown)
+        {
+            //qDebug() << "setting flight mode from joystick" << action;
+            emit setFlightMode(action);
+        }
     } else if(action == _buttonActionContinuousZoomIn || action == _buttonActionContinuousZoomOut) {
         if (buttonDown) {
             emit startContinuousZoom(action == _buttonActionContinuousZoomIn ? 1 : -1);
@@ -1538,6 +1543,7 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         }
     }
     else {
+        qDebug() << "doing generic item.send";
         if (buttonDown && _activeVehicle) {
             for (auto& item : _customMavCommands) {
                 if (action == item.name()) {

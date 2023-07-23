@@ -100,6 +100,7 @@ QStringList APMFirmwarePlugin::flightModes(Vehicle* vehicle)
     QStringList flightModesList;
     foreach (const APMCustomMode& customMode, _supportedModes) {
         if (customMode.canBeSet()) {
+            //qDebug() << "adding to flight mode list" << customMode.modeString();
             flightModesList << customMode.modeString();
         }
     }

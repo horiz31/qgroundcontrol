@@ -305,6 +305,10 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     _stopLogging();
                     _logSuspendError = true;
                 }
+                else
+                {
+                   //qDebug() << "Writing message id " << _message.msgid << "to log";
+                }
 
                 // Check for the vehicle arming going by. This is used to trigger log save.
                 if (!_vehicleWasArmed && _message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
