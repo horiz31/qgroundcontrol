@@ -93,16 +93,13 @@ Item {
 
             }
 
-           // PreFlightCheckButton {
-           //     name:            qsTr("Actuators")
-           //     manualText:      qsTr("Pickup and move the aircraft and ensure that control surfaces react. Did they work properly?")
-           // }
-            PreFlightJoystickCheck {
-                allowTelemetryFailureOverride:    false
-            }
 
-            PreFlightQHoverCheck {
-            }
+            PreFlightJoystickCheck {
+                allowTelemetryFailureOverride:    true
+             }
+
+             PreFlightQHoverCheck {
+             }
 
         }
 

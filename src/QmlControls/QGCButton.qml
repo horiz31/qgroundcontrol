@@ -16,6 +16,8 @@ Button {
 
     property bool   primary:        false                               ///< primary button for a group of buttons
     property bool   warning:        false                               ///< A type of button used for important or critical functions
+    property bool   caution:        false                               ///< A type of button used for semi-critical functions
+    property bool   recommended:          false                         ///< A type of button used for recommended functions (when more than one is available)
     property real   pointSize:      ScreenTools.defaultFontPointSize    ///< Point size for button text
     property bool   showBorder:     qgcPal.globalTheme === QGCPalette.Light
     property bool   iconLeft:       false
@@ -43,7 +45,9 @@ Button {
         border.color:   qgcPal.buttonText
         color:          _showHighlight ?
                             qgcPal.buttonHighlight :
-                            (primary ? qgcPal.primaryButton : (warning ? qgcPal.colorRed : qgcPal.button))
+                            (primary ? qgcPal.primaryButton :
+                                       (warning ? qgcPal.colorRed
+                                                : (caution ? qgcPal.colorOrange : (recommended ? qgcPal.colorGreen : qgcPal.button))))
     }
 
     contentItem: Item {

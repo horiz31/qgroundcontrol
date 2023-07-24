@@ -42,19 +42,28 @@ Rectangle {
             title:      guidedController.landMissionTitle,
             text:       guidedController.landMissionMessage,
             action:     guidedController.actionMissionLand,
-            visible:    guidedController.showLandInMission
+            visible:    guidedController.showLandInMission,
+            caution:    false,
+            warning:    false,
+            recommended:    true
         },
         {
             title:      guidedController.landQRTLTitle,
             text:       guidedController.landQRTLMessage,
             action:     guidedController.actionQRTLLand,
-            visible:    guidedController.showLand
+            visible:    guidedController.showLand,
+            caution:    true,
+            warning:    false,
+            recommended:    false
         },
         {
             title:      guidedController.landQLandTitle,
             text:       guidedController.landQLandMessage,
             action:     guidedController.actionLandQLand,
-            visible:    guidedController.showLand
+            visible:    guidedController.showLand,
+            caution:    false,
+            warning:    true,
+            recommended:    false
         }
     ]
 
@@ -114,6 +123,9 @@ Rectangle {
                             id:                 actionButton
                             text:               modelData.title
                             Layout.alignment:   Qt.AlignCenter
+                            caution:            modelData.caution
+                            warning:            modelData.warning
+                            recommended:        modelData.recommended
 
                             onClicked: {
                                 _root.visible = false

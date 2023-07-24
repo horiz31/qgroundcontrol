@@ -77,6 +77,7 @@ Item {
     readonly property string landOptMessage:                    qsTr("Select the desired landing method below.")
     readonly property string gotoMessage:                       qsTr("Move the vehicle to the specified location.")
              property string setWaypointMessage:                qsTr("Adjust current waypoint to %1.").arg(_actionData)
+             property string setAndGoWaypointMessage:           qsTr("Adjust waypoint to %1 and resume mission.").arg(_actionData)
     readonly property string orbitMessage:                      qsTr("Orbit the vehicle around the specified location.")
     readonly property string landAbortMessage:                  qsTr("Abort the landing sequence.")
     readonly property string pauseMessage:                      qsTr("Pause the vehicle at it's current position, adjusting altitude up or down as needed.")
@@ -156,6 +157,7 @@ Item {
     property bool   _vehicleInMissionMode:  false
     property bool   _vehicleInRTLMode:      false
     property bool   _vehicleInLandMode:     false
+    property bool   _vehicleFlyinginGuided: _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false
     property int    _missionItemCount:      missionController.missionItemCount
     property int    _currentMissionIndex:   missionController.currentMissionIndex
     property int    _resumeMissionIndex:    missionController.resumeMissionIndex
@@ -307,6 +309,7 @@ Item {
         _vehicleInRTLMode =     _activeVehicle ? _flightMode === _activeVehicle.rtlFlightMode || _flightMode === _activeVehicle.smartRTLFlightMode : false
         _vehicleInLandMode =    _activeVehicle ? _flightMode === _activeVehicle.landFlightMode : false
         _vehicleInMissionMode = _activeVehicle ? _flightMode === _activeVehicle.missionFlightMode : false // Must be last to get correct signalling for showStartMission popups
+        _vehicleFlyinginGuided = _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false
     }
 
     Connections {
@@ -469,7 +472,10 @@ Item {
             break;
         case actionSetWaypoint:
             confirmDialog.title = setWaypointTitle
-            confirmDialog.message = setWaypointMessage
+            if (_vehicleFlyinginGuided)
+                confirmDialog.message = setAndGoWaypointMessage
+            else
+                confirmDialog.message = setWaypointMessage
             break;
         case actionOrbit:
             confirmDialog.title = orbitTitle
@@ -621,7 +627,9 @@ Item {
             _activeVehicle.setGuidedModeRadius(guidedRadius);
             break
         case actionSetWaypoint:
-            _activeVehicle.setCurrentMissionSequence(actionData)
+            _activeVehicle.setCurrentMissionSequence(actionData)          
+            if (_vehicleFlyinginGuided)
+                _activeVehicle.flightMode = _activeVehicle.missionFlightMode
             break
         case actionOrbit:
             _activeVehicle.guidedModeOrbit(orbitMapCircle.center, orbitMapCircle.radius() * (orbitMapCircle.clockwiseRotation ? 1 : -1), _activeVehicle.altitudeAMSL.rawValue + actionAltitudeChange)
