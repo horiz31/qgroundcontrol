@@ -93,16 +93,14 @@ Item {
 
             }
 
-           // PreFlightCheckButton {
-           //     name:            qsTr("Actuators")
-           //     manualText:      qsTr("Pickup and move the aircraft and ensure that control surfaces react. Did they work properly?")
-           // }
-            PreFlightJoystickCheck {
-                allowTelemetryFailureOverride:    false
-            }
+            //two below removed for Greg Config
 
-            PreFlightQHoverCheck {
-            }
+            //PreFlightJoystickCheck {
+            //    allowTelemetryFailureOverride:    false
+            // }
+
+            // PreFlightQHoverCheck {
+            // }
 
         }
 

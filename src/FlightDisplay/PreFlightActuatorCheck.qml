@@ -22,7 +22,7 @@ PreFlightCheckButton {
     telemetryFailure:   true  //this causes the button to go yellow/red
     allowTelemetryFailureOverride: true
 
-    specifiedBottomPadding: getPadding()
+    //specifiedBottomPadding: getPadding()
     property var    _activeVehicle:         globals.activeVehicle
     property var    _planMasterController:  globals.planMasterControllerFlyView
     property var    _missionController:     _planMasterController.missionController
@@ -31,8 +31,8 @@ PreFlightCheckButton {
     Button {
         id: modeButton
         text:           _buttonLabel
-        visible:        notAcceptableMode() && (_telemetryState !== _statePassed)
-        enabled:        true
+        visible:        false //notAcceptableMode() && (_telemetryState !== _statePassed)
+        enabled:        false
         onClicked:      setMode()
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: ScreenTools.defaultFontPixelWidth * 3
@@ -81,16 +81,16 @@ PreFlightCheckButton {
 
 
     function updateTelemetryTextFailure() {      
-        if (notAcceptableMode())
-        {
-            telemetryTextFailure = qsTr("Pick up the aircraft and move it, ensuring the control surfaces respond to changes in roll/pitch. Recommend to put the aircraft in FBWA mode for this check to ensure surfaces respond appropriately.")
-            return
-        }
-        else
-        {
+       // if (notAcceptableMode())
+       // {
+       //     telemetryTextFailure = qsTr("Pick up the aircraft and move it, ensuring the control surfaces respond to changes in roll/pitch. Recommend to put the aircraft in FBWA mode for this check to ensure surfaces respond appropriately.")
+       //     return
+       // }
+       // else
+       // {
             telemetryTextFailure = qsTr("Pick up the aircraft and move it, ensuring the control surfaces respond to changes in roll/pitch.")
             return
-        }
+       // }
 
 
     }

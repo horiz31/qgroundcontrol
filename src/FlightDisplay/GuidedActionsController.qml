@@ -70,13 +70,14 @@ Item {
     readonly property string resumeMissionUploadFailMessage:    qsTr("Upload of resume mission failed. Confirm to retry upload")
     readonly property string landMessage:                       qsTr("Land the vehicle at the current position.")
     readonly property string landQLandMessage:                  qsTr("Land the vehicle at the current position using QLand mode. Aircraft will descend as a quadrotor.")
-    readonly property string landQRTLMessage:                   qsTr("Switch to quadrotors, return to launch position and land.")
+    readonly property string landQRTLMessage:                   qsTr("Switch to quadrotors, return to launch or closest rally position and land.")
     readonly property string landMissionMessage:                qsTr("Start the landing sequence within the current mission.")
     readonly property string rtlMessage:                        qsTr("Return to the launch position of the vehicle.")
     readonly property string changeAltMessage:                  qsTr("Change the altitude of the vehicle up or down.")
     readonly property string landOptMessage:                    qsTr("Select the desired landing method below.")
     readonly property string gotoMessage:                       qsTr("Move the vehicle to the specified location.")
              property string setWaypointMessage:                qsTr("Adjust current waypoint to %1.").arg(_actionData)
+             property string setAndGoWaypointMessage:           qsTr("Adjust waypoint to %1 and resume mission.").arg(_actionData)
     readonly property string orbitMessage:                      qsTr("Orbit the vehicle around the specified location.")
     readonly property string landAbortMessage:                  qsTr("Abort the landing sequence.")
     readonly property string pauseMessage:                      qsTr("Pause the vehicle at it's current position, adjusting altitude up or down as needed.")
@@ -156,6 +157,7 @@ Item {
     property bool   _vehicleInMissionMode:  false
     property bool   _vehicleInRTLMode:      false
     property bool   _vehicleInLandMode:     false
+    property bool   _vehicleFlyinginGuided: _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false
     property int    _missionItemCount:      missionController.missionItemCount
     property int    _currentMissionIndex:   missionController.currentMissionIndex
     property int    _resumeMissionIndex:    missionController.resumeMissionIndex
@@ -307,6 +309,7 @@ Item {
         _vehicleInRTLMode =     _activeVehicle ? _flightMode === _activeVehicle.rtlFlightMode || _flightMode === _activeVehicle.smartRTLFlightMode : false
         _vehicleInLandMode =    _activeVehicle ? _flightMode === _activeVehicle.landFlightMode : false
         _vehicleInMissionMode = _activeVehicle ? _flightMode === _activeVehicle.missionFlightMode : false // Must be last to get correct signalling for showStartMission popups
+        _vehicleFlyinginGuided = _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false
     }
 
     Connections {
@@ -469,7 +472,10 @@ Item {
             break;
         case actionSetWaypoint:
             confirmDialog.title = setWaypointTitle
-            confirmDialog.message = setWaypointMessage
+            if (_vehicleFlyinginGuided)
+                confirmDialog.message = setAndGoWaypointMessage
+            else
+                confirmDialog.message = setWaypointMessage
             break;
         case actionOrbit:
             confirmDialog.title = orbitTitle
@@ -622,6 +628,9 @@ Item {
             break
         case actionSetWaypoint:
             _activeVehicle.setCurrentMissionSequence(actionData)
+            //for greg, he wants the aircraft to enter auto mode if it is currently armed, inair and guidedActionLandingList
+            if (_vehicleFlyinginGuided)
+                _activeVehicle.flightMode = _activeVehicle.missionFlightMode
             break
         case actionOrbit:
             _activeVehicle.guidedModeOrbit(orbitMapCircle.center, orbitMapCircle.radius() * (orbitMapCircle.clockwiseRotation ? 1 : -1), _activeVehicle.altitudeAMSL.rawValue + actionAltitudeChange)
