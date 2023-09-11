@@ -50,6 +50,7 @@ Item {
     property var    _rallyPointController:  _planController.rallyPointController
     property real   _margins:               ScreenTools.defaultFontPixelWidth / 2
     property var    _guidedController:      guidedActionsController
+    property var    _widgetLayer:           widgetLayer
     property var    _guidedActionList:      guidedActionList
     property var    _guidedActionLandingList:      guidedActionLandingList
     property var    _guidedAltSlider:       guidedAltSlider
@@ -102,6 +103,7 @@ Item {
         actionList:         _guidedActionList
         actionLandingList: _guidedActionLandingList
         altitudeSlider:     _guidedAltSlider   
+        widgetLayer:        _widgetLayer
     }
 
     /*GuidedActionConfirm {
