@@ -103,6 +103,7 @@ Item {
         actionList:         _guidedActionList
         actionLandingList: _guidedActionLandingList
         altitudeSlider:     _guidedAltSlider   
+        //adding widget layer to the guided actions controller can tell if checklist is open
         widgetLayer:        _widgetLayer
     }
 
