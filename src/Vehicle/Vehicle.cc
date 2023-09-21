@@ -283,9 +283,9 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(&_requestStreamRateTimer, &QTimer::timeout, this, &Vehicle::_requestStreamRatesTick);
 
     // RSSI Fetch timer
-    _rssiTimer.setInterval(5000);
-    _rssiTimer.setSingleShot(false);
-    connect(&_rssiTimer, &QTimer::timeout, this, &Vehicle::_getPersistentSystemsRSSI);
+    //_rssiTimer.setInterval(5000);
+    //_rssiTimer.setSingleShot(false);
+    //connect(&_rssiTimer, &QTimer::timeout, this, &Vehicle::_getPersistentSystemsRSSI);
 
     _mav = uas();
 
@@ -325,7 +325,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     _engineRunUpFact.setRawValue(false);
 
     //open websocket connection to MPU5
-    _openPersistentWebsocket();
+    //_openPersistentWebsocket();
 }
 
 // Disconnected Vehicle for offline editing
