@@ -183,7 +183,7 @@ public:
     }MavlinkExtCmd;
 
     explicit CameraManagement(QObject *parent = nullptr,MultiVehicleManager *multiVehicleManager = nullptr, JoystickManager *joystickManager = nullptr);
-    void sendGimbalCommand(float cam_roll_yaw,float cam_pitch);
+    Q_INVOKABLE void sendGimbalCommand(float cam_roll_yaw,float cam_pitch);
     void sendGimbalVirtualCommand(float cam_roll_yaw,float cam_pitch);
 
     JoyBtnState _camButtonFuncState[32];

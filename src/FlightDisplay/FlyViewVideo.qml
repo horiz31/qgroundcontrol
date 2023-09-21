@@ -75,30 +75,163 @@ Item {
 
     MouseArea {
         id: flyViewVideoMouseArea
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         anchors.fill:       parent
         enabled:            pipState.state === pipState.fullState
+        property var isPressed: false
         onDoubleClicked: {
             QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
         }
+        /*
+        onPositionChanged: {
+            var xScaledFromCenter
+            var yScaledFromCenter
+            if (isPressed)
+            {
+                var result = scaleValueCentered(mouse.x, mouse.y);
+                joystickManager.cameraManagement.sendGimbalCommand(result.x,result.y);
+                console.log("Sending Gimbal Command Roll/Pitch (1)", result.x, result.y);
+                //update roll/pan based on how far we are from center
+            }
+
+        }
+        onPressed:
+        {
+            if (mouse.button != Qt.LeftButton)
+                return
+            isPressed = true
+            mouse.accepted = true
+
+            var result = scaleValueCentered(mouse.x, mouse.y);
+            joystickManager.cameraManagement.sendGimbalCommand(result.x,result.y);
+            console.log("Sending Gimbal Command Roll/Pitch (2)", result.x, result.y);
+            //start roll/pan based on how far we are from center
+        }
+        onReleased:
+        {
+            if (mouse.button != Qt.LeftButton)
+                return
+             isPressed = false
+             mouse.accepted = true
+            console.log("Sending Gimbal Command Roll/Pitch (3) 0.0,0.0");
+            joystickManager.cameraManagement.sendGimbalCommand(0.0,0.0);
+            //stop roll/pan
+        }
+        */
+
         onClicked: {
             /* Calculating the position to track on */
+
+               var videoWidth
+               var videoHeight
+               var videoMargin
+               var xPos = mouseX
+               videoHeight = height
+               videoWidth = (videoHeight * 16.0 ) / 9.0
+               videoMargin = (width - videoWidth) / 2.0
+               if(mouseX < (videoMargin + 16))
+                   xPos = videoMargin + 16
+               else if(mouseX > (videoMargin + videoWidth - 16) )
+                   xPos = (videoMargin + videoWidth - 16)
+               xPos -= videoMargin
+               var xScaled = (1280.0 * xPos) / videoWidth
+               var yScaled = (720.0 * mouseY) / videoHeight
+               /* Sending the Track On Position command to the TRIP */
+               joystickManager.cameraManagement.trackOnPosition(xScaled,yScaled,QGroundControl.settingsManager.appSettings.nvVideoChannel.rawValue);
+
+            /*
+              //below is TBD, when I get left click to change pointing location
+              /*
+            if (mouse.button == Qt.RightButton)
+            {
+                var result = scaleValue(mouseX, mouseY);             
+                console.log("Sending Tracking Command");
+                joystickManager.cameraManagement.trackOnPosition(result.xScaled,result.yScaled,QGroundControl.settingsManager.appSettings.nvVideoChannel.rawValue);
+            }
+
+            else
+            {
+                //left click, so we want to position the camera based on the click distance from center screen
+                //var result2 = scaleValueCentered(mouseX, mouseY);
+                //console.log("Sending Gimbal Command Roll/Pitch", result2.x, result2.y);
+                //joystickManager.cameraManagement.sendGimbalCommand(result2.x,result2.y);
+            }
+            */
+        }
+        onWheel: {
+
+            //Send nextvision zoom in/out
+             console.log("timer: starting camera zoom");
+            if (wheel.angleDelta.y / 120 > 0 && !zoomStopTimer.running)
+               joystickManager.cameraManagement.setSysZoomInCommand();
+            else if (!zoomStopTimer.running)
+               joystickManager.cameraManagement.setSysZoomOutCommand();
+
+            //start a timer that stops zoom after 0.5
+            zoomStopTimer.start();
+
+           }
+        Timer {
+            id:             zoomStopTimer
+            interval:       500
+            repeat:         true
+
+            onTriggered: {
+                joystickManager.cameraManagement.setSysZoomStopCommand();
+                console.log("timer: stopping camera zoom");
+                this.stop();
+            }
+
+        }
+
+        function scaleValue(x, y){
             var videoWidth
             var videoHeight
             var videoMargin
-            var xPos = mouseX
+
+            var xPos = x
             videoHeight = height
             videoWidth = (videoHeight * 16.0 ) / 9.0
             videoMargin = (width - videoWidth) / 2.0
-            if(mouseX < (videoMargin + 16))
+            if(x < (videoMargin + 16))
                 xPos = videoMargin + 16
-            else if(mouseX > (videoMargin + videoWidth - 16) )
+            else if(x > (videoMargin + videoWidth - 16) )
                 xPos = (videoMargin + videoWidth - 16)
             xPos -= videoMargin
             var xScaled = (1280.0 * xPos) / videoWidth
-            var yScaled = (720.0 * mouseY) / videoHeight
-            /* Sending the Track On Position command to the TRIP */
-            joystickManager.cameraManagement.trackOnPosition(xScaled,yScaled,QGroundControl.settingsManager.appSettings.nvVideoChannel.rawValue);
+            var yScaled = (720.0 * y) / videoHeight
+
+            return {
+                x: xScaled,
+                y: yScaled
+            }
         }
+        function scaleValueCentered(x, y){
+            var videoWidth
+            var videoHeight
+            var videoMargin
+
+            var xPos = x
+            videoHeight = height
+            videoWidth = (videoHeight * 16.0 ) / 9.0
+            videoMargin = (width - videoWidth) / 2.0
+            if(x < (videoMargin + 16))
+                xPos = videoMargin + 16
+            else if(x > (videoMargin + videoWidth - 16) )
+                xPos = (videoMargin + videoWidth - 16)
+            xPos -= videoMargin
+            var xScaled = (1280.0 * xPos) / videoWidth
+            var yScaled = (720.0 * y) / videoHeight
+
+            var xScaledFromCenter = (xScaled - 1280.0/2.0)/(1280/2.0)
+            var yScaledFromCenter = (yScaled - 720.0/2.0)/(1280/2.0)
+
+            return {
+                x: xScaledFromCenter,
+                y: yScaledFromCenter
+            }
+        }
+
     }
 
     Rectangle {

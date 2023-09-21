@@ -21,6 +21,7 @@
 #include "QGCFileDownload.h"
 #include "SettingsManager.h"
 #include "PlanViewSettings.h"
+#include "PersistentSystemsComponentController.h"
 
 #include <QDebug>
 
@@ -58,6 +59,9 @@ PX4FirmwarePlugin::PX4FirmwarePlugin()
     qmlRegisterType<AirframeComponentController>        ("QGroundControl.Controllers", 1, 0, "AirframeComponentController");
     qmlRegisterType<SensorsComponentController>         ("QGroundControl.Controllers", 1, 0, "SensorsComponentController");
     qmlRegisterType<PowerComponentController>           ("QGroundControl.Controllers", 1, 0, "PowerComponentController");
+    //qmlRegisterType<PersistentSystemsComponentController>          ("QGroundControl.Controllers", 1, 0, "PersistentSystemsComponentController");
+
+
 
     struct Modes2Name {
         uint8_t     main_mode;

@@ -258,7 +258,8 @@ QT += \
     widgets \
     xml \
     texttospeech \
-    core-private
+    core-private \
+    websockets
 
 # Multimedia only used if QVC is enabled
 !contains (DEFINES, QGC_DISABLE_UVC) {
@@ -1088,7 +1089,7 @@ HEADERS+= \
     src/FirmwarePlugin/CameraMetaData.h \
     src/FirmwarePlugin/FirmwarePlugin.h \
     src/FirmwarePlugin/FirmwarePluginManager.h \
-    src/VehicleSetup/VehicleComponent.h \
+    src/VehicleSetup/VehicleComponent.h \    
 
 !MobileBuild { !NoSerialBuild {
     HEADERS += \

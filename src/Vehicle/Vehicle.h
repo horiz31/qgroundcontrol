@@ -16,6 +16,7 @@
 #include <QTime>
 #include <QQueue>
 #include <QSharedPointer>
+#include <QtWebSockets/QWebSocket>
 
 #include "FactGroup.h"
 #include "QGCMAVLink.h"
@@ -78,6 +79,17 @@ class Autotune;
 #if defined(QGC_AIRMAP_ENABLED)
 class AirspaceVehicleManager;
 #endif
+
+struct PersistentSystemsRSSIEntry_t {
+    Q_GADGET
+public:
+    QString     mac;
+    int         signal;
+    int         percentage;
+    Q_PROPERTY(QString qmac MEMBER mac)
+    Q_PROPERTY(int qsignal MEMBER signal)
+    Q_PROPERTY(int qpercentage MEMBER percentage)
+} ;
 
 namespace events {
 namespace parser {
@@ -1090,6 +1102,8 @@ private slots:
     void _orbitTelemetryTimeout             ();
     void _updateFlightTime                  ();
     void _gotProgressUpdate                 (float progressValue);
+    void onPersistentConnected();
+    void onPersistentMessageReceived(QString message);
 
 private:
     void _joystickChanged               (Joystick* joystick);
@@ -1153,6 +1167,9 @@ private:
     void _chunkedStatusTextCompleted    (uint8_t compId);
     void _setMessageInterval            (int messageId, int rate);
     EventHandler& _eventHandler         (uint8_t compid);
+    void _getPersistentSystemsRSSI                 ();
+    void _openPersistentWebsocket                  ();
+    QWebSocket _persistentWebSocket;
 
     static void _rebootCommandResultHandler(void* resultHandlerData, int compId, MAV_RESULT commandResult, uint8_t progress, MavCmdResultFailureCode_t failureCode);
 
@@ -1400,8 +1417,10 @@ private:
         int                 ackTimeoutMSecs     = _mavCommandAckTimeoutMSecs;
     } MavCommandListEntry_t;
 
+    QList<PersistentSystemsRSSIEntry_t>        _persistentSystemsRSSIList;
     QList<MavCommandListEntry_t>    _mavCommandList;
     QTimer                          _mavCommandResponseCheckTimer;
+    QTimer                          _rssiTimer;
     static const int                _mavCommandMaxRetryCount                = 3;
     static const int                _mavCommandResponseCheckTimeoutMSecs    = 500;
     static const int                _mavCommandAckTimeoutMSecs              = 3000;

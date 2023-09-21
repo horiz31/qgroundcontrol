@@ -12,6 +12,8 @@
 #include <QLocale>
 #include <QQuaternion>
 #include <Eigen/Eigen>
+#include <QWebSocketProtocol>
+//#include <QWebSocketHandshakeOptions>
 
 #include "Vehicle.h"
 #include "MAVLinkProtocol.h"
@@ -280,6 +282,11 @@ Vehicle::Vehicle(LinkInterface*             link,
     _requestStreamRateTimer.start();
     connect(&_requestStreamRateTimer, &QTimer::timeout, this, &Vehicle::_requestStreamRatesTick);
 
+    // RSSI Fetch timer
+    _rssiTimer.setInterval(5000);
+    _rssiTimer.setSingleShot(false);
+    connect(&_rssiTimer, &QTimer::timeout, this, &Vehicle::_getPersistentSystemsRSSI);
+
     _mav = uas();
 
     // Listen for system messages
@@ -316,6 +323,9 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     //init engine runup to false
     _engineRunUpFact.setRawValue(false);
+
+    //open websocket connection to MPU5
+    _openPersistentWebsocket();
 }
 
 // Disconnected Vehicle for offline editing
@@ -4102,6 +4112,124 @@ void Vehicle::_handleADSBVehicle(const mavlink_message_t& message)
 
         _toolbox->adsbVehicleManager()->adsbVehicleUpdate(vehicleInfo);
     }
+}
+
+void Vehicle::_openPersistentWebsocket()
+{
+    //try to open a websocket connection to the Persistent Systems Radio
+
+    //set up the websocket params for persistent systems
+
+    //QString doodleIP = _settingsManager->appSettings()->doodleIP()->rawValue().toString();
+    //QString doodleURI = QString("https://%1/ubus").arg(doodleIP);
+
+    QString persistentURI = QString("172.20.1.1");
+
+    //open a websocket connection
+
+
+    const QUrl url(persistentURI);
+
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setRawHeader("Sec-WebSocket-Protocol", "wr-json");
+
+    _persistentWebSocket.open(request);
+
+    //connect websocket connected signal
+    connect(&_persistentWebSocket, &QWebSocket::connected, this, &Vehicle::onPersistentConnected);
+
+
+}
+
+void Vehicle::onPersistentConnected()
+{
+    qDebug() << "Got a connection from Persistent Systems websocket";
+
+    connect(&_persistentWebSocket, &QWebSocket::textMessageReceived,
+            this, &Vehicle::onPersistentMessageReceived);
+    _persistentWebSocket.sendTextMessage(QStringLiteral("Hello, world!"));
+
+}
+
+void Vehicle::onPersistentMessageReceived(QString message)
+{
+    qDebug() << "Got Message: " << message;
+
+}
+
+void Vehicle::_getPersistentSystemsRSSI()
+{
+    //use JSON-RPC to retrieve the associated station list and calulate RSSI
+    //first get a token
+    //qDebug() << "get rssi running";
+    try {
+
+        //bool enabled = _settingsManager->appSettings()->enableDoodleRssi()->rawValue().toBool();
+
+        //if (!enabled)
+        //{
+        //    _doodleRSSIList.clear();
+        //    emit doodleRSSIChanged();
+       //     return;
+        //}
+
+        //QString doodleIP = _settingsManager->appSettings()->doodleIP()->rawValue().toString();
+        //QString doodleURI = QString("https://%1/ubus").arg(doodleIP);
+
+        QString persistentIP = QString("172.20.1.1");
+
+        //open a websocket connection
+
+        /*
+        QNetworkAccessManager *mgr = new QNetworkAccessManager(this);
+        //pull the IP from settings
+        const QUrl url(doodleURI);
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+        QSslConfiguration conf = request.sslConfiguration();
+        conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+        request.setSslConfiguration(conf);
+
+        QByteArray data("{\"jsonrpc\":\"2.0\",\"id\": 1,\"method\": \"call\",\"params\": [ \"00000000000000000000000000000000\", \"session\", \"login\", { \"username\": \"doodle\", \"password\": \"doodle\" } ] }" );
+
+        QNetworkReply *reply = mgr->post(request, data);
+
+        reply->ignoreSslErrors();
+
+        QObject::connect(reply, &QNetworkReply::finished, [=](){
+            if(reply->error() == QNetworkReply::NoError){
+                QString contents = QString::fromUtf8(reply->readAll());
+                //qDebug() << contents;
+                QJsonDocument document = QJsonDocument::fromJson(contents.toUtf8());
+
+                if (!document.isObject())
+                    qDebug() << "document is not an object";
+
+                QJsonObject object = document.object();
+                QJsonValue result = object.value("result");
+                QJsonArray array = result.toArray();
+                QString token = array[1].toObject().value("ubus_rpc_session").toString();
+
+            }
+            else{
+                QString err = reply->errorString();
+                qDebug() << "Error communicating with Doodle radio" << err;
+                if (_doodleRSSIList.count())
+                {
+                    _doodleRSSIList.clear();
+                    emit doodleRSSIChanged();
+                }
+            }
+            reply->deleteLater();
+        });
+*/
+    }  catch (...) {
+
+        qDebug() << "Error in _getPersistentSystemsRSSI";
+    }
+
+
 }
 
 void Vehicle::_updateDistanceHeadingToHome()
