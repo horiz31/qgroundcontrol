@@ -228,7 +228,7 @@ Item {
         anchors.verticalCenter:     parent.verticalCenter
         anchors.right:               parent.right
         anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
-        text:                       vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.value).toFixed(0) : "----"   //vehicle.altitudeRelative.value.toFixed(0)
+        text:                       vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.rawValue).toFixed(0) : "----"
         color:                      vehicle ? getAltColor() : "white"
         font.family:        ScreenTools.normalFontFamily
         font.pointSize:     ScreenTools.mediumFontPointSize
