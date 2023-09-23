@@ -12,6 +12,7 @@
 #include <QLocale>
 #include <QQuaternion>
 #include <Eigen/Eigen>
+#include <QtWebSockets/QtWebSockets>
 
 #include "Vehicle.h"
 #include "MAVLinkProtocol.h"
@@ -223,9 +224,13 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvPresentStatusChanged,       this, &Vehicle::_updateNvPresentStatusChange);
     connect(_mavlink, &MAVLinkProtocol::nvTripVersionChanged,         this, &Vehicle::_updateNvTripVersionChange);
 
-
     connect(this, &Vehicle::flightModeChanged,          this, &Vehicle::_handleFlightModeChanged);
     connect(this, &Vehicle::armedChanged,               this, &Vehicle::_announceArmedChanged);
+
+    //connect to persistent system rssi setting changes
+    connect(_settingsManager->appSettings()->MPU5IP(),   &Fact::rawValueChanged, this, &Vehicle::_openPersistentWebsocket);
+    connect(_settingsManager->appSettings()->MPU5Password(),    &Fact::rawValueChanged, this, &Vehicle::_openPersistentWebsocket);
+    connect(_settingsManager->appSettings()->enableMPU5Rssi(),    &Fact::rawValueChanged, this, &Vehicle::_openPersistentWebsocket);
 
     connect(_toolbox->multiVehicleManager(), &MultiVehicleManager::parameterReadyVehicleAvailableChanged, this, &Vehicle::_vehicleParamLoaded);
 
@@ -280,6 +285,19 @@ Vehicle::Vehicle(LinkInterface*             link,
     _requestStreamRateTimer.start();
     connect(&_requestStreamRateTimer, &QTimer::timeout, this, &Vehicle::_requestStreamRatesTick);
 
+
+    // MPU5 RSSI Fetch timer
+    _MPU5RssiTimer.setInterval(5000);
+    _MPU5RssiTimer.setSingleShot(false);
+    _MPU5RssiTimer.stop();
+    connect(&_MPU5RssiTimer, &QTimer::timeout, this, &Vehicle::_sendMPU5RssiRequest);
+
+    // MPU5 WebSocket Connection Retry timer
+    _MPU5WebSocketTimer.setInterval(30000);  //30s to retry websocket connection
+    _MPU5WebSocketTimer.setSingleShot(false);
+    _MPU5WebSocketTimer.stop();
+    connect(&_MPU5WebSocketTimer, &QTimer::timeout, this, &Vehicle::_openPersistentWebsocket);
+
     _mav = uas();
 
     // Listen for system messages
@@ -316,6 +334,9 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     //init engine runup to false
     _engineRunUpFact.setRawValue(false);
+
+    _setupPersistentWebsocket();  //set up the signals and slots
+    _openPersistentWebsocket();   //try to open the websocket to get RSSI from MPU5 (if enabled)
 }
 
 // Disconnected Vehicle for offline editing
@@ -2372,6 +2393,42 @@ QVariantList Vehicle::links() const {
 }
 #endif
 
+QVariantList Vehicle::MPU5RSSI() const {
+    QVariantList ret;
+
+    for( const auto &item: _MPU5RSSIList )
+        ret << QVariant::fromValue(item);
+
+    return ret;
+}
+
+int Vehicle::MPU5RSSIMax() const {
+    int ret = -255;
+
+    for( const MPU5RSSIEntry_t &item: _MPU5RSSIList )
+    {
+        //find the max value
+        if (item.percentage > ret)
+            ret = item.percentage;
+    }
+
+    return ret;
+}
+
+int Vehicle::MPU5RSSIMin() const {
+    int ret = 255;
+
+    for( const MPU5RSSIEntry_t &item: _MPU5RSSIList )
+    {
+        //find the min value
+        if (item.percentage < ret)
+            ret = item.percentage;
+    }
+
+    return ret;
+}
+
+
 void Vehicle::requestDataStream(MAV_DATA_STREAM stream, uint16_t rate, bool sendMultiple)
 {
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
@@ -4387,6 +4444,162 @@ void Vehicle::flashBootloader()
 
 }
 #endif
+
+void Vehicle::_setupPersistentWebsocket()
+{
+    //connect websocket signals
+    connect(&_persistentWebSocket, &QWebSocket::connected, this, &Vehicle::onPersistentConnected);
+
+    //hook up ssl errors, and we'll have to ignore ssl errors
+    connect(&_persistentWebSocket, QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors),
+            this, &Vehicle::onPersistentError);
+
+    //connect to disconnects
+    connect(&_persistentWebSocket, &QWebSocket::disconnected, this, &Vehicle::onPersistentDisconnected);
+
+}
+void Vehicle::_openPersistentWebsocket()
+{
+    //try to open a websocket connection to the Persistent Systems Radio
+
+    bool enabled = _settingsManager->appSettings()->enableMPU5Rssi()->rawValue().toBool();
+
+    if (!enabled)
+    {
+        //qDebug() << "MPU5 RSSI is not enabled";
+        _MPU5RSSIList.clear();
+        emit MPU5RSSIChanged();
+        return;
+    }
+
+    QString persistentSystemsIP = _settingsManager->appSettings()->MPU5IP()->rawValue().toString();
+    QString persistentURI = QString("wss://%1").arg(persistentSystemsIP);
+
+    //open the websocket connection
+
+    const QUrl url(persistentURI);
+
+    QNetworkRequest request;
+    request.setUrl(url);
+    request.setRawHeader(QByteArray("Sec-WebSocket-Protocol"), QString("wr-json").toUtf8());
+
+    qDebug() << "Trying to open Persistent Systems websocket to " << persistentURI;
+
+    _persistentWebSocket.open(request);
+
+}
+
+void Vehicle::onPersistentError(const QList<QSslError> & error)
+{
+    //ignore SSL errors
+    Q_UNUSED(error);
+    _persistentWebSocket.ignoreSslErrors();
+}
+
+void Vehicle::onPersistentConnected()
+{
+    _MPU5WebSocketTimer.stop();
+    qDebug() << "Got a connection from Persistent Systems websocket";
+    //connect to recevied messages
+    connect(&_persistentWebSocket, &QWebSocket::textMessageReceived,
+            this, &Vehicle::onPersistentMessageReceived);
+
+    _sendMPU5RssiRequest();
+    _MPU5RssiTimer.start();
+}
+
+void Vehicle::_sendMPU5RssiRequest()
+{
+
+    QString persistentSystemsPassword = _settingsManager->appSettings()->MPU5Password()->rawValue().toString();
+    QJsonObject jsonrequest;
+    jsonrequest["protocol_version"] = "1.1.0";
+    jsonrequest["username"] = "factory";   //ultimately pull from settings
+    jsonrequest["password"] = persistentSystemsPassword;   //ultimately pull from settings
+    jsonrequest["command"] = "get";
+    jsonrequest["msgtype"] = "req";
+    jsonrequest["token"] = "12345678";     //if I need to track reqest/response, I can use this. don't think I need to for rssi
+
+    QJsonObject variables;
+    QJsonObject empty;
+    variables["waverelay_neighbors_json"] =  empty;
+    jsonrequest["variables"] = variables;
+
+    qDebug() << "JSON going out is:" << QJsonDocument(jsonrequest).toJson(QJsonDocument::Compact);
+
+    //form a JSON request to get waverelay_neighbors_json
+    //start a timer to do this periodically
+    //ondisconnect, stop the timer and try to connect again
+    _persistentWebSocket.sendTextMessage(QJsonDocument(jsonrequest).toJson(QJsonDocument::Compact));
+
+}
+
+void Vehicle::onPersistentDisconnected()
+{
+    qDebug() << "Got a DISCONNECTION from Persistent Systems websocket";
+    _MPU5RssiTimer.stop();
+    _MPU5WebSocketTimer.start();
+
+}
+
+void Vehicle::onPersistentMessageReceived(QString message)
+{
+    const int rssi_limits[2] = {-85, -40};  //these need to be checked against real data from the mpu5
+
+    qDebug() << "Got Message from Persistent: " << message;
+    _MPU5RSSIList.clear();
+
+    QJsonDocument document = QJsonDocument::fromJson(message.toUtf8());
+
+    if (!document.isObject())
+    {
+        qDebug() << "MPU5 JSON response document is not an object, fatal error";
+        emit MPU5RSSIChanged();
+        return;
+    }
+
+    QJsonObject object = document.object();
+    QJsonValue variables = object.value("variables");
+    QJsonValue waverelay_neighbors = variables.toObject().value("waverelay_neighbors_json");
+    QJsonValue values = waverelay_neighbors.toObject().value("value");
+    QJsonArray value_array = values.toArray();
+
+    if (value_array.count() == 0)
+    {
+        //we got back no associated stations, the list is already cleared, so just emit
+        emit MPU5RSSIChanged();
+        qDebug() << "No associated stations found from the connected MPU5 radio";
+        return;
+    }
+
+    //loop through values getting mac, snr and ip
+    foreach (const QJsonValue & value, value_array)
+    {
+        QString mac = value.toObject().value("mac").toString();
+        qint16 signal = value.toObject().value("snr").toInt();
+        QString ip = value.toObject().value("ip").toString();
+
+        MPU5RSSIEntry_t   rssi;
+        rssi.mac =      mac;
+        rssi.signal =   signal;
+        rssi.ip = ip;
+
+        if (signal >= rssi_limits[1]) rssi.percentage = 100;
+        else if (signal <= rssi_limits[0]) rssi.percentage = 0;
+        else
+        {
+            rssi.percentage = ((100.0 / ((float)(rssi_limits[1] - rssi_limits[0]))) * (signal - rssi_limits[0] + 1));
+        }
+        _MPU5RSSIList.append(rssi);
+    }
+
+    if (_MPU5RSSIList.count() > 0)
+    {
+        emit MPU5RSSIChanged();
+    }
+
+
+}
 
 void Vehicle::gimbalControlValue(double pitch, double yaw)
 {

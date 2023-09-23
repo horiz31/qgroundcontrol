@@ -362,6 +362,61 @@ Rectangle {
                         }
                     }
 
+                    Item { width: 1; height: _margins }
+
+                    QGCLabel {
+                        id:                             mpu5RssiSectionLabel
+                        text:                           qsTr("MPU5 RSSI Settings")
+                        visible:                        true
+                    }
+
+
+                    Rectangle {
+                        Layout.preferredHeight: mpu5RssiGrid.y + mpu5RssiGrid.height + _margins
+                        Layout.preferredWidth:  mpu5RssiGrid.width + (_margins * 2)
+                        color:                  qgcPal.windowShade
+                        visible:                mpu5RssiSectionLabel.visible
+                        Layout.fillWidth:       true
+
+                        GridLayout {
+                            id:                         mpu5RssiGrid
+                            anchors.margins:            _margins
+                            anchors.top:                parent.top
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            Layout.fillWidth:           false
+                            columns:                    2
+
+                            QGCLabel {
+                                text:                   qsTr("Retrieve RSSI From MPU5 Radio")
+                            }
+                            FactCheckBox {
+                                text:                   ""
+                                fact:                   QGroundControl.settingsManager.appSettings.enableMPU5Rssi
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("IP Address of MPU5 Radio")
+                                //visible:                QGroundControl.settingsManager.appSettings.MPU5IP.visible && QGroundControl.settingsManager.appSettings.enableMPU5Rssi.value
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.MPU5IP
+                                //visible:                QGroundControl.settingsManager.appSettings.MPU5IP.visible && QGroundControl.settingsManager.appSettings.enableMPU5Rssi.value
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("Network Password for the GCS MPU5 Radio")
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.MPU5Password
+                            }
+                        }
+
+
+                    }
+
+
                     Item { width: 1; height: _margins; visible: planViewSectionLabel.visible }
                     QGCLabel {
                         id:         planViewSectionLabel

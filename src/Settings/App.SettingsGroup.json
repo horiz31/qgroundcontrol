@@ -447,6 +447,27 @@
     "longDesc":  "Host name to forward mavlink to. i.e: localhost:14445",
     "type":             "string",
     "default":     "localhost:14445"
+},
+{
+    "name":             "enableMPU5Rssi",
+    "shortDescription": "Enable getting RSSI from MPU5",
+    "longDescription":  "If this option is enabled, the MPU5 radio will be queried every 5 seconds for associated station rssi.",
+    "type":             "bool",
+    "default":          false
+},
+{
+    "name":             "MPU5IP",
+    "shortDescription": "MPU5 GCS Radio IP Address",
+    "longDescription":  "IP Address of the MPU5 radio connected to the GCS.",
+    "type":             "string",
+    "default":          "172.20.1.1"
+},
+{
+    "name":             "MPU5Password",
+    "shortDescription": "MPU5 Password",
+    "longDescription":  "Network access password for the MPU5.",
+    "type":             "string",
+    "default":          "password"
 }
 ]
 }

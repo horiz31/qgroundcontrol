@@ -16,6 +16,7 @@
 #include <QTime>
 #include <QQueue>
 #include <QSharedPointer>
+#include <QtWebSockets/QWebSocket>
 
 #include "FactGroup.h"
 #include "QGCMAVLink.h"
@@ -78,6 +79,19 @@ class Autotune;
 #if defined(QGC_AIRMAP_ENABLED)
 class AirspaceVehicleManager;
 #endif
+
+struct MPU5RSSIEntry_t {
+    Q_GADGET
+public:
+    QString     mac;
+    QString     ip;
+    int         signal;
+    int         percentage;
+    Q_PROPERTY(QString qmac MEMBER mac)
+    Q_PROPERTY(QString qip MEMBER ip)
+    Q_PROPERTY(int qsignal MEMBER signal)
+    Q_PROPERTY(int qpercentage MEMBER percentage)
+} ;
 
 namespace events {
 namespace parser {
@@ -271,6 +285,11 @@ public:
     Q_PROPERTY(bool                 supportsGuidedRadius        READ supportsGuidedRadius                                           NOTIFY supportsGuidedRadiusChanged)
     Q_PROPERTY(uint                 brdSerialNumber             READ brdSerialNumber                                                NOTIFY brdSerialNumberChanged)  //Used to track the board/aircraft serial number, if supported by the vehicle
     Q_PROPERTY(Model                vehicleModel                READ vehicleModel                                                   NOTIFY vehicleModelChanged)  //Used to track vehicle model, if supported by the vehicle
+    Q_PROPERTY(QVariantList         MPU5RSSI                    READ MPU5RSSI                                                       NOTIFY MPU5RSSIChanged)
+    Q_PROPERTY(int                  MPU5RSSIMax                 READ MPU5RSSIMax                                                    NOTIFY MPU5RSSIChanged)
+    Q_PROPERTY(int                  MPU5RSSIMin                 READ MPU5RSSIMin                                                    NOTIFY MPU5RSSIChanged)
+
+
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
     Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)    
@@ -542,6 +561,10 @@ public:
     bool armed              () const{ return _armed; }
     void setArmed           (bool armed, bool showError);
     void setArmedShowError  (bool armed) { setArmed(armed, true); }
+
+    QVariantList MPU5RSSI() const;
+    int MPU5RSSIMax() const;
+    int MPU5RSSIMin() const;
 
     Q_INVOKABLE void say                (const QString& text) { _say(text); }
     bool flightModeSetAvailable             ();
@@ -986,6 +1009,7 @@ signals:
     void allSensorsHealthyChanged       (bool allSensorsHealthy);
     void requiresGpsFixChanged          ();
 
+
     void firmwareVersionChanged         ();
     void firmwareCustomVersionChanged   ();
     void gitHashChanged                 (QString hash);
@@ -998,6 +1022,8 @@ signals:
     void brdSerialNumberChanged         ();
     void vehicleModelChanged            ();
     void nvShowQuickPanelChanged        (bool nvShowQuickPanel);
+
+    void MPU5RSSIChanged              ();
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -1090,6 +1116,10 @@ private slots:
     void _orbitTelemetryTimeout             ();
     void _updateFlightTime                  ();
     void _gotProgressUpdate                 (float progressValue);
+    void onPersistentConnected();
+    void onPersistentDisconnected();
+    void onPersistentError(const QList<QSslError> &);
+    void onPersistentMessageReceived(QString message);
 
 private:
     void _joystickChanged               (Joystick* joystick);
@@ -1153,6 +1183,10 @@ private:
     void _chunkedStatusTextCompleted    (uint8_t compId);
     void _setMessageInterval            (int messageId, int rate);
     EventHandler& _eventHandler         (uint8_t compid);
+    void _openPersistentWebsocket       ();
+    void _setupPersistentWebsocket      ();
+    void _sendMPU5RssiRequest           ();
+    QWebSocket _persistentWebSocket;
 
     static void _rebootCommandResultHandler(void* resultHandlerData, int compId, MAV_RESULT commandResult, uint8_t progress, MavCmdResultFailureCode_t failureCode);
 
@@ -1236,6 +1270,8 @@ private:
     SysStatusSensorInfo _sysStatusSensorInfo;
 
     QGCCameraManager* _cameraManager = nullptr;
+
+    QList<MPU5RSSIEntry_t>        _MPU5RSSIList;
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;
@@ -1350,6 +1386,8 @@ private:
     QTimer _chunkedStatusTextTimer;
 
     QTimer _requestStreamRateTimer;
+    QTimer _MPU5RssiTimer;
+    QTimer _MPU5WebSocketTimer;
 
     /// Callback for waitForMavlinkMessage
     ///     @param resultHandleData     Opaque data passed in to waitForMavlinkMessage call
@@ -1400,6 +1438,7 @@ private:
         int                 ackTimeoutMSecs     = _mavCommandAckTimeoutMSecs;
     } MavCommandListEntry_t;
 
+    QList<MPU5RSSIEntry_t>        _persistentSystemsRSSIList;
     QList<MavCommandListEntry_t>    _mavCommandList;
     QTimer                          _mavCommandResponseCheckTimer;
     static const int                _mavCommandMaxRetryCount                = 3;
