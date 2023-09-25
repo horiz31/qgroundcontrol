@@ -15,6 +15,8 @@ import QGroundControl.Controls              1.0
 import QGroundControl.MultiVehicleManager   1.0
 import QGroundControl.ScreenTools           1.0
 import QGroundControl.Palette               1.0
+import QGroundControl.SettingsManager       1.0
+
 
 //-------------------------------------------------------------------------
 //-- RC RSSI Indicator
@@ -28,17 +30,17 @@ Item {
 
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
     property bool   _rcRSSIAvailable:   true //activeVehicle ? activeVehicle.mavlinkLossPercent >= 0 && activeVehicle.mavlinkLossPercent <= 100 : false
-    //property bool   _rcRSSIAvailable:   activeVehicle ? activeVehicle.rcRSSI > 0 && activeVehicle.rcRSSI <= 100 : false
+    property var    _rssiSource:    QGroundControl.settingsManager.appSettings.rssiRadioSelect.rawValue
 
     function getRssiMaxColor() {
-        if(_activeVehicle.MPU5RSSI.length > 0) {
-            if(_activeVehicle.MPU5RSSIMax > 50) {
+        if(_activeVehicle.RadioRSSI.length > 0) {
+            if(_activeVehicle.RadioRSSIMax > 50) {
                 return qgcPal.text
             }
-            if(_activeVehicle.MPU5RSSIMax > 35) {
+            if(_activeVehicle.RadioRSSIMax > 35) {
                 return qgcPal.colorOrange
             }
-            if(_activeVehicle.MPU5RSSIMax >= 0) {
+            if(_activeVehicle.RadioRSSIMax >= 0) {
                 return qgcPal.colorRed
             }
 
@@ -46,18 +48,41 @@ Item {
         return qgcPal.text
     }
 
-    function getRssiLabel() {
+    function getRssiToolbarText() {
 
         if (!_activeVehicle)
-            return 0
+            return "--"
 
-        if (_activeVehicle.MPU5RSSI.length > 1)  //a mesh detectected, return worst case neightbor
-            return _activeVehicle.MPU5RSSIMin + "% (Mesh)"
-        else if (_activeVehicle.MPU5RSSIMax != -255) //single MPU5 detected, return max which will be the single value in this case
-            return _activeVehicle.MPU5RSSIMax + "%"
-        else  //no MPU5 data, so return mavlink loss %
-            return (100 - _activeVehicle.mavlinkLossPercent.toFixed(0)) + "%"
+        switch (_rssiSource)
+        {
+            case 0: // packet
+                return (100 - _activeVehicle.mavlinkLossPercent.toFixed(0)) + "%"
+            case 1:  //mpu5
+            case 2:  //doodle
+                if (_activeVehicle.RadioRSSI.length > 1)  //a mesh detectected, return worst case neightbor signal
+                    return _activeVehicle.RadioRSSIMin + "% (Mesh)"
+                else if (_activeVehicle.RadioRSSIMax != -255) //single Radio detected, return max which will be the single value in this case
+                    return _activeVehicle.RadioRSSIMax + "%"
+                else
+                    return "--"
+        }
+    }
 
+    function getDetailHeader()
+    {
+        if (!_activeVehicle)
+            return "N/A, No data available";
+        switch (_rssiSource)
+        {
+            case 0: // packet
+                return "Mavlink Packet Loss Ratio"
+            case 1: //mpu5
+                return "MPU5 RSSI Status"
+            case 2: //doodle
+                return "Doodle RSSI Status"
+            default:
+                return "Unknown"
+        }
     }
 
     Component {
@@ -73,48 +98,76 @@ Item {
             Column {
                 id:                 rcrssiCol
                 spacing:            ScreenTools.defaultFontPixelHeight * 0.5
-                //width:              Math.max(rcrssiGrid.width, rssiLabel.width)
                 anchors.margins:    ScreenTools.defaultFontPixelHeight
                 anchors.centerIn:   parent
 
                 QGCLabel {
                     id:             rssiLabel
-                    text:           _activeVehicle ? (_activeVehicle.MPU5RSSI.length >= 1 ? qsTr("MPU5 RSSI Status") : qsTr("Mavlink Packet Loss Ratio")) : qsTr("N/A", "No data available")
+                    text:           getDetailHeader()
                     font.family:    ScreenTools.demiboldFontFamily
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 Row {
                     id: mavPacket
-                    visible: (_activeVehicle.MPU5RSSI.length === 0) ? true : false
-                    QGCLabel { text: _activeVehicle ? (_activeVehicle.mavlinkLossPercent.toFixed(0) + "% Lost ") : 0 }
+                    visible: (_rssiSource === 0) ? true : false
+                    QGCLabel { text: _activeVehicle ? (100 - _activeVehicle.mavlinkLossPercent.toFixed(0) + "% (" + _activeVehicle.mavlinkLossPercent.toFixed(0) + "% Packet Loss)") : 0 }
                 }
 
+                // MPU5 Single Radio Row with no data
                 Row {
-                    id: singleRssi
-                    visible: (_activeVehicle.MPU5RSSI.length === 1) ? true : false
+                    id: singleRssiMPU5NoData
+                    visible: (_activeVehicle.RadioRSSI.length === 0 && _rssiSource === 1) ? true : false
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 0) ? qsTr("Error: No Data Available, Check Settings") : "" }
+                }
+                // MPU5 Single Radio Row
+                Row {
+                    id: singleRssiMPU5
+                    visible: (_activeVehicle.RadioRSSI.length === 1 && _rssiSource === 1) ? true : false
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? _activeVehicle.RadioRSSI[0].qmac + ", " + _activeVehicle.RadioRSSI[0].qip + ", " : "" }
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? _activeVehicle.RadioRSSI[0].qsignal + " dBm " : ""}
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? "(" +_activeVehicle.RadioRSSI[0].qpercentage + "%)" : "" }
 
-                    //QGCLabel { text: activeVehicle ? (100 - activeVehicle.mavlinkLossPercent.toFixed(0) + "%") : 0 }
-                    QGCLabel { text : (_activeVehicle.MPU5RSSI.length === 1) ? _activeVehicle.MPU5RSSI[0].qmac + ", " : "" }
-                    QGCLabel { text : (_activeVehicle.MPU5RSSI.length === 1) ? _activeVehicle.MPU5RSSI[0].qsignal + " dBm " : ""}
-                    QGCLabel { text : (_activeVehicle.MPU5RSSI.length === 1) ? "(" +_activeVehicle.MPU5RSSI[0].qpercentage + "%)" : "" }
+                }
+                // MPU5 Single Radio Row with no data
+                Row {
+                    id: singleRssiDoodleNoData
+                    visible: (_activeVehicle.RadioRSSI.length === 0 && _rssiSource === 2) ? true : false
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 0) ? qsTr("Error: No Data Available, Check Settings") : "" }
+                }
+                // Doodle Single Radio Row (doodle does not provide IP)
+                Row {
+                    id: singleRssiDoodle
+                    visible: (_activeVehicle.RadioRSSI.length === 1 && _rssiSource === 2) ? true : false
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? _activeVehicle.RadioRSSI[0].qmac + ", " : "" }
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? _activeVehicle.RadioRSSI[0].qsignal + " dBm " : ""}
+                    QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? "(" +_activeVehicle.RadioRSSI[0].qpercentage + "%)" : "" }
 
                 }
 
-                    Repeater {
-                        id:     rssiList
-                        model:  _activeVehicle.MPU5RSSI
-
-
-                        Row {
-                            visible: (_activeVehicle.MPU5RSSI.length > 1) ? true : false
-                            QGCLabel { text : modelData.qmac + ", " }
-                            QGCLabel { text : modelData.qsignal + " dBm " }
-                            QGCLabel { text : "(" + modelData.qpercentage + "%)" }
-
-
-                        }
+                //MPU5 Multi Radio
+                Repeater {
+                    id:     rssiListMPU5
+                    model:  _activeVehicle.RadioRSSI
+                    Row {
+                        visible: (_activeVehicle.RadioRSSI.length > 1 && _rssiSource === 1) ? true : false
+                        QGCLabel { text : modelData.qip + ", " }
+                        QGCLabel { text : "(" + modelData.qmac + "), " }
+                        QGCLabel { text : modelData.qsignal + " dBm " }
+                        QGCLabel { text : "(" + modelData.qpercentage + "%)" }
                     }
+                }
+                //Doodle Multi Radio
+                Repeater {
+                    id:     rssiListDoodle
+                    model:  _activeVehicle.RadioRSSI
+                    Row {
+                        visible: (_activeVehicle.RadioRSSI.length > 1 && _rssiSource === 2) ? true : false
+                        QGCLabel { text : modelData.qmac + ", " }
+                        QGCLabel { text : modelData.qsignal + " dBm " }
+                        QGCLabel { text : "(" + modelData.qpercentage + "%)" }
+                    }
+                }
             }
         }
     }
@@ -140,12 +193,12 @@ Item {
         SignalStrength {
             anchors.verticalCenter: parent.verticalCenter
             size:                   parent.height * 0.5
-            percent:                _activeVehicle ? ((_activeVehicle.MPU5RSSIMin != 255) ? _activeVehicle.MPU5RSSIMin : (100 - _activeVehicle.mavlinkLossPercent.toFixed(0))) : 0
+            percent:                _activeVehicle ? ((_activeVehicle.RadioRSSIMin != 255) ? _activeVehicle.RadioRSSIMin : (100 - _activeVehicle.mavlinkLossPercent.toFixed(0))) : 0
 
         }
         QGCLabel {
             id:             rssiLabel2
-            text:           getRssiLabel()
+            text:           getRssiToolbarText()
             color:          getRssiMaxColor()
             font.pointSize:         ScreenTools.mediumFontPointSize
             anchors.verticalCenter: parent.verticalCenter

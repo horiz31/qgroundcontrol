@@ -37,7 +37,7 @@ PreFlightCheckButton {
     }
     function missionLacksLoiterUnlimited()
     {
-            if (_activeVehicle.fixedWing || _activeVehicle.vtol)
+            if (_activeVehicle && (_activeVehicle.fixedWing || _activeVehicle.vtol))
             {
                 for (var i = 1; i < _missionController.visualItems.count; i++) {
                     var missionItem = _missionController.visualItems.get(i)

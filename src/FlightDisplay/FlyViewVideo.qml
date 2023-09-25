@@ -80,6 +80,14 @@ Item {
         onDoubleClicked: {
             QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
         }
+        onWheel: {
+            //if this is a desktop build, then nextvision zoom in/out on wheel.
+            //Start a timer and stop the zoom after 0.5 seconds of no Zoom
+            //the time out period might correspond to the number of wheel turns, e.g. if you quickly roll the wheel you'd
+            //expect the zoom to last longer.
+
+        }
+
         onClicked: {
             /* Calculating the position to track on */
             var videoWidth

@@ -12,6 +12,7 @@ TextField {
     implicitHeight:     ScreenTools.implicitTextFieldHeight
     activeFocusOnPress: true
     antialiasing:       true
+    echoMode: TextInput.Normal
 
     property bool   showUnits:          false
     property bool   showHelp:           false

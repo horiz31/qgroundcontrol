@@ -66,8 +66,8 @@ PreFlightCheckButton {
     }
 
     function notAcceptableMode()
-    {
-        if (_activeVehicle.flightMode === "QuadPlane Hover")
+    {      
+        if (_activeVehicle && _activeVehicle.flightMode === "QuadPlane Hover")
             return false
         return true
     }

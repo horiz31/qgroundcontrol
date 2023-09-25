@@ -20,7 +20,9 @@ import QGroundControl.ScreenTools   1.0
 PreFlightCheckButton {
     id:  airSpeedCheckButton
     name:               qsTr("Air Speed Sensor")
-    telemetryFailure:   (_airSpeed > _airSpeedLimit) || (Math.abs(_windOffsetfact) > _offSetError) //this causes the button to go yellow/red
+    //telemetryFailure:   (_airSpeed > _airSpeedLimit) || (Math.abs(_windOffsetfact) > _offSetError) //this causes the button to go yellow/red
+    telemetryFailure:  (Math.abs(_windOffsetfact) > _offSetError) //this causes the button to go yellow/red
+    //edit above to only indicate failure if the offset is too high. 9/24/23. See additional edit below - updateTelemetryTextFailure
     allowTelemetryFailureOverride: false
     specifiedBottomPadding: Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + indicatedWindSpeedRow.height + spacer.height + Math.round(ScreenTools.defaultFontPixelHeight / 2) //_telemetryState != _statePassed ? (Math.round(ScreenTools.defaultFontPixelHeight / 2) + calibrateButton.height + Math.round(ScreenTools.defaultFontPixelHeight / 2)) : Math.round(ScreenTools.defaultFontPixelHeight / 2)
     property real   _airSpeed:        globals.activeVehicle ? globals.activeVehicle.airSpeed.rawValue : 0
@@ -123,10 +125,17 @@ PreFlightCheckButton {
 
     Component.onCompleted: updateTelemetryTextFailure()
 
+    function updateTelemetryTextFailure() {
+        if( _windOffsetFailure) {
+            telemetryTextFailure = qsTr("Failure. The Air Speed sensor calibration offset parameter is too high ("+ _windOffsetfact.toFixed(0) + "). The maximum expected value is +/- 150. Possibly a bad sensor, or shield the sensor and recalibrate.")
+        }
+    }
+    /*
     function updateTelemetryTextFailure() {      
         if((_airSpeed > _airSpeedLimit) || _windOffsetFailure) {           
             if (_airSpeed > _airSpeedLimit)               telemetryTextFailure = qsTr("Failure. Air speed measures " + _airSpeed.toFixed(1) + " m/s, which is above the maximum of 3 m/s. Please cover the sensor and restart the vehicle to recalibrate.")
             else if(_windOffsetFailure)                 telemetryTextFailure = qsTr("Failure. The Air Speed sensor calibration offset parameter is too high ("+ _windOffsetfact.toFixed(0) + "). The maximum expected value is +/- 150. Possibly a bad sensor, or shield the sensor and recalibrate.")
         }
     }
+    */
 }

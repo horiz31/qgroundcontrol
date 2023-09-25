@@ -15,6 +15,7 @@ QGCTextField {
     unitsLabel: fact ? fact.units : ""
     showUnits:  true
     showHelp:   true
+    echoMode: TextInput.Normal
 
     signal updated()
 

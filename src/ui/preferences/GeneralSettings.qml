@@ -362,61 +362,6 @@ Rectangle {
                         }
                     }
 
-                    Item { width: 1; height: _margins }
-
-                    QGCLabel {
-                        id:                             mpu5RssiSectionLabel
-                        text:                           qsTr("MPU5 RSSI Settings")
-                        visible:                        true
-                    }
-
-
-                    Rectangle {
-                        Layout.preferredHeight: mpu5RssiGrid.y + mpu5RssiGrid.height + _margins
-                        Layout.preferredWidth:  mpu5RssiGrid.width + (_margins * 2)
-                        color:                  qgcPal.windowShade
-                        visible:                mpu5RssiSectionLabel.visible
-                        Layout.fillWidth:       true
-
-                        GridLayout {
-                            id:                         mpu5RssiGrid
-                            anchors.margins:            _margins
-                            anchors.top:                parent.top
-                            anchors.horizontalCenter:   parent.horizontalCenter
-                            Layout.fillWidth:           false
-                            columns:                    2
-
-                            QGCLabel {
-                                text:                   qsTr("Retrieve RSSI From MPU5 Radio")
-                            }
-                            FactCheckBox {
-                                text:                   ""
-                                fact:                   QGroundControl.settingsManager.appSettings.enableMPU5Rssi
-                            }
-
-                            QGCLabel {
-                                text:                   qsTr("IP Address of MPU5 Radio")
-                                //visible:                QGroundControl.settingsManager.appSettings.MPU5IP.visible && QGroundControl.settingsManager.appSettings.enableMPU5Rssi.value
-                            }
-                            FactTextField {
-                                Layout.preferredWidth:  _comboFieldWidth
-                                fact:                   QGroundControl.settingsManager.appSettings.MPU5IP
-                                //visible:                QGroundControl.settingsManager.appSettings.MPU5IP.visible && QGroundControl.settingsManager.appSettings.enableMPU5Rssi.value
-                            }
-
-                            QGCLabel {
-                                text:                   qsTr("Network Password for the GCS MPU5 Radio")
-                            }
-                            FactTextField {
-                                Layout.preferredWidth:  _comboFieldWidth
-                                fact:                   QGroundControl.settingsManager.appSettings.MPU5Password
-                            }
-                        }
-
-
-                    }
-
-
                     Item { width: 1; height: _margins; visible: planViewSectionLabel.visible }
                     QGCLabel {
                         id:         planViewSectionLabel
@@ -510,6 +455,108 @@ Rectangle {
                                 }
                             }
                         }
+                    }
+
+                    Item { width: 1; height: _margins }
+                    QGCLabel {
+                        id:                             mpu5RssiSectionLabel
+                        text:                           qsTr("Received Signal Strength Indicator (RSSI) Source")
+                        visible:                        true
+                    }
+
+
+                    Rectangle {
+                        Layout.preferredHeight: mpu5RssiGrid.y + mpu5RssiGrid.height + _margins
+                        Layout.preferredWidth:  mpu5RssiGrid.width + (_margins * 2)
+                        color:                  qgcPal.windowShade
+                        visible:                mpu5RssiSectionLabel.visible
+                        Layout.fillWidth:       true
+
+
+                        GridLayout {
+                            id:                         mpu5RssiGrid
+                            anchors.margins:            _margins
+                            anchors.top:                parent.top
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            Layout.fillWidth:           false
+                            columns:                    2
+
+                            QGCLabel {
+                                text:                   qsTr("RSSI Source")
+                            }
+                            FactComboBox {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.rssiRadioSelect
+                                indexModel:             false
+                                visible:                true
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("MPU5 IP Address")
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 1
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.MPU5IP
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 1
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("MPU5 Password")
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 1
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.MPU5Password
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 1
+                                echoMode:               TextInput.Password
+                            }
+                            QGCLabel {
+                                id:                 doodleInfoLabel
+                                Layout.columnSpan:  2
+                                font.pointSize:     ScreenTools.smallFontPointSize
+                                wrapMode:           Text.WordWrap
+                                visible:            QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                                color:              qgcPal.colorOrange
+                                text:               qsTr("Important: Enable the JSON-RPC API via the Doodle web UI: https://<IP ADDRESS>/cgi-bin/luci/admin/services/rpcd")
+                            }
+                            QGCLabel {
+                                text:                   qsTr("Doodle IP Address")
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.DoodleIP
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("Doodle JSON-RPC Username")
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.DoodleUser
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                            }
+
+                            QGCLabel {
+                                text:                   qsTr("Doodle JSON-RPC Password")
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                            }
+                            FactTextField {
+                                Layout.preferredWidth:  _comboFieldWidth
+                                fact:                   QGroundControl.settingsManager.appSettings.DoodlePassword
+                                visible:                QGroundControl.settingsManager.appSettings.rssiRadioSelect.value === 2
+                                echoMode:               TextInput.Password
+                            }
+
+
+
+                            //Enable the JSON-RPC API via Doodle web UI: https://<IP ADDRESS>/cgi-bin/luci/admin/services/rpcd
+                        }
+
+
                     }
 
                     Item { width: 1; height: _margins; visible: miscSectionLabel.visible }

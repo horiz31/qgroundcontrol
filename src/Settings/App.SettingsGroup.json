@@ -449,11 +449,14 @@
     "default":     "localhost:14445"
 },
 {
-    "name":             "enableMPU5Rssi",
-    "shortDescription": "Enable getting RSSI from MPU5",
-    "longDescription":  "If this option is enabled, the MPU5 radio will be queried every 5 seconds for associated station rssi.",
-    "type":             "bool",
-    "default":          false
+    "name":                 "rssiRadioSelect",
+    "shortDesc":            "RSSI Source",
+    "longDesc":             "Select the source of the RSSI (Received Signal Strength Indicator) .",
+    "type":                 "uint8",
+    "enumStrings":          "Packet Loss (default),Persistent Systems MPU5,Doodle Labs",
+    "enumValues":           "0,1,2",
+    "default":              0,
+    "qgcRebootRequired":    false
 },
 {
     "name":             "MPU5IP",
@@ -468,6 +471,27 @@
     "longDescription":  "Network access password for the MPU5.",
     "type":             "string",
     "default":          "password"
+},
+{
+    "name":             "DoodleUser",
+    "shortDescription": "Doodle User",
+    "longDescription":  "JSON-RPC API Username for the Doodle.",
+    "type":             "string",
+    "default":          "root"
+},
+{
+    "name":             "DoodlePassword",
+    "shortDescription": "Doodle Password",
+    "longDescription":  "JSON-RPC API Password for the Doodle.",
+    "type":             "string",
+    "default":          "DoodleSmartRadio"
+},
+{
+    "name":             "DoodleIP",
+    "shortDescription": "Doodle IP Address",
+    "longDescription":  "Doodle radio IP Address.",
+    "type":             "string",
+    "default":          "172.20.1.1"
 }
 ]
 }

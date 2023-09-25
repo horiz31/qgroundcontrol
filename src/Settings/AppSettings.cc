@@ -166,9 +166,12 @@ DECLARE_SETTINGSFACT(AppSettings, saveCsvTelemetry)
 DECLARE_SETTINGSFACT(AppSettings, firstRunPromptIdsShown)
 DECLARE_SETTINGSFACT(AppSettings, forwardMavlink)
 DECLARE_SETTINGSFACT(AppSettings, forwardMavlinkHostName)
-DECLARE_SETTINGSFACT(AppSettings, enableMPU5Rssi)
+DECLARE_SETTINGSFACT(AppSettings, rssiRadioSelect)
 DECLARE_SETTINGSFACT(AppSettings, MPU5IP)
 DECLARE_SETTINGSFACT(AppSettings, MPU5Password)
+DECLARE_SETTINGSFACT(AppSettings, DoodlePassword)
+DECLARE_SETTINGSFACT(AppSettings, DoodleUser)
+DECLARE_SETTINGSFACT(AppSettings, DoodleIP)
 
 DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, indoorPalette)
 {

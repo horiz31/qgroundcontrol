@@ -80,7 +80,7 @@ class Autotune;
 class AirspaceVehicleManager;
 #endif
 
-struct MPU5RSSIEntry_t {
+struct RSSIEntry_t {
     Q_GADGET
 public:
     QString     mac;
@@ -285,9 +285,9 @@ public:
     Q_PROPERTY(bool                 supportsGuidedRadius        READ supportsGuidedRadius                                           NOTIFY supportsGuidedRadiusChanged)
     Q_PROPERTY(uint                 brdSerialNumber             READ brdSerialNumber                                                NOTIFY brdSerialNumberChanged)  //Used to track the board/aircraft serial number, if supported by the vehicle
     Q_PROPERTY(Model                vehicleModel                READ vehicleModel                                                   NOTIFY vehicleModelChanged)  //Used to track vehicle model, if supported by the vehicle
-    Q_PROPERTY(QVariantList         MPU5RSSI                    READ MPU5RSSI                                                       NOTIFY MPU5RSSIChanged)
-    Q_PROPERTY(int                  MPU5RSSIMax                 READ MPU5RSSIMax                                                    NOTIFY MPU5RSSIChanged)
-    Q_PROPERTY(int                  MPU5RSSIMin                 READ MPU5RSSIMin                                                    NOTIFY MPU5RSSIChanged)
+    Q_PROPERTY(QVariantList         RadioRSSI                    READ RadioRSSI                                                       NOTIFY RSSIChanged)
+    Q_PROPERTY(int                  RadioRSSIMax                 READ RadioRSSIMax                                                    NOTIFY RSSIChanged)
+    Q_PROPERTY(int                  RadioRSSIMin                 READ RadioRSSIMin                                                    NOTIFY RSSIChanged)
 
 
     // The following properties relate to Orbit status
@@ -562,9 +562,9 @@ public:
     void setArmed           (bool armed, bool showError);
     void setArmedShowError  (bool armed) { setArmed(armed, true); }
 
-    QVariantList MPU5RSSI() const;
-    int MPU5RSSIMax() const;
-    int MPU5RSSIMin() const;
+    QVariantList RadioRSSI() const;
+    int RadioRSSIMax() const;
+    int RadioRSSIMin() const;
 
     Q_INVOKABLE void say                (const QString& text) { _say(text); }
     bool flightModeSetAvailable             ();
@@ -1023,7 +1023,7 @@ signals:
     void vehicleModelChanged            ();
     void nvShowQuickPanelChanged        (bool nvShowQuickPanel);
 
-    void MPU5RSSIChanged              ();
+    void RSSIChanged              ();
 
     /// New RC channel values coming from RC_CHANNELS message
     ///     @param channelCount Number of available channels, cMaxRcChannels max
@@ -1120,6 +1120,7 @@ private slots:
     void onPersistentDisconnected();
     void onPersistentError(const QList<QSslError> &);
     void onPersistentMessageReceived(QString message);
+    void _rssiSourceChanged();
 
 private:
     void _joystickChanged               (Joystick* joystick);
@@ -1186,6 +1187,9 @@ private:
     void _openPersistentWebsocket       ();
     void _setupPersistentWebsocket      ();
     void _sendMPU5RssiRequest           ();
+    void _getDoodleRSSI                 ();
+    void _getDoodleRSSIstep2            (QString value, QString value2);
+
     QWebSocket _persistentWebSocket;
 
     static void _rebootCommandResultHandler(void* resultHandlerData, int compId, MAV_RESULT commandResult, uint8_t progress, MavCmdResultFailureCode_t failureCode);
@@ -1204,6 +1208,7 @@ private:
     bool                _engineRunUp = false;
     QGCToolbox*         _toolbox = nullptr;
     SettingsManager*    _settingsManager = nullptr;
+    int                 _rssiSource = 0;
 
     QTimer              _csvLogTimer;
     QFile               _csvLogFile;
@@ -1271,7 +1276,7 @@ private:
 
     QGCCameraManager* _cameraManager = nullptr;
 
-    QList<MPU5RSSIEntry_t>        _MPU5RSSIList;
+    QList<RSSIEntry_t>        _RSSIList;
 
     QString             _prearmError;
     QTimer              _prearmErrorTimer;
@@ -1388,6 +1393,7 @@ private:
     QTimer _requestStreamRateTimer;
     QTimer _MPU5RssiTimer;
     QTimer _MPU5WebSocketTimer;
+    QTimer _DoodleRssiTimer;
 
     /// Callback for waitForMavlinkMessage
     ///     @param resultHandleData     Opaque data passed in to waitForMavlinkMessage call
@@ -1438,7 +1444,6 @@ private:
         int                 ackTimeoutMSecs     = _mavCommandAckTimeoutMSecs;
     } MavCommandListEntry_t;
 
-    QList<MPU5RSSIEntry_t>        _persistentSystemsRSSIList;
     QList<MavCommandListEntry_t>    _mavCommandList;
     QTimer                          _mavCommandResponseCheckTimer;
     static const int                _mavCommandMaxRetryCount                = 3;
