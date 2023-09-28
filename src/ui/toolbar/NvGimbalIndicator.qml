@@ -115,7 +115,8 @@ Item {
                     QGCLabel { text: _activeVehicle ? getSDCardStatus() : ""
                         function getSDCardStatus()
                         {
-                            if (isNaN(_activeVehicle.nvGimbal.sdCapacity.value) || _activeVehicle.nvGimbal.sdCapacity.value !== 0)
+
+                            if (!isNaN(_activeVehicle.nvGimbal.sdCapacity.value) && _activeVehicle.nvGimbal.sdCapacity.value !== 0)
                             {
                                 var _sdPercentage = (((_activeVehicle.nvGimbal.sdCapacity.value - _activeVehicle.nvGimbal.sdAvailable.value) / _activeVehicle.nvGimbal.sdCapacity.value) * 100).toFixed(0)
                                 return _sdPercentage + "% Full" + " (" + (_activeVehicle.nvGimbal.sdCapacity.value / 1024).toFixed(0) + " GiB)"

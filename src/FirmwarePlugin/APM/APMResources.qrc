@@ -25,6 +25,7 @@
         <file alias="APMSafetyComponentSub.qml">../../AutoPilotPlugins/APM/APMSafetyComponentSub.qml</file>
         <file alias="APMSafetyComponentSummary.qml">../../AutoPilotPlugins/APM/APMSafetyComponentSummary.qml</file>
         <file alias="APMSafetyComponentSummarySub.qml">../../AutoPilotPlugins/APM/APMSafetyComponentSummarySub.qml</file>
+        <file alias="APMSafetyComponentPlane.qml">../../AutoPilotPlugins/APM/APMSafetyComponentPlane.qml</file>
         <file alias="APMSensorsComponent.qml">../../AutoPilotPlugins/APM/APMSensorsComponent.qml</file>
         <file alias="APMSensorsComponentSummary.qml">../../AutoPilotPlugins/APM/APMSensorsComponentSummary.qml</file>
         <file alias="APMTuningComponentCopter.qml">../../AutoPilotPlugins/APM/APMTuningComponentCopter.qml</file>

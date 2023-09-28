@@ -736,6 +736,24 @@ Rectangle {
                                 }
 
                                 FactCheckBox {
+                                    id:         lowAlt
+                                    text:       qsTr("Mute low altitude warnings")
+                                    fact:       _lowAltitudeMuted
+                                    visible:    _lowAltitudeMuted.visible
+                                    property Fact _lowAltitudeMuted: QGroundControl.settingsManager.appSettings.lowAltitudeMuted
+                                }
+                                QGCLabel {
+                                    text:       qsTr("Altitude for low warning:")
+                                    visible:    guidedMinAltField.visible
+                                }
+                                FactTextField {
+                                    id:                     lowAltitudeLevel
+                                    Layout.preferredWidth:  _valueFieldWidth
+                                    visible:                true
+                                    fact:                   QGroundControl.settingsManager.appSettings.lowAltitudeLevel
+                                }
+
+                                FactCheckBox {
                                     text:       qsTr("Check for Internet connection")
                                     fact:       _checkInternet
                                     visible:    _checkInternet && _checkInternet.visible

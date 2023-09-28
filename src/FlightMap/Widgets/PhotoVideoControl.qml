@@ -120,7 +120,24 @@ Rectangle {
     property bool   _nvIRMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 1 : false
     property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
     property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
-    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"    
+    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+
+    ListModel {
+        id: irColorModel
+
+        ListElement {
+            text:       qsTr("Color")
+        }
+        ListElement {
+            text:       qsTr("White Hot")
+        }
+        ListElement {
+            text:       qsTr("Black Hot")
+        }
+        ListElement {
+            text:       qsTr("Color Inverse")
+        }
+    }
 
     function setCameraMode(photoMode) {
         _videoStreamInPhotoMode = photoMode
@@ -865,7 +882,6 @@ Rectangle {
                     }
 
 
-
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("IR Color Mode")
@@ -874,14 +890,46 @@ Rectangle {
                     RowLayout{
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         QGCButton {
-                            text: "Color"
-                            onClicked: joystickManager.cameraManagement.setSysIrColorPCommand()
+                            text: "B&W"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrPolarityToggleCommand()
+                                //joystickManager.cameraManagement.setSysIrBWPCommand()
+                            }
                         }
                         QGCButton {
-                            text: "B&W"
-                            onClicked: joystickManager.cameraManagement.setSysIrBWPCommand()
+                            text: "Color"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrColorPCommand()
+                            }
                         }
                     }
+
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("IR Display Mode")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "White Hot"
+                            onClicked:
+                            {
+                                //joystickManager.cameraManagement.setSysIrBWPCommand()
+                                joystickManager.cameraManagement.setSysIrPolarityWHCommand()
+
+                            }
+                        }
+                        QGCButton {
+                            text: "Black Hot"
+                            onClicked: {
+                                //joystickManager.cameraManagement.setSysIrBWPCommand()
+                                joystickManager.cameraManagement.setSysIrPolarityBHCommand()
+                            }
+                        }
+                    }
+
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight

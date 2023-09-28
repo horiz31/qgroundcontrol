@@ -2428,7 +2428,7 @@ void MissionController::_searchForLandingPattern()
             VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(pVI);
             if (vtolLanding){
                 foundLand = true;
-                qDebug() << "found vtol landing complex item at sequence" << vtolLanding->sequenceNumber();
+                //qDebug() << "found vtol landing complex item at sequence" << vtolLanding->sequenceNumber();
                 if (vtolLanding->sequenceNumber()!=_startLandingSequenceNumber)
                 {
                     _startLandingSequenceNumber = vtolLanding->sequenceNumber();
@@ -2518,7 +2518,7 @@ void MissionController::setCurrentPlanViewSeqNum(int sequenceNumber, bool force)
                     }
                     VTOLLandingComplexItem* vtolLanding = qobject_cast<VTOLLandingComplexItem*>(pVI);
                     if (vtolLanding){
-                        qDebug() << "found vtol landing complex item";
+                        //qDebug() << "found vtol landing complex item";
                         foundLand = true;
                         landSeqNum = currentSeqNumber;
                     }

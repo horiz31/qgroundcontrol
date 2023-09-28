@@ -492,6 +492,23 @@
     "longDescription":  "Doodle radio IP Address.",
     "type":             "string",
     "default":          "172.20.1.1"
+},
+{
+    "name":             "lowAltitudeMuted",
+    "shortDesc": "Mute low altitude warning audio output",
+    "longDesc":  "If this option is enabled, low altitude warnings will be muted.",
+    "type":             "bool",
+    "default":     false
+},
+{
+    "name":             "lowAltitudeLevel",
+    "shortDesc": "Altitude below which to warn",
+    "longDesc":  "Altitude below which you will get a low altitude warning.",
+    "type":             "double",
+    "default":     30.48,
+    "min":              5.0,
+    "units":            "vertical m",
+    "decimalPlaces":    0
 }
 ]
 }

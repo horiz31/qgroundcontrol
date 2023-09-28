@@ -19,7 +19,7 @@ import QtGraphicalEffects 1.0
 Item {
     id:         _root
     visible:    QGroundControl.videoManager.hasVideo
-
+    property var _lastZoomDirection: ""
     property Item pipState: videoPipState
     QGCPipState {
         id:         videoPipState
@@ -73,6 +73,20 @@ Item {
         anchors.centerIn: parent
     }
 
+    function stopZoom()
+    {
+        //stop nextvision zoom
+        joystickManager.cameraManagement.setSysZoomStopCommand()
+    }
+
+    Timer {
+        id:           zoomTimer
+        interval:     500;
+        running:      false
+        repeat:       false
+        onTriggered:  stopZoom()
+    }
+
     MouseArea {
         id: flyViewVideoMouseArea
         anchors.fill:       parent
@@ -80,12 +94,55 @@ Item {
         onDoubleClicked: {
             QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
         }
-        onWheel: {
-            //if this is a desktop build, then nextvision zoom in/out on wheel.
-            //Start a timer and stop the zoom after 0.5 seconds of no Zoom
-            //the time out period might correspond to the number of wheel turns, e.g. if you quickly roll the wheel you'd
-            //expect the zoom to last longer.
 
+        onWheel: {
+            if (wheel.angleDelta.y > 0)
+            {
+                if (zoomTimer.running && _lastZoomDirection === "out" )
+                {
+                    zoomTimer.stop()
+                    joystickManager.cameraManagement.setSysZoomStopCommand()
+                }
+                else
+                {
+                    joystickManager.cameraManagement.setSysZoomInCommand();
+                    _lastZoomDirection = "in"
+                    if (zoomTimer.running)
+                    {
+                        zoomTimer.interval += 250;
+                        zoomTimer.restart()
+                    }
+                    else
+                    {
+                        zoomTimer.interval = 500;
+                        zoomTimer.restart()
+                    }
+                }
+            }
+            else
+            {
+                //zoom out
+                if (zoomTimer.running && _lastZoomDirection === "in" )
+                {
+                    zoomTimer.stop()
+                    joystickManager.cameraManagement.setSysZoomStopCommand()
+                }
+                else
+                {
+                    joystickManager.cameraManagement.setSysZoomOutCommand();
+                    _lastZoomDirection = "out"
+                    if (zoomTimer.running)
+                    {
+                        zoomTimer.interval += 250;
+                        zoomTimer.restart()
+                    }
+                    else
+                    {
+                        zoomTimer.interval = 500;
+                        zoomTimer.restart()
+                    }
+                }
+            }
         }
 
         onClicked: {

@@ -228,12 +228,23 @@ void CameraManagement::doCamAction(QString buttonAction, bool pressed, int butto
         if (doAction)
             sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSensor,_camButtonFuncValue[buttonIndex],0,0,0,0,0);
     }
-    else if (buttonAction == "White Hot / Black Hot")
+    else if (buttonAction == "Color / B&W")
+    {
+        /* Color Toggle */
+        if (doAction)
+        {
+            if (!_currentIRColor)
+                sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIrColor,MavExtCmdArg_Color_P,0,0,0,0,0);
+            else
+                 sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIrColor,MavExtCmdArg_BW_P,0,0,0,0,0);
+            _currentIRColor = !_currentIRColor;
+        }
+    }else if (buttonAction == "White Hot / Black Hot")
     {
         /* Polarity Toggle */
         if (doAction)
             sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIrPolarity,_camButtonFuncValue[buttonIndex],0,0,0,0,0);
-    }else if(buttonAction == "Image Capture"){
+    }    else if(buttonAction == "Image Capture"){
         /* Image Capture */
         if (doAction)
             sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_TakeSnapShot,0,0,0,0,0,0);

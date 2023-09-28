@@ -239,22 +239,6 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     connect(this, &Vehicle::remoteControlRSSIChanged,   this, &Vehicle::_remoteControlRSSIChanged);
 
-    //get current RSSI source
-    _rssiSource = _settingsManager->appSettings()->rssiRadioSelect()->rawValue().toInt();
-
-    switch(_rssiSource) {
-    case 1:
-        //Persistent Systems MPU5
-        _openPersistentWebsocket();
-        break;
-    case 2:
-        //Doodle Labs, start a timer that tries to do a periodic JSON-RPC call
-        _DoodleRssiTimer.start();
-        break;
-    default:
-        //default packet loss based
-        break;
-    }
 
     _commonInit();
 
@@ -319,8 +303,13 @@ Vehicle::Vehicle(LinkInterface*             link,
     // RSSI Fetch timer
     _DoodleRssiTimer.setInterval(5000);
     _DoodleRssiTimer.setSingleShot(false);
-    _DoodleRssiTimer.stop();
     connect(&_DoodleRssiTimer, &QTimer::timeout, this, &Vehicle::_getDoodleRSSI);
+
+    //Low Altitude Warning Timer
+    _lowAltitudeTimer.setInterval(10000);
+    _lowAltitudeTimer.setSingleShot(false);
+    _lowAltitudeTimer.start();
+    connect(&_lowAltitudeTimer, &QTimer::timeout, this, &Vehicle::_lowAltitudeWarningTick);
 
 
     _mav = uas();
@@ -361,6 +350,23 @@ Vehicle::Vehicle(LinkInterface*             link,
     _engineRunUpFact.setRawValue(false);
 
     _setupPersistentWebsocket();  //set up the signals and slots
+    //get current RSSI source
+    _rssiSource = _settingsManager->appSettings()->rssiRadioSelect()->rawValue().toInt();
+
+    switch(_rssiSource) {
+    case 1:
+        //Persistent Systems MPU5
+        _openPersistentWebsocket();
+        break;
+    case 2:
+        //Doodle Labs, start a timer that tries to do a periodic JSON-RPC call
+        qDebug() << "Starting doodle rssi timer";
+        _DoodleRssiTimer.start();
+        break;
+    default:
+        //default packet loss based
+        break;
+    }
 }
 
 // Disconnected Vehicle for offline editing
@@ -830,10 +836,9 @@ void Vehicle::_rssiSourceChanged()
     if (_rssiSource == _currentRssiSource)
         return;
 
-    qDebug() << "RSSI source changed to" << _rssiSource;
-
     if (_rssiSource == 0)
     {
+        qDebug() << "RSSI source changed to Disabled";
         //changed to disabled
         //stop any associated timers
         _MPU5RssiTimer.stop();
@@ -845,6 +850,7 @@ void Vehicle::_rssiSourceChanged()
     else if (_rssiSource == 1)  //currently disabled
     {
         //going from disabled to mpu5
+        qDebug() << "RSSI source changed to MPU5";
         _openPersistentWebsocket();
         //stop Doodle timers
         _DoodleRssiTimer.stop();
@@ -853,6 +859,7 @@ void Vehicle::_rssiSourceChanged()
     else if (_rssiSource == 2)
     {
         //changing to Doodle
+        qDebug() << "RSSI source changed to Doodle";
         _MPU5RssiTimer.stop();
         _MPU5WebSocketTimer.stop();
         //start doodle timer
@@ -1406,6 +1413,12 @@ void Vehicle::_handleGlobalPositionInt(mavlink_message_t& message)
     if (!_altitudeMessageAvailable) {
         _altitudeRelativeFact.setRawValue(globalPositionInt.relative_alt / 1000.0);
         _altitudeAMSLFact.setRawValue(globalPositionInt.alt / 1000.0);
+
+        double lowerLimit = _settingsManager->appSettings()->lowAltitudeLevel()->rawValue().toDouble() * 1.1;
+        if ((globalPositionInt.relative_alt / 1000.0) > lowerLimit && _armed && _flying && !_lowAltitudeWarningEnable)
+        {
+            _lowAltitudeWarningEnable = true;
+        }
     }
 
     // ArduPilot sends bogus GLOBAL_POSITION_INT messages with lat/lat 0/0 even when it has no gps signal
@@ -1542,6 +1555,12 @@ void Vehicle::_handleAltitude(mavlink_message_t& message)
     _altitudeMessageAvailable = true;
     _altitudeRelativeFact.setRawValue(altitude.altitude_relative);
     _altitudeAMSLFact.setRawValue(altitude.altitude_amsl);
+
+    double lowerLimit = _settingsManager->appSettings()->lowAltitudeLevel()->rawValue().toDouble() * 1.1;
+    if (altitude.altitude_relative > lowerLimit && _armed && _flying && !_lowAltitudeWarningEnable)
+    {
+        _lowAltitudeWarningEnable = true;
+    }
 }
 
 void Vehicle::_setCapabilities(uint64_t capabilityBits)
@@ -1802,6 +1821,7 @@ void Vehicle::_updateArmed(bool armed)
         } else {
             _trajectoryPoints->stop();
             _flightTimerStop();
+            _lowAltitudeWarningEnable = false;
             // Also handle Video Streaming
             if(qgcApp()->toolbox()->videoManager()->videoReceiver()) {
                 if(_settingsManager->videoSettings()->disableWhenDisarmed()->rawValue().toBool()) {
@@ -4668,8 +4688,7 @@ void Vehicle::onPersistentMessageReceived(QString message)
 void Vehicle::_getDoodleRSSI()
 {
     //use JSON-RPC to retrieve the associated station list and calulate RSSI
-    //first get a token
-    //qDebug() << "get Doodle rssi running";
+    //first get a token    
     try {
 
         bool enabled = (_settingsManager->appSettings()->rssiRadioSelect()->rawValue().toInt() == 2);
@@ -4700,7 +4719,7 @@ void Vehicle::_getDoodleRSSI()
         QObject::connect(reply, &QNetworkReply::finished, [=](){
             if(reply->error() == QNetworkReply::NoError){
                 QString contents = QString::fromUtf8(reply->readAll());
-                //qDebug() << contents;
+
                 QJsonDocument document = QJsonDocument::fromJson(contents.toUtf8());
 
                 if (!document.isObject())
@@ -4709,9 +4728,36 @@ void Vehicle::_getDoodleRSSI()
                 QJsonObject object = document.object();
                 QJsonValue result = object.value("result");
                 QJsonArray array = result.toArray();
-                QString token = array[1].toObject().value("ubus_rpc_session").toString();
+                QString token;
+
+                if (array.count()<=1)
+                {
+                    qDebug() << "Error, array empty in response";
+                    if (_RSSIList.count())
+                    {
+                        _RSSIList.clear();
+                        emit RSSIChanged();
+                    }
+                    return;
+                }
+
+                if (array[1].toObject().contains("ubus_rpc_session"))
+                {
+                    token = array[1].toObject().value("ubus_rpc_session").toString();
+                }
+                else
+                {
+                    qDebug() << "Error, ubus_rpc_session not found in response";
+                    if (_RSSIList.count())
+                    {
+                        _RSSIList.clear();
+                        emit RSSIChanged();
+                    }
+                    return;
+                }
 
                 _getDoodleRSSIstep2(token, doodleURI);
+
             }
             else{
                 QString err = reply->errorString();
@@ -4752,29 +4798,46 @@ void Vehicle::_getDoodleRSSIstep2(QString token, QString urlString)
 
     QObject::connect(reply, &QNetworkReply::finished, [=](){
         if(reply->error() == QNetworkReply::NoError){
+            _RSSIList.clear();
             QString contents = QString::fromUtf8(reply->readAll());
             //qDebug() << contents;
             QJsonDocument document = QJsonDocument::fromJson(contents.toUtf8());
 
-            if (!document.isObject()){
+            if (!document.isObject()){                
+                emit RSSIChanged();
                 qDebug() << "document is not an object";
                 return;
             }
 
             QJsonObject object = document.object();
-            QJsonValue result = object.value("result");
+            QJsonValue result = object.value("result");            
             QJsonArray arrayouter = result.toArray();
-            QJsonArray arrayinner = arrayouter[1].toObject().value("results").toArray();
+            QJsonArray arrayinner;
+            if (arrayouter.count() >= 1)
+            {
+                arrayinner = arrayouter[1].toObject().value("results").toArray();
+            }
+            else
+            {
+                qDebug() << "Doodle RPC-JSON missing results, aborting";
+                emit RSSIChanged();
+                return;
+            }
 
-            _RSSIList.clear();
+            if (arrayinner.count()==0)
+            {
+                emit RSSIChanged();
+                return;
+            }
             foreach (const QJsonValue & value, arrayinner)
             {
                 QString mac = value.toObject().value("mac").toString();
                 qint16 signal = value.toObject().value("signal").toInt();
-                //qDebug() << "Station"<< mac << "Signal"<< signal;
+                qDebug() << "Station"<< mac << "Signal"<< signal;
                 RSSIEntry_t   rssi;
                 rssi.mac =      mac;
                 rssi.signal =   signal;
+
                 //calculate the percentage
 
                 if (signal >= rssi_limits[1]) rssi.percentage = 100;
@@ -4786,10 +4849,11 @@ void Vehicle::_getDoodleRSSIstep2(QString token, QString urlString)
                 _RSSIList.append(rssi);
             }
 
-            if (_RSSIList.count() > 0)
-            {
+
+            //if (_RSSIList.count() > 0)
+            //{
                 emit RSSIChanged();
-            }
+            //}
         }
         else{
             QString err = reply->errorString();
@@ -4799,6 +4863,28 @@ void Vehicle::_getDoodleRSSIstep2(QString token, QString urlString)
         }
         reply->deleteLater();
     });
+}
+
+void Vehicle::_lowAltitudeWarningTick()
+{
+
+    double lowerLimit = _settingsManager->appSettings()->lowAltitudeLevel()->rawValue().toDouble();
+    if (_lowAltitudeWarningEnable && (_altitudeRelativeFact.rawValue().toDouble() < lowerLimit) && (_settingsManager->appSettings()->lowAltitudeMuted()->rawValue().toBool()==false))
+    {
+        QString warningText;
+        if (QString::compare(qgcApp()->toolbox()->settingsManager()->unitsSettings()->verticalDistanceUnits()->enumStringValue(), "Feet")==0)
+        {
+            //convert to feet from meters
+            QString _altitudeFeet = QString::number(round(_altitudeRelativeFact.rawValue().toDouble() * 3.28));
+            warningText = QString("Warning, low altitude %1 %2").arg(_altitudeFeet, "feet");
+        }
+        else
+        {
+            warningText = QString("Warning, low altitude %1 %2").arg(_altitudeRelativeFact.rawValueString(), "meters");
+        }
+
+        qgcApp()->toolbox()->audioOutput()->say(warningText);
+    }
 }
 
 void Vehicle::gimbalControlValue(double pitch, double yaw)

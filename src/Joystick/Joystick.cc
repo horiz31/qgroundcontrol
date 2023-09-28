@@ -92,6 +92,7 @@ const char* Joystick::_buttonActionZoomIn =             QT_TR_NOOP("Zoom In");
 const char* Joystick::_buttonActionZoomOut =            QT_TR_NOOP("Zoom Out");
 const char* Joystick::_buttonActionDayIR =              QT_TR_NOOP("Day / IR");
 const char* Joystick::_buttonActionWHBH =               QT_TR_NOOP("White Hot / Black Hot");
+const char* Joystick::_buttonActionCM =                 QT_TR_NOOP("Color / B&W");
 const char* Joystick::_buttonActionNUC =                QT_TR_NOOP("NUC");
 const char* Joystick::_buttonActionSnap =               QT_TR_NOOP("Image Capture");
 const char* Joystick::_buttonActionRec =                QT_TR_NOOP("Record");
@@ -1293,6 +1294,7 @@ void Joystick::_buildCamActionList()
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionZoomOut));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionDayIR));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionWHBH));
+    _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionCM));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionNUC));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionSnap));
     _assignableCamButtonActions.append(new AssignableButtonAction(this, _buttonActionRec));

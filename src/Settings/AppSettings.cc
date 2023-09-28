@@ -172,6 +172,9 @@ DECLARE_SETTINGSFACT(AppSettings, MPU5Password)
 DECLARE_SETTINGSFACT(AppSettings, DoodlePassword)
 DECLARE_SETTINGSFACT(AppSettings, DoodleUser)
 DECLARE_SETTINGSFACT(AppSettings, DoodleIP)
+DECLARE_SETTINGSFACT(AppSettings, lowAltitudeMuted)
+DECLARE_SETTINGSFACT(AppSettings, lowAltitudeLevel)
+
 
 DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, indoorPalette)
 {

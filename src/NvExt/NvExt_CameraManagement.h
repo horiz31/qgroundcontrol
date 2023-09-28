@@ -120,6 +120,7 @@ private:
     QGeoCoordinate _coord;
     double gndCrsAltitude = 0.0;
     bool _rollPitchEnabled = true;
+    bool _currentIRColor = false;
 
 public:
 

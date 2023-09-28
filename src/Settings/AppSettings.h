@@ -87,6 +87,8 @@ public:
     DEFINE_SETTINGFACT(DoodlePassword)
     DEFINE_SETTINGFACT(DoodleUser)
     DEFINE_SETTINGFACT(DoodleIP)
+    DEFINE_SETTINGFACT(lowAltitudeMuted)
+    DEFINE_SETTINGFACT(lowAltitudeLevel)
 
 
     // Although this is a global setting it only affects ArduPilot vehicle since PX4 automatically starts the stream from the vehicle side

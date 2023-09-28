@@ -30,17 +30,19 @@ SetupPage {
             width:      availableWidth
             spacing:    _margins
 
-            FactPanelController { id: controller; factPanel: safetyPage.viewPanel }
+            //FactPanelController { id: controller; factPanel: safetyPage.viewPanel }
+            FactPanelController { id: controller;  }
 
             QGCPalette { id: palette; colorGroupEnabled: true }
 
-            property Fact _failsafeBattMah:     controller.getParameterFact(-1, "r.BATT_LOW_MAH")
-            property Fact _failsafeBattVoltage: controller.getParameterFact(-1, "r.BATT_LOW_VOLT")
-            property Fact _failsafeThrEnable:   controller.getParameterFact(-1, "THR_FAILSAFE")
-            property Fact _failsafeThrValue:    controller.getParameterFact(-1, "THR_FS_VALUE")
+            //property Fact _failsafeBattMah:     controller.getParameterFact(-1, "r.BATT_LOW_MAH")
+            //property Fact _failsafeBattVoltage: controller.getParameterFact(-1, "r.BATT_LOW_VOLT")
+            //property Fact _failsafeThrEnable:   controller.getParameterFact(-1, "THR_FAILSAFE")
+            //property Fact _failsafeThrValue:    controller.getParameterFact(-1, "THR_FS_VALUE")
             property Fact _failsafeGCSEnable:   controller.getParameterFact(-1, "FS_GCS_ENABL")
+            property Fact _failsafeLongAction:   controller.getParameterFact(-1, "FS_LONG_TIMEOUT")
 
-            property Fact _rtlAltFact: controller.getParameterFact(-1, "ALT_HOLD_RTL")
+            //property Fact _rtlAltFact: controller.getParameterFact(-1, "ALT_HOLD_RTL")
 
             property real _margins: ScreenTools.defaultFontPixelHeight
 
@@ -55,10 +57,10 @@ SetupPage {
                 }
 
                 Rectangle {
-                    width:  throttlePWMField.x + throttlePWMField.width + _margins
+                    width:  longActionField.x + longActionField.width + _margins
                     height: gcsCheckbox.y + gcsCheckbox.height + _margins
                     color:  palette.windowShade
-
+/*
                     QGCCheckBox {
                         id:                 throttleEnableCheckBox
                         anchors.margins:    _margins
@@ -121,23 +123,33 @@ SetupPage {
                         showUnits:          true
                         enabled:            mahCheckBox.checked
                     }
+                    */
 
                     QGCCheckBox {
                         id:                 gcsCheckbox
                         anchors.margins:    _margins
-                        anchors.left:       parent.left
-                        anchors.top:        mahField.bottom
+                        anchors.baseline:   longActionField.baseline
+                        anchors.left:       parent.left                        
                         text:               qsTr("GCS failsafe")
                         checked:            _failsafeGCSEnable.value != 0
 
                         onClicked: _failsafeGCSEnable.value = checked ? 1 : 0
+                    }
+                    FactTextField {
+                        id:                 longActionField
+                        anchors.margins:    _margins
+                        anchors.left:       gcsCheckbox.right
+                        anchors.top:        parent.top
+                        fact:               _failsafeLongAction
+                        showUnits:          true
+                        enabled:            gcsCheckbox.checked
                     }
                 } // Rectangle - Failsafe trigger settings
             } // Column - Failsafe trigger settings
 
             Column {
                 spacing: _margins / 2
-
+/*
                 QGCLabel {
                     text:           qsTr("Return to Launch")
                     font.family:    ScreenTools.demiboldFontFamily
@@ -155,7 +167,7 @@ SetupPage {
                         anchors.top:        parent.top
                         text:               qsTr("Return at current altitude")
                         checked:            _rtlAltFact.value < 0
-                        exclusiveGroup:     returnAltRadioGroup
+                       // exclusiveGroup:     returnAltRadioGroup
 
                         onClicked: _rtlAltFact.value = -1
                     }
@@ -166,7 +178,7 @@ SetupPage {
                         anchors.left:       returnAtCurrentRadio.left
                         anchors.top:        returnAtCurrentRadio.bottom
                         text:               qsTr("Return at specified altitude:")
-                        exclusiveGroup:     returnAltRadioGroup
+                      //  exclusiveGroup:     returnAltRadioGroup
                         checked:            _rtlAltFact.value >= 0
 
                         onClicked: _rtlAltFact.value = 10000
@@ -181,8 +193,9 @@ SetupPage {
                         showUnits:          true
                         enabled:            returnAltRadio.checked
                     }
-                } // Rectangle - RTL Settings
+                } // Rectangle - RTL Settings */
             } // Column - RTL Settings
+
         } // Flow
     } // Component
 } // SetupView

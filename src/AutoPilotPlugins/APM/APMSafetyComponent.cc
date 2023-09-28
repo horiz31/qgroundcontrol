@@ -40,6 +40,9 @@ QString APMSafetyComponent::description(void) const
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
     case MAV_TYPE_TRICOPTER:
+    case MAV_TYPE_VTOL_QUADROTOR:
+        return tr("If the GCS failsafe is enabled, the aircraft will Rally when it has not had contact with a GCS within the specified number of seconds.");
+        break;
     default:
         return tr("Safety Setup is used to setup triggers for Return to Land as well as the settings for Return to Land itself.");
         break;
@@ -72,13 +75,16 @@ QUrl APMSafetyComponent::setupSource(void) const
     QString qmlFile;
 
     switch (_vehicle->vehicleType()) {
-    case MAV_TYPE_FIXED_WING:
+    case MAV_TYPE_FIXED_WING:            
     case MAV_TYPE_QUADROTOR:
     case MAV_TYPE_COAXIAL:
     case MAV_TYPE_HELICOPTER:
     case MAV_TYPE_HEXAROTOR:
     case MAV_TYPE_OCTOROTOR:
     case MAV_TYPE_TRICOPTER:
+    case MAV_TYPE_VTOL_QUADROTOR:
+        qmlFile = QStringLiteral("qrc:/qml/APMSafetyComponentPlane.qml");
+        break;
     case MAV_TYPE_GROUND_ROVER:
         qmlFile = QStringLiteral("qrc:/qml/APMSafetyComponent.qml");
         break;

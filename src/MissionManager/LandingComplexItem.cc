@@ -491,7 +491,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
         {
            return false;
         }
-        qDebug() << "seting final approach altitude"<< missionItemFinalApproach.param7();
+        //qDebug() << "seting final approach altitude"<< missionItemFinalApproach.param7();
         altitudeExit = missionItemFinalApproach.param7();
     }
     else if (missionItemFinalApproach.command() == MAV_CMD_NAV_WAYPOINT)
@@ -536,7 +536,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
                 return false;
             }
         }
-        qDebug() << "seting final approach entry altitude"<< missionItemFinalApproachEntry.param7();
+        //qDebug() << "seting final approach entry altitude"<< missionItemFinalApproachEntry.param7();
         altitudeEntry = missionItemFinalApproachEntry.param7();
 
     }
@@ -637,7 +637,7 @@ bool LandingComplexItem::_scanForItem(QmlObjectListModel* visualItems, bool flyV
 
     visualItems->append(complexItem);
 
-    qDebug() << "scan for item complete";
+    //qDebug() << "scan for item complete";
     return true;
 }
 

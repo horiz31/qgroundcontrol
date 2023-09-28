@@ -1189,6 +1189,7 @@ private:
     void _sendMPU5RssiRequest           ();
     void _getDoodleRSSI                 ();
     void _getDoodleRSSIstep2            (QString value, QString value2);
+    void _lowAltitudeWarningTick        ();
 
     QWebSocket _persistentWebSocket;
 
@@ -1240,6 +1241,7 @@ private:
     bool            _flying = false;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
+    bool            _lowAltitudeWarningEnable = false;
     uint32_t        _onboardControlSensorsPresent = 0;
     uint32_t        _onboardControlSensorsEnabled = 0;
     uint32_t        _onboardControlSensorsHealth = 0;
@@ -1394,6 +1396,7 @@ private:
     QTimer _MPU5RssiTimer;
     QTimer _MPU5WebSocketTimer;
     QTimer _DoodleRssiTimer;
+    QTimer _lowAltitudeTimer;
 
     /// Callback for waitForMavlinkMessage
     ///     @param resultHandleData     Opaque data passed in to waitForMavlinkMessage call

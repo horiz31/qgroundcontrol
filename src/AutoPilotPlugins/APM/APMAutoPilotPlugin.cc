@@ -106,7 +106,7 @@ const QVariantList& APMAutoPilotPlugin::vehicleComponents(void)
             _safetyComponent = new APMSafetyComponent(_vehicle, this);
             _safetyComponent->setupTriggerSignals();
      //safety stuff seems to be poorly support with APM. If I want this, I'll need to update and build one for VTOL
-            //       _components.append(QVariant::fromValue((VehicleComponent*)_safetyComponent));
+                   _components.append(QVariant::fromValue((VehicleComponent*)_safetyComponent));
 
 #if 0
     // Follow me not ready for Stable

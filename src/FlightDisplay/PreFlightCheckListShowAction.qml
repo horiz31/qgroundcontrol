@@ -17,6 +17,8 @@ ToolStripAction {
     visible:        _useChecklist
     enabled:        _useChecklist && _activeVehicle && !_activeVehicle.armed && _activeVehicle.parameterManager.parametersReady
 
+    //can I make the background flash when checklist needs to be complete?
+
     property var  _activeVehicle:   QGroundControl.multiVehicleManager.activeVehicle
     property bool _useChecklist:    QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
 }

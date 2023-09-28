@@ -435,6 +435,7 @@ private:
     static const char* _buttonActionZoomOut;
     static const char* _buttonActionDayIR;
     static const char* _buttonActionWHBH;
+    static const char* _buttonActionCM;
     static const char* _buttonActionNUC;
     static const char* _buttonActionSnap;
     static const char* _buttonActionRec;
