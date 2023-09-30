@@ -27,6 +27,7 @@ Rectangle {
     opacity:            0.95
     radius:             ScreenTools.defaultFontPixelWidth / 2
 
+    property var     mouseCursor
     property bool    bottomMode: true
     property var     _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     property bool    _nvRecording: _activeVehicle? _activeVehicle.nvGimbal.isRecording.value === 1 : false
@@ -37,6 +38,11 @@ Rectangle {
     property string  _fov: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.fov.value) ? "--°" : _activeVehicle.nvGimbal.fov.value.toFixed(0) + "°") : "--°"
     property string  _azimuth: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.azimuth.value) ? "--°" : _activeVehicle.nvGimbal.azimuth.value.toFixed(0) + "°") : "--°"
     property bool    _nvPresent:  _activeVehicle ? (_activeVehicle.nvGimbal.mode.value !== "" ? true : false) : false
+    property string  _vehicleLatitude: _activeVehicle ? ((isNaN(_activeVehicle.latitude)) ? "--.-------°" : _activeVehicle.latitude.toFixed(6) + "°") : "--.-------°"
+    property string  _vehicleLongitude: _activeVehicle ? ((isNaN(_activeVehicle.latitude)) ? "--.-------°" : _activeVehicle.longitude.toFixed(6) + "°") : "--.-------°"
+
+    //need to get this from mouse area on map
+    property string _cursorLatitude: _activeVehicle ? ((isNaN(_activeVehicle.longitude.toString())) ? "--.-------°" : _activeVehicle.longitude.toFixed(6) + "°") : "--.-------°"
 
 
     //DeadMouseArea { anchors.fill: parent }
@@ -54,6 +60,15 @@ Rectangle {
             nvTitle.visible = false
         }
     }
+
+    function toggleDetails()
+    {
+        if (!detailGrid.visible)
+            detailGrid.visible = true
+        else
+            detailGrid.visible = false
+    }
+
     MouseArea {
            anchors.fill: parent
            onClicked: {
@@ -283,6 +298,77 @@ Rectangle {
 
         }
 
+        // Details Panel (vehicle lat/lon, cursor lat/lon)
+        GridLayout {
+
+            id: detailGrid
+            visible: false
+            Layout.fillWidth: true
+            rowSpacing:     ScreenTools.defaultFontPixelHeight
+            columnSpacing:  ScreenTools.defaultFontPixelWidth * 2
+            rows: 3
+            columns: 1
+            Layout.bottomMargin: ScreenTools.defaultFontPixelHeight * .5
+
+
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                    RowLayout{
+                    QGCLabel { text: qsTr("Vehicle Coordinates: ") + _vehicleLatitude + ", " + _vehicleLongitude
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.mediumFontPointSize
+                        Layout.fillWidth: false
+
+                    }
+                    QGCColoredImage {
+                        Layout.alignment:  Qt.AlignLeft
+                        source:             "/res/content_copy.svg"
+                        mipmap:             true
+                        width:              ScreenTools.defaultFontPixelHeight
+                        height:             width
+                        sourceSize.width:   width
+                        color:              qgcPal.text
+                        fillMode:           Image.PreserveAspectFit
+                        QGCMouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape:  Qt.PointingHandCursor
+                            onClicked:    {
+                                textEdit3.text = _vehicleLatitude + ", " + _vehicleLongitude
+                                textEdit3.selectAll()
+                                textEdit3.copy()
+                            }
+                            TextEdit {
+                                   id: textEdit3
+                                   visible: false
+                            }
+                        }
+                   }
+
+                }
+                RowLayout {
+                    QGCLabel { text: qsTr("Cursor Coodinates: ") + (mouseCursor ? mouseCursor.latitude.toFixed(6) + ", " + mouseCursor.longitude.toFixed(6) : "--.-------°, --.-------°")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.mediumFontPointSize
+                        Layout.fillWidth: true
+
+                    }
+
+                }
+                RowLayout {
+
+                    QGCLabel {
+                        text: qsTr("Vector from Cursor: ") + ((mouseCursor && _activeVehicle) ? mouseCursor.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  + "∠" + mouseCursor.azimuthTo(_activeVehicle.coordinate).toFixed(1) + " °"  : "")
+                        font.family:        ScreenTools.demiboldFontFamily
+                        font.pointSize:     ScreenTools.mediumFontPointSize
+                        Layout.fillWidth: true
+
+                    }
+                }
+            }
+        }
+
 
         //Super Volo Telemetry Value Panel
 
@@ -290,7 +376,7 @@ Rectangle {
 
             id: superVoloTelemGrid
             visible: true
-            columns: 3
+            columns: 4
             rows: 1
             rowSpacing:     ScreenTools.defaultFontPixelWidth
             columnSpacing:  ScreenTools.defaultFontPixelWidth * 2
@@ -370,6 +456,29 @@ Rectangle {
                     }
 
             }
+
+            RowLayout {
+                    QGCColoredImage {
+                        source:             "/res/menu.svg"
+                        mipmap:             true
+                        width:              ScreenTools.defaultFontPixelHeight
+                        height:             width
+                        sourceSize.width:   width
+                        color:              qgcPal.text
+                        fillMode:           Image.PreserveAspectFit
+                        QGCMouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape:  Qt.PointingHandCursor
+                            onClicked:    {
+                                toggleDetails()
+                            }
+
+                        }
+                    }
+            }
+
+
 
 
 

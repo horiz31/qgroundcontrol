@@ -58,6 +58,7 @@ FlightMap {
     property bool   _airspaceEnabled:           QGroundControl.airmapSupported ? (QGroundControl.settingsManager.airMapSettings.enableAirMap.rawValue && QGroundControl.airspaceManager.connected): false
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
     property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
+    readonly property real  _hamburgerSize:     ScreenTools.defaultFontPixelHeight
 
     property bool   _disableVehicleTracking:    false
     property bool   _keepVehicleCentered:       pipMode ? true : false
@@ -65,7 +66,9 @@ FlightMap {
 
     property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
     property var    _videoSettings:             QGroundControl.settingsManager.videoSettings
+    property var    _clickedCoordinate
 
+    signal mouseCursorChanged(var coordinate)
 
     function updateAirspace(reset) {
         if(_airspaceEnabled) {
@@ -87,6 +90,23 @@ FlightMap {
             zoomLevel = QGroundControl.flightMapZoom
         }
         _saveZoomLevelSetting = true
+    }
+
+    Component {
+        id: editPositionDialog
+
+        EditPositionDialog {
+            coordinate: _clickedCoordinate
+            onCoordinateChanged:
+            {
+                if (coordinate !== mapMouseArea.clickCoord)
+                {
+                    console.log("coordinate changed")
+                    mapClickIconItem.update(coordinate)
+                    mapMouseArea.clickCoord = coordinate
+                }
+            }
+        }
     }
 
    GPSUnitsController {
@@ -428,6 +448,9 @@ FlightMap {
         function hide() {
             mapClickIconItem.visible = false
         }
+        function update(coord) {
+            mapClickIconItem.coordinate = coord
+        }
     }
 
     // GoTo Location visuals
@@ -476,6 +499,10 @@ FlightMap {
         function show(coord) {
             gotoLocationItem.coordinate = coord
             gotoLocationItem.visible = true
+        }
+
+        function update(coord) {
+            gotoLocationItem.coordinate = coord
         }
 
         function hide() {           
@@ -757,6 +784,7 @@ FlightMap {
         id: mapMouseArea
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
+        hoverEnabled: true
         property var clickCoord
 
         onPressed:
@@ -767,6 +795,13 @@ FlightMap {
 
         onPressAndHold: {
            mouseAction(mouse);
+        }
+
+        onPositionChanged:
+        {
+            var currentLocation = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
+            //console.log(currentLocation.latitude + ", " + currentLocation.longitude)
+            mouseCursorChanged(currentLocation)
         }
 
         function mouseAction(mouse)
@@ -861,22 +896,63 @@ FlightMap {
                             //horizontalAlignment:    Text.AlignHCenter
                             visible:                globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
                         }
+                        RowLayout {
+                            QGCButton {
+                                Layout.fillWidth:   true
+                                backRadius:         4
+                                text:               qsTr("Go to location")
+                                visible:            globals.guidedControllerFlyView.showGotoLocation
+                                onClicked: {
+                                    mapClickIconItem.hide()
+                                    gotoLocationItem.show(mapMouseArea.clickCoord)
+                                    guidedPlanMapCircle.setCenter(mapMouseArea.clickCoord)
+                                    guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                                    guidedPlanMapCircle.setClockwise(true)
+                                    hideDialog()
+                                    globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem, guidedPlanMapCircle)
 
-                        QGCButton {
-                            Layout.fillWidth:   true
-                            backRadius:         4
-                            text:               qsTr("Go to location")
-                            visible:            globals.guidedControllerFlyView.showGotoLocation
-                            onClicked: {
-                                mapClickIconItem.hide()
-                                gotoLocationItem.show(mapMouseArea.clickCoord)
-                                guidedPlanMapCircle.setCenter(mapMouseArea.clickCoord)
-                                guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
-                                guidedPlanMapCircle.setClockwise(true)
-                                hideDialog()
-                                globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, mapMouseArea.clickCoord, gotoLocationItem, guidedPlanMapCircle)
-
+                                }
                             }
+                            QGCColoredImage {
+                                 id:                     hamburger
+                                 //anchors.margins:        _margin
+                                 //anchors.right:          parent.right
+                                 //anchors.verticalCenter: topRowLayout.verticalCenter
+                                 width:                  _hamburgerSize
+                                 height:                 _hamburgerSize
+                                 sourceSize.height:      _hamburgerSize
+                                 source:                 "qrc:/qmlimages/Hamburger.svg"
+                                 visible:                true
+                                 color:                  qgcPal.text
+
+                                 QGCMouseArea {
+                                     fillItem:   hamburger
+                                     onClicked: {
+                                         //currentItemScope.focus = true
+                                         _clickedCoordinate = mapClickIconItem.coordinate
+                                         mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Guided Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+
+                                         //if needs expand, then use the popup menu below, but for now going directly to Edit Position
+                                         //hamburgerMenu.popup()
+                                     }
+
+                                     QGCMenu {
+                                         id: hamburgerMenu
+
+                                         QGCMenuItem {
+                                             text:           qsTr("Edit position...")
+                                             visible:        true
+                                             onTriggered:
+                                             {
+                                                 _clickedCoordinate = mapClickIconItem.coordinate
+                                                 mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+                                             }
+                                         }
+
+
+                                     }
+                                 }
+                             }
                         }
 
                         QGCButton {
@@ -959,14 +1035,14 @@ FlightMap {
                         QGCLabel {
 
                             Layout.fillWidth:       true
-                            text:                   mapMouseArea.clickCoord ? qsTr("Range: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  : ""
+                            text:                   (mapMouseArea.clickCoord && _activeVehicle) ? qsTr("Range: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  : ""
                             visible:                true
                         }
 
                         QGCLabel {
                             Layout.topMargin: 1
                             Layout.fillWidth:       true
-                            text:                   mapMouseArea.clickCoord ? qsTr("Bearing: ") + _activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °" : ""
+                            text:                   (mapMouseArea.clickCoord && _activeVehicle) ? qsTr("Bearing: ") + _activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °" : ""
                             visible:                true
                         }
                         QGCButton {

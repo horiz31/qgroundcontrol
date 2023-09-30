@@ -4595,7 +4595,10 @@ void Vehicle::onPersistentConnected()
 void Vehicle::_sendMPU5RssiRequest()
 {
 
+    //Get password from settings
     QString persistentSystemsPassword = _settingsManager->appSettings()->MPU5Password()->rawValue().toString();
+
+    //form a JSON request to get waverelay_neighbors_json
     QJsonObject jsonrequest;
     jsonrequest["protocol_version"] = "1.1.0";
     jsonrequest["username"] = "factory";   //ultimately pull from settings
@@ -4609,11 +4612,7 @@ void Vehicle::_sendMPU5RssiRequest()
     variables["waverelay_neighbors_json"] =  empty;
     jsonrequest["variables"] = variables;
 
-    qDebug() << "JSON going out is:" << QJsonDocument(jsonrequest).toJson(QJsonDocument::Compact);
-
-    //form a JSON request to get waverelay_neighbors_json
-    //start a timer to do this periodically
-    //ondisconnect, stop the timer and try to connect again
+    //Send the message
     _persistentWebSocket.sendTextMessage(QJsonDocument(jsonrequest).toJson(QJsonDocument::Compact));
 
 }
@@ -4630,9 +4629,9 @@ void Vehicle::onPersistentMessageReceived(QString message)
 {
     //note Persistent systems reports SNR, not RSSI like Doodle does
     //snr we are getting is the combined SNR from all chains
-    const int snr_limits[2] = {10, 75};  //these limits are somewhat arbitrary. We don't want to cause the user to think the limit is abnormal/poor by being too conservative, hence we treat anything over 75dB SNR as 100%.
+    const int snr_limits[2] = {10, 65};  //these limits are somewhat arbitrary. We don't want to cause the user to think the limit is abnormal/poor by being too conservative, hence we treat anything over 75dB SNR as 100%.
     //the lower number is based on this report, and is the expected SNR where we can expect any connectivity. https://triadrf.com/resources/persistent-mpu5-data-link-testing.pdf
-    qDebug() << "Got Message from Persistent: " << message;
+
     _RSSIList.clear();
 
     QJsonDocument document = QJsonDocument::fromJson(message.toUtf8());

@@ -62,6 +62,8 @@ Item {
     property real   _fullItemZorder:    0
     property real   _pipItemZorder:     QGroundControl.zOrderWidgets
 
+    property var    _mouseCursor
+
     function _calcCenterViewPort() {
         var newToolInset = Qt.rect(0, 0, width, height)
         toolstrip.adjustToolInset(newToolInset)
@@ -85,6 +87,7 @@ Item {
         z:                      _fullItemZorder + 1
         parentToolInsets:       _toolInsets
         mapControl:             _mapControl
+        mapMouseCursor:         _mouseCursor
         visible:                !QGroundControl.videoManager.fullScreen
     }
 
@@ -157,6 +160,11 @@ Item {
         toolInsets:             customOverlay.totalToolInsets
         mapName:                "FlightDisplayView"
         altitudeSlider:         _guidedAltSlider
+        onMouseCursorChanged:   (coordinate) => {
+                                    //console.log("updated mouse coordinate " + coordinate.latitude)
+                                    _mouseCursor = coordinate
+                                }
+
     }
 
     FlyViewVideo {

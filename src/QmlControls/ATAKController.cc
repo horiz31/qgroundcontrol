@@ -16,6 +16,7 @@
 ATAKController::ATAKController(void)
 {
 
+    qDebug() << "Setting up ATAK Controller";
     //hostile targets
     _cotMap.insert(QStringLiteral("SAM"), "a-h-A-W-M-S-A");
     _cotMap.insert(QStringLiteral("Radar"), "a-h-G-E-S-R");

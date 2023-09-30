@@ -40,6 +40,7 @@ Item {
     property var    parentToolInsets
     property var    totalToolInsets:        _totalToolInsets
     property var    mapControl
+    property var    mapMouseCursor
     property var    _mapPosition:           QGroundControl.flightMapPosition
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property var    _activeVehicleCoordinate:   _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
@@ -220,6 +221,7 @@ Item {
         id:                 telemetryPanel
         x:                  recalcXPosition()
         anchors.margins:    _toolsMargin
+        mouseCursor:       mapMouseCursor
 
         // States for custom layout support
         states: [

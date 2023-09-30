@@ -612,7 +612,12 @@ void PlanManager::_handleMissionAck(const mavlink_message_t& message)
     case AckMissionClearAll:
         // MAV_MISSION_ACCEPTED expected
         if (missionAck.type != MAV_MISSION_ACCEPTED) {
-            _sendError(VehicleAckError, tr("Vehicle remove all failed. Error: %1").arg(_missionResultToString((MAV_MISSION_RESULT)missionAck.type)));
+            if (_vehicle->flightMode() == "Auto")
+            {
+                _sendError(VehicleAckError, tr("Error: Cannot clear mission when in Auto mode. Change modes and try again."));
+            }
+            else
+                _sendError(VehicleAckError, tr("Mission clear failed. Error: %1").arg(_missionResultToString((MAV_MISSION_RESULT)missionAck.type)));
         }
         _finishTransaction(missionAck.type == MAV_MISSION_ACCEPTED);
         break;

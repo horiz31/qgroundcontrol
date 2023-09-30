@@ -26,7 +26,6 @@ QGCViewDialog {
 
     EditPositionDialogController {
         id: controller
-
         Component.onCompleted: initValues()
     }
 
