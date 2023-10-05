@@ -11,12 +11,14 @@
 #include "QGCApplication.h"
 #include "SettingsManager.h"
 #include <QDebug>
+#include "ATAKMarkerManager.h"
 
 //the atak mcast address and port should come from settings
 ATAKController::ATAKController(void)
 {
 
-    qDebug() << "Setting up ATAK Controller";
+
+    _toolbox = qgcApp()->toolbox();
     //hostile targets
     _cotMap.insert(QStringLiteral("SAM"), "a-h-A-W-M-S-A");
     _cotMap.insert(QStringLiteral("Radar"), "a-h-G-E-S-R");
@@ -76,9 +78,9 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     _atakMcastPort = settings->atakServerPort()->rawValue().toInt();
 
     if (uid.isEmpty())
-        _uid = QString("EchoMav.") + GetRandomString();
+        _uid = QString("EchoMAV.") + GetRandomString();
     else
-        _uid = QString("EchoMav.") + uid;
+        _uid = QString("EchoMAV.") + uid;
 
     //qDebug() << "Sending ATAK mcast message";
     //qDebug() << "The specified type is" << _cotTypes[_cotType] << "and the CoT code is"<< _cotMap.value(_cotTypes[_cotType]);
@@ -118,6 +120,39 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     //now send out udp mcast to atak mcast address and to localhost:4242
     udpSocket4.writeDatagram(output.toUtf8(), QHostAddress(QHostAddress::LocalHost), 4242);
     udpSocket4.writeDatagram(output.toUtf8(), _atakMcastAddress, _atakMcastPort);
+
+    //append to an array of atak_local markers for display on the map
+   // ATAKMarkerInfo atakarkerInfo = ATAKM
+
+    ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo;
+
+    atakMarkerInfo.uid = _uid;
+    atakMarkerInfo.callsign = _uid;
+    atakMarkerInfo.location = coordinate;
+    atakMarkerInfo.altitude = qQNaN();
+    atakMarkerInfo.heading = qQNaN();
+    atakMarkerInfo.isLocal = true;
+/*
+    vehicleInfo.location.setLatitude(adsbVehicleMsg.lat / 1e7);
+    vehicleInfo.location.setLongitude(adsbVehicleMsg.lon / 1e7);
+    vehicleInfo.availableFlags |= ADSBVehicle::LocationAvailable;
+
+    vehicleInfo.callsign = adsbVehicleMsg.callsign;
+    vehicleInfo.availableFlags |= ADSBVehicle::CallsignAvailable;
+
+    if (adsbVehicleMsg.flags & ADSB_FLAGS_VALID_ALTITUDE) {
+        vehicleInfo.altitude = (double)adsbVehicleMsg.altitude / 1e3;
+        vehicleInfo.availableFlags |= ADSBVehicle::AltitudeAvailable;
+    }
+
+    if (adsbVehicleMsg.flags & ADSB_FLAGS_VALID_HEADING) {
+        vehicleInfo.heading = (double)adsbVehicleMsg.heading / 100.0;
+        vehicleInfo.availableFlags |= ADSBVehicle::HeadingAvailable;
+    }
+
+*/
+    _toolbox->atakMarkerManager()->atakMarkerUpdate(atakMarkerInfo);
+
 }
 
 void

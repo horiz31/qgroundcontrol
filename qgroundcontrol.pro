@@ -387,6 +387,7 @@ INCLUDEPATH += .
 INCLUDEPATH += \
     include/ui \
     src \
+    src/ATAK \
     src/ADSB \
     src/api \
     src/AnalyzeView \
@@ -577,6 +578,8 @@ DebugBuild { PX4FirmwarePlugin { PX4FirmwarePluginFactory { APMFirmwarePlugin { 
 # Main QGC Headers and Source files
 
 HEADERS += \
+    src/ATAK/ATAKMarker.h \
+    src/ATAK/ATAKMarkerManager.h \
     src/ADSB/ADSBVehicle.h \
     src/ADSB/ADSBVehicleManager.h \
     src/AnalyzeView/LogDownloadController.h \
@@ -838,6 +841,8 @@ AndroidBuild {
 }
 
 SOURCES += \
+    src/ATAK/ATAKMarker.cc \
+    src/ATAK/ATAKMarkerManager.cc \
     src/ADSB/ADSBVehicle.cc \
     src/ADSB/ADSBVehicleManager.cc \
     src/AnalyzeView/LogDownloadController.cc \

@@ -305,6 +305,7 @@
         <file alias="QGroundControl/FlightDisplay/PreFlightQHoverCheck.qml">src/FlightDisplay/PreFlightQHoverCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/FlyViewThrottleIndicator.qml">src/FlightDisplay/FlyViewThrottleIndicator.qml</file>
         <file alias="QGroundControl/FlightDisplay/ChecklistWarningIndicator.qml">src/FlightDisplay/ChecklistWarningIndicator.qml</file>
+        <file alias="QGroundControl/FlightMap/ATAKMarkerMapItem.qml">src/FlightMap/MapItems/ATAKMarkerMapItem.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

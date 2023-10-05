@@ -321,6 +321,24 @@ FlightMap {
         }
     }
 
+    // Add ATAK Markers
+
+    MapItemView {
+        model: QGroundControl.atakMarkerManager.atakMarkers
+        delegate: ATAKMarkerMapItem {
+            marker:         object
+            coordinate:     object.coordinate
+            altitude:       object.altitude
+            callsign:       object.callsign
+            heading:        object.heading
+            isLocal:        object.isLocal
+            map:            _root
+            z:              QGroundControl.zOrderATAKMarkers
+        }
+    }
+
+
+
     // Add the items associated with each vehicles flight plan to the map
     Repeater {
         model: QGroundControl.multiVehicleManager.vehicles
