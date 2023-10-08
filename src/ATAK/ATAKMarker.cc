@@ -10,7 +10,6 @@
 #include "ATAKMarker.h"
 #include "QGCLoggingCategory.h"
 #include "QGC.h"
-
 #include <QDebug>
 #include <QtMath>
 
@@ -35,6 +34,18 @@ void ATAKMarker::update(const ATAKMarkerInfo_t& atakMarkerInfo)
         _callsign = atakMarkerInfo.callsign;
         emit callsignChanged();
     }
+    if (atakMarkerInfo.type != _type) {
+        _type = atakMarkerInfo.type;
+        emit typeChanged();
+    }
+    if (atakMarkerInfo.staleTime != _staleTime) {
+        _staleTime = atakMarkerInfo.staleTime;
+        emit staleTimeChanged();
+    }
+    if (atakMarkerInfo.startTime != _startTime) {
+        _startTime = atakMarkerInfo.startTime;
+        emit startTimeChanged();
+    }
 
     if (_coordinate != atakMarkerInfo.location) {
         _coordinate = atakMarkerInfo.location;
@@ -49,10 +60,10 @@ void ATAKMarker::update(const ATAKMarkerInfo_t& atakMarkerInfo)
         emit headingChanged();
     }
 
-    _lastUpdateTimer.restart();
 }
 
 bool ATAKMarker::expired()
 {
-    return _lastUpdateTimer.hasExpired(expirationTimeoutMs);
+    //qDebug () << QDateTime::currentMSecsSinceEpoch() << ">" << _staleTime << "?";
+    return (QDateTime::currentMSecsSinceEpoch() > _staleTime);
 }

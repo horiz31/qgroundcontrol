@@ -15,6 +15,8 @@ import QtGraphicalEffects   1.0
 import QGroundControl               1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Controls      1.0
+import QtQuick.Dialogs              1.2
+
 
 /// Marker for displaying an ATAK Marker on the map
 MapQuickItem {
@@ -25,6 +27,7 @@ MapQuickItem {
     property double heading:        marker ? marker.heading.value : Number.NaN      ///< marker heading, NAN for none
     property bool   isLocal:        false                                           /// Identify if this is a locally generated marker or ingested from remote TAK system
     property real   size:           ScreenTools.defaultFontPixelHeight * 1.5        /// Size for icon, typically specified by the parent
+    property string uid
 
     anchorPoint.x:  markerItem.width  / 2
     anchorPoint.y:  markerItem.height / 2
@@ -36,7 +39,7 @@ MapQuickItem {
         id:         markerItem
         width:      markerIcon.width
         height:     markerIcon.height
-        opacity:    0.8
+        opacity:    1.0
 
         Rectangle {
             id:                 markerShadow
@@ -67,17 +70,96 @@ MapQuickItem {
                 origin.y:       markerIcon.height / 2
                 angle:          isNaN(heading) ? 0 : heading
             }
+            QGCMouseArea {
+                fillItem:   markerIcon
+                onClicked: {
+                    //currentItemScope.focus = true
+                    //_clickedCoordinate = mapClickIconItem.coordinate
+                    //mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Guided Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+
+                    //if needs expand, then use the popup menu below, but for now going directly to Edit Position
+                    hamburgerMenu.popup()
+                }
+
+                QGCMenu {
+                    id: hamburgerMenu
+
+                    QGCMenuItem {
+                        text:           qsTr("Navigate To")
+                        visible:        true
+                        onTriggered:
+                        {
+                            mapClickIconItem.hide()
+                            gotoLocationItem.show(coordinate)
+                            guidedPlanMapCircle.setCenter(coordinate)
+                            guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                            guidedPlanMapCircle.setClockwise(true)
+                            globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, coordinate, gotoLocationItem, guidedPlanMapCircle)
+
+                            //alternatively open up the side panel
+                            /*
+                            orbitMapCircle.hide()
+                            mapMouseArea.clickCoord = coordinate
+                            mainWindow.showComponentDialog(
+                            mapClickActionDialogComponent,
+                            qsTr("Marker Click Action"),
+                            mainWindow.showDialogDefaultWidth,
+                            StandardButton.Close)
+                            */
+                        }
+                    }
+                    QGCMenuItem {
+                        text:           qsTr("Point Camera At")
+                        visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                        //visible: true
+                        onTriggered:
+                        {
+                            mapClickIconItem.hide()
+                            nvPTCLocationItem.show(coordinate)
+                            if(_activeVehicle)
+                                joystickManager.cameraManagement.pointToCoordinate(coordinate.latitude, coordinate.longitude)
+                        }
+                    }
+                    QGCMenuItem {
+                        text:           qsTr("Delete Marker")
+                        visible:        isLocal
+                        onTriggered:
+                        {
+                            mainWindow.showPopupDialogFromComponent(deleteMarkerDialog)
+                        }
+                    }
+
+
+                }
+            }
         }
 
         QGCMapLabel {
             id:                         markerLabel
+            visible:                    _mainWindowIsMap
             anchors.top:                parent.bottom
             anchors.horizontalCenter:   parent.horizontalCenter
             map:                        _map
             text:                       markerLabelText
-            font.pointSize:             ScreenTools.smallFontPointSize
-            visible:                    true
+            font.pointSize:             ScreenTools.mediumFontPointSize
+            //visible:                    true
             property string markerLabelText: visible ? callsign : ""
+
+        }
+
+        Component {
+            id: deleteMarkerDialog
+            QGCPopupDialog {
+               title:      qsTr("Delete Marker?")
+                buttons:    StandardButton.Yes | StandardButton.Cancel
+
+                QGCLabel { text: qsTr("Are you sure you want to delete marker '%1'?").arg(uid) }
+
+                function accept() {
+                    QGroundControl.atakMarkerManager.deleteMarker(uid)
+                    hideDialog()
+                }
+            }
 
         }
     }

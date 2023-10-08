@@ -797,6 +797,18 @@ void CameraManagement::setSysObjDetSetFireThresCommand(float fireThres)
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DetectionControl,MavExtCmdArg_DetectorFireThres,fireThres,0,0,0,0);
 }
 
+void CameraManagement::setSysOSDOffCommand(void)
+{
+    /* Set the system OSD Mode Off */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,0,20,MavExtCmdArg_OSDOff,0,0,0);
+}
+
+void CameraManagement::setSysOSDOnCommand(void)
+{
+    /* Set the system OSD Mode Off */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,0,20,MavExtCmdArg_OSDCfg1,0,0,0);
+}
+
 void CameraManagement::setSysGeoAVGOnCommand(void)
 {
     /* Set the system sensor */

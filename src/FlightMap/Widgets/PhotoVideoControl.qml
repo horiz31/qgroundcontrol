@@ -858,6 +858,31 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
                     }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Video OSD")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.osd.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          {
+                            if (_videoStreamSettings.osd.value !== checked)
+                            {
+                                if (checked)
+                                {
+                                    joystickManager.cameraManagement.setSysOSDOnCommand();
+                                }
+                                else
+                                {
+                                    joystickManager.cameraManagement.setSysOSDOffCommand();
+                                }
+                            }
+                            _videoStreamSettings.osd.rawValue = checked ? true : false
+                        }
+                    }
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight

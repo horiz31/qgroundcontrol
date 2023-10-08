@@ -36,16 +36,22 @@ signals:
 protected:
     void run(void) final;
 
+public slots:
+    void sendBytes(const QByteArray bytes);
+
 private slots:
     void _readBytes(void);
 
 private:
     void _hardwareConnect(void);
-    void _parseData(const QString& line);
+    void _parseDataProtoBuf(const QByteArray& data);
+    void _parseDataXml(const QByteArray& data);
+
 
     QString         _hostAddress;
     int             _port;
     QUdpSocket*     _socket =   nullptr;
+    QUdpSocket*      _udpSendSocket = nullptr;
 };
 
 class ATAKMarkerManager : public QGCTool {
@@ -60,6 +66,7 @@ public:
 
     // QGCTool overrides
     void setToolbox(QGCToolbox* toolbox) final;
+    Q_INVOKABLE void deleteMarker       (const QString uid);
 
 public slots:
     void atakMarkerUpdate  (const ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo);
@@ -67,10 +74,13 @@ public slots:
 
 private slots:
     void _cleanupStaleMarkers(void);
+    void _sendOutLocalMarkers(void);
+    void _send(ATAKMarker* atakMarker);
 
 private:
     QmlObjectListModel              _ATAKMarkers;
     QMap<QString, ATAKMarker*>      _atakUidMap;
     QTimer                          _ATAKMarkerCleanupTimer;
+    QTimer                          _ATAKMarkerSendoutTimer;
     ATAKUDPLink*                    _udpLink = nullptr;
 };

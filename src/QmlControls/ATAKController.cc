@@ -35,10 +35,13 @@ ATAKController::ATAKController(void)
     _cotMap.insert(QStringLiteral("Infantry Light"), "a-h-G-U-C-I-L");
     _cotMap.insert(QStringLiteral("Infantry Motorized"), "a-h-G-U-C-I-M");
     //neutral civ targets
-    _cotMap.insert(QStringLiteral("Civ. Vehicle"), "a-n-G-E-V-C");
-    _cotMap.insert(QStringLiteral("Bridge"), "a-n-G-I-c-b");
-    _cotMap.insert(QStringLiteral("Residence"), "a-n-G-I-c-rah");
-    _cotMap.insert(QStringLiteral("Electric Power Facility"), "a-n-G-I-U-E");
+    _cotMap.insert(QStringLiteral("Structure (Civ)"), "a-n-G-I-c");
+    _cotMap.insert(QStringLiteral("Vehicle (Civ)"), "a-n-G-E-V-C");
+    _cotMap.insert(QStringLiteral("Road"), "a-.-G-I-r");
+    _cotMap.insert(QStringLiteral("Bridge"), "a-.-G-I-c-b");
+    _cotMap.insert(QStringLiteral("Residence (Civ)"), "a-n-G-I-c-rah");
+
+
 
     //now for each key in map, append to QStringList I can find to the model
     //note this method will automatically sort by key name, that is ok for this use case but if I don't want
@@ -48,6 +51,7 @@ ATAKController::ATAKController(void)
         _cotTypes.append(i.key());
         ++i;
     }
+
 
     //stale times, save in seconds
     _minuteMap.append(QPair(QStringLiteral("10 minutes"), 10 * 60));
@@ -122,35 +126,19 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     udpSocket4.writeDatagram(output.toUtf8(), _atakMcastAddress, _atakMcastPort);
 
     //append to an array of atak_local markers for display on the map
-   // ATAKMarkerInfo atakarkerInfo = ATAKM
 
     ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo;
 
     atakMarkerInfo.uid = _uid;
     atakMarkerInfo.callsign = _uid;
+    atakMarkerInfo.type = _cotMap.value(_cotTypes[_cotType]);
     atakMarkerInfo.location = coordinate;
     atakMarkerInfo.altitude = qQNaN();
     atakMarkerInfo.heading = qQNaN();
+    atakMarkerInfo.staleTime = QDateTime::currentDateTime().toTimeSpec(Qt::UTC).addSecs(_minuteMap[_staleMinutes].second).toMSecsSinceEpoch();
+    atakMarkerInfo.startTime = QDateTime::currentMSecsSinceEpoch();
     atakMarkerInfo.isLocal = true;
-/*
-    vehicleInfo.location.setLatitude(adsbVehicleMsg.lat / 1e7);
-    vehicleInfo.location.setLongitude(adsbVehicleMsg.lon / 1e7);
-    vehicleInfo.availableFlags |= ADSBVehicle::LocationAvailable;
 
-    vehicleInfo.callsign = adsbVehicleMsg.callsign;
-    vehicleInfo.availableFlags |= ADSBVehicle::CallsignAvailable;
-
-    if (adsbVehicleMsg.flags & ADSB_FLAGS_VALID_ALTITUDE) {
-        vehicleInfo.altitude = (double)adsbVehicleMsg.altitude / 1e3;
-        vehicleInfo.availableFlags |= ADSBVehicle::AltitudeAvailable;
-    }
-
-    if (adsbVehicleMsg.flags & ADSB_FLAGS_VALID_HEADING) {
-        vehicleInfo.heading = (double)adsbVehicleMsg.heading / 100.0;
-        vehicleInfo.availableFlags |= ADSBVehicle::HeadingAvailable;
-    }
-
-*/
     _toolbox->atakMarkerManager()->atakMarkerUpdate(atakMarkerInfo);
 
 }
