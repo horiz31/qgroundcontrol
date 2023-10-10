@@ -799,14 +799,38 @@ void CameraManagement::setSysObjDetSetFireThresCommand(float fireThres)
 
 void CameraManagement::setSysOSDOffCommand(void)
 {
-    /* Set the system OSD Mode Off */
+    /* Set the system OSD Mode Off */    
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,0,20,MavExtCmdArg_OSDOff,0,0,0);
+
+    //queue param save
+    QTimer::singleShot(1000, this, &CameraManagement::setSysSaveParams);
+
+    //queue a reboot
+    QTimer::singleShot(2000, this, &CameraManagement::setSysReboot);
 }
 
 void CameraManagement::setSysOSDOnCommand(void)
 {
-    /* Set the system OSD Mode Off */
+    /* Set the system OSD Mode Off */ 
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,0,20,MavExtCmdArg_OSDCfg1,0,0,0);
+
+    //queue param save
+    QTimer::singleShot(1000, this, &CameraManagement::setSysSaveParams);
+
+    //queue a reboot
+    QTimer::singleShot(2000, this, &CameraManagement::setSysReboot);
+}
+
+void CameraManagement::setSysSaveParams(void)
+{
+    qDebug() << "Saving Params";
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,1,20,0,0,0,0);
+}
+
+void CameraManagement::setSysReboot(void)
+{
+    qDebug() << "Rebooting";
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_ConfigurationCommand,2,20,0,0,0,0);
 }
 
 void CameraManagement::setSysGeoAVGOnCommand(void)

@@ -28,8 +28,16 @@ Item {
 
         property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
 
-        DeadMouseArea { anchors.fill: parent }
+        QGCMouseArea {
+            fillItem:   checklistPanel
+            onClicked: {
+                if (!_isCheckListWindowVisible && _checkListWindow)
+                {
+                    _checkListWindow.show()
+                }
+            }
 
+        }
         PropertyAnimation on opacity {
             easing.type:    Easing.OutQuart
             from:           0.5

@@ -67,6 +67,9 @@
         <file alias="target.svg">resources/target.svg</file>
         <file alias="content_copy.svg">resources/content_copy.svg</file>
         <file alias="menu.svg">resources/menu.svg</file>
+        <file alias="taklogo.svg">resources/taklogo.svg</file>
+        <file alias="gimbal2.svg">resources/gimbal2.svg</file>
+        <file alias="guidedIcon.svg">resources/guidedIcon.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

@@ -4629,7 +4629,7 @@ void Vehicle::onPersistentMessageReceived(QString message)
 {
     //note Persistent systems reports SNR, not RSSI like Doodle does
     //snr we are getting is the combined SNR from all chains
-    const int snr_limits[2] = {10, 65};  //these limits are somewhat arbitrary. We don't want to cause the user to think the limit is abnormal/poor by being too conservative, hence we treat anything over 75dB SNR as 100%.
+    const int snr_limits[2] = {10, 50};  //these limits are somewhat arbitrary. We don't want to cause the user to think the limit is abnormal/poor by being too conservative, hence we treat anything over 75dB SNR as 100%.
     //the lower number is based on this report, and is the expected SNR where we can expect any connectivity. https://triadrf.com/resources/persistent-mpu5-data-link-testing.pdf
 
     _RSSIList.clear();

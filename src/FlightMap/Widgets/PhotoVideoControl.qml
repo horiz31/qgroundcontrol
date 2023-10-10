@@ -189,54 +189,6 @@ Rectangle {
             }
         }
 
-        /*
-
-        //handle nextvision recording
-        if (_videoStreamInPhotoMode) {
-            console.log("nextvision snapshot");
-            joystickManager.cameraManagement.setSysSnapshotCommand(0);
-        }
-        else
-        {
-             if (_activeVehicle.nvGimbal.isRecording.value === 1) {
-                console.log("nextvision recording off");
-                joystickManager.cameraManagement.setSysRecOffCommand(0);
-             }
-             else if (_activeVehicle.nvGimbal.isRecording.value === 0) {
-                console.log("nextvision recording on");
-                joystickManager.cameraManagement.setSysRecOnCommand(0);
-             }
-        }
-        */
-
-        /*
-        if (_mavlinkCamera && _mavlinkCamera.capturesVideo) {
-            if(_mavlinkCameraInVideoMode) {
-                _mavlinkCamera.toggleVideo()
-            } else {
-                if(_mavlinkCameraInPhotoMode && !_mavlinkCameraPhotoCaptureIsIdle && _mavlinkCameraElapsedMode) {
-                    _mavlinkCamera.stopTakePhoto()
-                } else {
-                    _mavlinkCamera.takePhoto()
-                }
-            }
-        } else if (_onlySimpleCameraAvailable || (_simpleCameraAvailable && _anyVideoStreamAvailable && _videoStreamInPhotoMode && !videoGrabRadio.checked)) {
-            _simplePhotoCaptureIsIdle = false
-            _activeVehicle.triggerSimpleCamera()
-            simplePhotoCaptureTimer.start()
-        } else if (_anyVideoStreamAvailable) {
-            if (_videoStreamInPhotoMode) {
-                _simplePhotoCaptureIsIdle = false
-                _videoStreamManager.grabImage()
-                simplePhotoCaptureTimer.start()
-            } else {
-                if (_videoStreamManager.recording) {
-                    _videoStreamManager.stopRecording()
-                } else {
-                    _videoStreamManager.startRecording()
-                }
-            }
-        }*/
     }
 
     Timer {
@@ -771,6 +723,7 @@ Rectangle {
         id: settingsDialogComponent
 
         QGCPopupDialog {
+            id:         videoSettingsPopup
             title:      qsTr("Video Settings")
             buttons:    StandardButton.Close
 
@@ -858,31 +811,9 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
                     }
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Video OSD")
-                        visible:            _nextVisionGimbalAvailable
-                    }
 
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.osd.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          {
-                            if (_videoStreamSettings.osd.value !== checked)
-                            {
-                                if (checked)
-                                {
-                                    joystickManager.cameraManagement.setSysOSDOnCommand();
-                                }
-                                else
-                                {
-                                    joystickManager.cameraManagement.setSysOSDOffCommand();
-                                }
-                            }
-                            _videoStreamSettings.osd.rawValue = checked ? true : false
-                        }
-                    }
+
+
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
@@ -999,6 +930,58 @@ Rectangle {
                         fact:               _videoStreamSettings.videoFit
                         indexModel:         false
                         visible:            _anyVideoStreamAvailable
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Video OSD")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "OSD On"
+                            onClicked: {
+                                 mainWindow.showPopupDialogFromComponent(changeOSDOnDialog)
+                            }
+                        }
+                        QGCButton {
+                            text: "OSD Off"
+                            onClicked: {
+                                 mainWindow.showPopupDialogFromComponent(changeOSDOffDialog)
+                            }
+                        }
+                    }
+                    Component {
+                        id: changeOSDOnDialog
+                        QGCPopupDialog {
+                           title:      qsTr("Enable OSD?")
+                            buttons:    StandardButton.Yes | StandardButton.Cancel
+
+                            QGCLabel { text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")}
+
+                            function accept() {
+                                joystickManager.cameraManagement.setSysOSDOnCommand()
+                                hideDialog()
+                                videoSettingsPopup.hideDialog()
+                            }
+                        }
+
+                    }
+                    Component {
+                        id: changeOSDOffDialog
+                        QGCPopupDialog {
+                           title:      qsTr("Disable OSD?")
+                            buttons:    StandardButton.Yes | StandardButton.Cancel
+
+                            QGCLabel { text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")}
+
+                            function accept() {
+                                joystickManager.cameraManagement.setSysOSDOffCommand()
+                                hideDialog()
+                                videoSettingsPopup.hideDialog()
+                            }
+                        }
+
                     }
 
                 }

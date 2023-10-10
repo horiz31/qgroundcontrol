@@ -95,7 +95,7 @@ Item {
 
 
             PreFlightJoystickCheck {
-                allowTelemetryFailureOverride:    true
+                allowTelemetryFailureOverride:    false
              }
 
              PreFlightQHoverCheck {

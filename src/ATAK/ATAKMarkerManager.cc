@@ -55,7 +55,7 @@ void ATAKMarkerManager::deleteMarker(QString uid)
 {
     for (int i=_ATAKMarkers.count()-1; i>=0; i--) {
         ATAKMarker* atakMarker = _ATAKMarkers.value<ATAKMarker*>(i);
-        if (atakMarker->uid() == uid && atakMarker->isLocal()) {
+        if (atakMarker->uid() == uid) {  //&& atakMarker->isLocal(
             _ATAKMarkers.removeAt(i);
             _atakUidMap.remove(atakMarker->uid());
             atakMarker->deleteLater();
@@ -130,12 +130,11 @@ void ATAKMarkerManager::_send(ATAKMarker* atakMarker)
 
 void ATAKMarkerManager::atakMarkerUpdate(const ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo)
 {
-    QString uid = atakMarkerInfo.uid;
-
-    //qDebug() << "Updating ATAK Marker with uid" << atakMarkerInfo.uid;
+    QString uid = atakMarkerInfo.uid;  
 
     if (_atakUidMap.contains(uid)) {
-        _atakUidMap[uid]->update(atakMarkerInfo);
+        if (!_atakUidMap[uid]->isLocal())  //if marker already exists and it's local, this is likely a network reflection, don't update uncessarily
+            _atakUidMap[uid]->update(atakMarkerInfo);
     } else {
             ATAKMarker* atakMarker = new ATAKMarker(atakMarkerInfo, this);
             _atakUidMap[uid] = atakMarker;
@@ -195,11 +194,13 @@ void ATAKUDPLink::_hardwareConnect()
     qDebug() << "Opening connection to receive ATAK data";
 
     _udpSendSocket = new QUdpSocket();  //create a socket to use for sending
-    _udpSendSocket->bind(QHostAddress(QHostAddress::AnyIPv4), 0, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+    //_udpSendSocket->bind(QHostAddress(QHostAddress::AnyIPv4), 0, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+    _udpSendSocket->bind(QHostAddress(QHostAddress::AnyIPv4), 0);
     _socket = new QUdpSocket();  //receive socket
 
-    // Bind the receive socket to a specific port
+    // Bind the receive socket to a specific port, enabling port sharing to allow tak to be running on the same machine
     if (!_socket->bind(QHostAddress::AnyIPv4, _port, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
+    //if (!_socket->bind(QHostAddress::AnyIPv4, _port)) {
         qDebug() << "Failed to bind UDP socket to port 6969";
         return;
     }
@@ -243,9 +244,16 @@ void ATAKUDPLink::_readBytes(void)
                 else if (dgram.data().at(1) == (char)0x01)
                 {
                     //use Protobuf
+                    //qDebug() << "Received protocol buf datagram:" << dgram.data().toHex() << "From:" << dgram.senderAddress().toString() << dgram.senderPort();
                     _parseDataProtoBuf(headerRemoved);
                 }
 
+            }
+            else
+            {
+                //qDebug() << "Received datagram without header from" << QString(dgram.data()) << dgram.senderAddress().toString() << dgram.senderPort();
+                //try to parse xml
+                //_parseDataXml(dgram.data());
             }
         }
     }
@@ -253,8 +261,11 @@ void ATAKUDPLink::_readBytes(void)
 void ATAKUDPLink::_parseDataXml(const QByteArray& data)
 {
     //XML (Version 0) CoT Data
+    bool callsignFound = false;
     QXmlStreamReader xml(data);
     ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo;
+    if (xml.hasError())
+        return;
     try {
         while (!xml.atEnd()) {
             xml.readNext();
@@ -263,17 +274,31 @@ void ATAKUDPLink::_parseDataXml(const QByteArray& data)
                 if (xml.name() == "event") {
                     atakMarkerInfo.uid = xml.attributes().value("uid").toString();
                     atakMarkerInfo.type = xml.attributes().value("type").toString();
+                    if (atakMarkerInfo.type=="a-f-A-M-F-Q")
+                    {
+                        //the issue here is that the echopilot puts out CoT data, which we show on top of the GCS's already present icon for the vehicle
+                        //woudl be nice in the future to come up with a way to show other UAS data but not our own
+                        return;
+                    }
                     atakMarkerInfo.startTime = xml.attributes().value("start").toInt();
+                    if (atakMarkerInfo.startTime == 0)
+                        atakMarkerInfo.startTime = QDateTime::fromString(xml.attributes().value("start").toString(), Qt::ISODate).toMSecsSinceEpoch();
                     atakMarkerInfo.staleTime = xml.attributes().value("stale").toInt();
+                    if (atakMarkerInfo.staleTime == 0)
+                        atakMarkerInfo.staleTime = QDateTime::fromString(xml.attributes().value("stale").toString(), Qt::ISODate).toMSecsSinceEpoch();
 
                 } else if (xml.name() == "point") {
-                    QGeoCoordinate location = QGeoCoordinate(xml.attributes().value("lat").toInt(), xml.attributes().value("lon").toInt());
+                    QGeoCoordinate location = QGeoCoordinate(xml.attributes().value("lat").toDouble(), xml.attributes().value("lon").toDouble());
                     atakMarkerInfo.location = location;
                     atakMarkerInfo.altitude = xml.attributes().value("hae").toDouble();
                 }
                 else if (xml.name() == "contact") {
                     atakMarkerInfo.callsign = xml.attributes().value("callsign").toString();
+                    if (atakMarkerInfo.callsign != "")
+                        callsignFound = true;
                 }
+                if (!callsignFound)
+                    atakMarkerInfo.callsign = atakMarkerInfo.uid;
             }
         }
 
@@ -281,7 +306,7 @@ void ATAKUDPLink::_parseDataXml(const QByteArray& data)
             qDebug() << "XML Error 1 in ATAKMarkerManager:" << xml.errorString();
         }
         else
-        {
+        {            
             atakMarkerInfo.isLocal = false;
             atakMarkerInfo.heading = qQNaN();
             emit atakMarkerUpdate(atakMarkerInfo);
@@ -304,7 +329,7 @@ void ATAKUDPLink::_parseDataProtoBuf(const QByteArray& data)
         // Access the parsed data
         if (takMessage.cotevent().detail().has_contact())
         {
-            //qDebug() << "Callsign (contact):" << takMessage.cotevent().detail().contact().callsign().c_str();
+            qDebug() << "Callsign (contact):" << takMessage.cotevent().detail().contact().callsign().c_str();
             atakMarkerInfo.callsign = takMessage.cotevent().detail().contact().callsign().c_str();
         }
         else
@@ -312,13 +337,13 @@ void ATAKUDPLink::_parseDataProtoBuf(const QByteArray& data)
             QXmlStreamReader reader(takMessage.cotevent().detail().xmldetail().c_str());
             while(!reader.atEnd() && !reader.hasError()) {
                 if(reader.readNext() == QXmlStreamReader::StartElement && reader.name() == "contact") {
-                    //qDebug() << "Callsign (xml):" << reader.attributes().value("callsign");
+                    qDebug() << "Callsign (xml):" << reader.attributes().value("callsign");
                     atakMarkerInfo.callsign = reader.attributes().value("callsign").toString();
                 }
             }
          }
 
-        //qDebug() << "UID:" << takMessage.cotevent().uid().c_str();
+        qDebug() << "UID:" << takMessage.cotevent().uid().c_str();
         atakMarkerInfo.uid = takMessage.cotevent().uid().c_str();
         QGeoCoordinate location(takMessage.cotevent().lat(), takMessage.cotevent().lon());
         atakMarkerInfo.location = location;

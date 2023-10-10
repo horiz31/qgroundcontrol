@@ -19,6 +19,7 @@ ToolStripActionList {
     signal clearFlightPath
     signal centerMap
 
+
     model: [
         ToolStripAction {
             text:           qsTr("Plan")
@@ -26,7 +27,10 @@ ToolStripActionList {
             onTriggered:    mainWindow.showPlanView()
             enabled:        _activeVehicle && _activeVehicle.parameterManager.parametersReady
         },
-        PreFlightCheckListShowAction { onTriggered: displayPreFlightChecklist() },
+        PreFlightCheckListShowAction
+        {
+            onTriggered: displayPreFlightChecklist()
+        },
         ClearFlightTrail {  onTriggered:  clearFlightPath()  },
         CenterMap {  onTriggered:  centerMap()  },
         GuidedActionTakeoff { },

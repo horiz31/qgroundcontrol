@@ -263,6 +263,8 @@ public:
     Q_INVOKABLE void setSysVMDOffCommand(void);
     Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);   
     void setPilotPhaseTwo();
+    void setSysSaveParams();
+    void setSysReboot();
 
 protected:
     MultiVehicleManager*    _multiVehicleManager;

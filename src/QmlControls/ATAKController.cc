@@ -119,8 +119,6 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     writer.writeEndElement();
     writer.writeEndDocument();
 
-    //qDebug() << "XML OUT is" << output;
-
     //now send out udp mcast to atak mcast address and to localhost:4242
     udpSocket4.writeDatagram(output.toUtf8(), QHostAddress(QHostAddress::LocalHost), 4242);
     udpSocket4.writeDatagram(output.toUtf8(), _atakMcastAddress, _atakMcastPort);

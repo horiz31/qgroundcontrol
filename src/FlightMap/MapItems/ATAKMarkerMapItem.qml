@@ -122,7 +122,7 @@ MapQuickItem {
                     }
                     QGCMenuItem {
                         text:           qsTr("Delete Marker")
-                        visible:        isLocal
+                        visible:        true //isLocal
                         onTriggered:
                         {
                             mainWindow.showPopupDialogFromComponent(deleteMarkerDialog)
