@@ -17,6 +17,7 @@
 #include "AppSettings.h"
 #include "AirspaceManager.h"
 #include "ADSBVehicleManager.h"
+#include "ATAKMarkerManager.h"
 #include "QGCPalette.h"
 #include "QmlUnitsConversion.h"
 #if defined(QGC_ENABLE_PAIRING)
@@ -68,6 +69,7 @@ public:
     Q_PROPERTY(SettingsManager*     settingsManager         READ    settingsManager         CONSTANT)
     Q_PROPERTY(AirspaceManager*     airspaceManager         READ    airspaceManager         CONSTANT)
     Q_PROPERTY(ADSBVehicleManager*  adsbVehicleManager      READ    adsbVehicleManager      CONSTANT)
+    Q_PROPERTY(ATAKMarkerManager*   atakMarkerManager       READ    atakMarkerManager       CONSTANT)
     Q_PROPERTY(QGCCorePlugin*       corePlugin              READ    corePlugin              CONSTANT)
     Q_PROPERTY(MissionCommandTree*  missionCommandTree      READ    missionCommandTree      CONSTANT)
     Q_PROPERTY(FactGroup*           gpsRtk                  READ    gpsRtkFactGroup         CONSTANT)
@@ -98,6 +100,7 @@ public:
     Q_PROPERTY(qreal zOrderWidgets              READ zOrderWidgets              CONSTANT) ///< z order value to widgets, for example: zoom controls, hud widgetss
     Q_PROPERTY(qreal zOrderMapItems             READ zOrderMapItems             CONSTANT)
     Q_PROPERTY(qreal zOrderVehicles             READ zOrderVehicles             CONSTANT)
+    Q_PROPERTY(qreal zOrderATAKMarkers          READ zOrderATAKMarkers          CONSTANT)
     Q_PROPERTY(qreal zOrderWaypointIndicators   READ zOrderWaypointIndicators   CONSTANT)
     Q_PROPERTY(qreal zOrderTrajectoryLines      READ zOrderTrajectoryLines      CONSTANT)
     Q_PROPERTY(qreal zOrderWaypointLines        READ zOrderWaypointLines        CONSTANT)
@@ -161,6 +164,7 @@ public:
     FactGroup*              gpsRtkFactGroup     ()  { return _gpsRtkFactGroup; }
     AirspaceManager*        airspaceManager     ()  { return _airspaceManager; }
     ADSBVehicleManager*     adsbVehicleManager  ()  { return _adsbVehicleManager; }
+    ATAKMarkerManager*      atakMarkerManager   ()  { return _atakMarkerManager; }
     QmlUnitsConversion*     unitsConversion     ()  { return &_unitsConversion; }
 #if defined(QGC_ENABLE_PAIRING)
     bool                    supportsPairing     ()  { return true; }
@@ -190,8 +194,9 @@ public:
     qreal zOrderMapItems            () { return 50; }
     qreal zOrderWaypointIndicators  () { return 50; }
     qreal zOrderVehicles            () { return 49; }
-    qreal zOrderTrajectoryLines     () { return 48; }
-    qreal zOrderWaypointLines       () { return 47; }
+    qreal zOrderATAKMarkers         () { return 48; }
+    qreal zOrderTrajectoryLines     () { return 47; }
+    qreal zOrderWaypointLines       () { return 46; }
 
     bool    isVersionCheckEnabled   () { return _toolbox->mavlinkProtocol()->versionCheckEnabled(); }
     int     mavlinkSystemID         () { return _toolbox->mavlinkProtocol()->getSystemId(); }
@@ -259,6 +264,7 @@ private:
     TaisyncManager*         _taisyncManager         = nullptr;
     MicrohardManager*       _microhardManager       = nullptr;
     ADSBVehicleManager*     _adsbVehicleManager     = nullptr;
+    ATAKMarkerManager*      _atakMarkerManager      = nullptr;
     QGCPalette*             _globalPalette          = nullptr;
     QmlUnitsConversion      _unitsConversion;
 #if defined(QGC_ENABLE_PAIRING)

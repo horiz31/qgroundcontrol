@@ -114,6 +114,16 @@ class CameraManagement : public QObject
         MavExtCmdArg_VMDSendReports,
     }MavlinkExtVMDControlArgs;
 
+    /* Mavlink Extension Arguments for OSD */
+    typedef enum
+    {
+        MavExtCmdArg_OSDOff = 0,
+        MavExtCmdArg_OSDCfg1,
+        MavExtCmdArg_OSDCfg2,
+        MavExtCmdArg_OSDCfg3,
+        MavExtCmdArg_OSDCfg4,
+    }MavlinkExtOSDControlArgs;
+
 private:
 
     void _terrainDataReceived(bool success, QList<double> heights);
@@ -241,6 +251,8 @@ public:
     Q_INVOKABLE void setSysObjDetSetNetTypeCommand(int netType);
     Q_INVOKABLE void setSysObjDetSetConfThresCommand(float confThres);
     Q_INVOKABLE void setSysObjDetSetFireThresCommand(float fireThres);
+    Q_INVOKABLE void setSysOSDOffCommand(void);
+    Q_INVOKABLE void setSysOSDOnCommand(void);
     Q_INVOKABLE void setSysGeoAVGOnCommand(void);
     Q_INVOKABLE void setSysGeoAVGOffCommand(void);
     Q_INVOKABLE void setSysMode2DScanCommand(void);
@@ -251,6 +263,8 @@ public:
     Q_INVOKABLE void setSysVMDOffCommand(void);
     Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);   
     void setPilotPhaseTwo();
+    void setSysSaveParams();
+    void setSysReboot();
 
 protected:
     MultiVehicleManager*    _multiVehicleManager;

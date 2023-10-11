@@ -58,7 +58,8 @@ FlightMap {
     property bool   _airspaceEnabled:           QGroundControl.airmapSupported ? (QGroundControl.settingsManager.airMapSettings.enableAirMap.rawValue && QGroundControl.airspaceManager.connected): false
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
     property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
-    readonly property real  _hamburgerSize:     ScreenTools.defaultFontPixelHeight
+    readonly property real  _hamburgerSize:     ScreenTools.defaultFontPixelHeight * 2
+    readonly property real _copyContentSize:    ScreenTools.defaultFontPixelHeight * 1.5
 
     property bool   _disableVehicleTracking:    false
     property bool   _keepVehicleCentered:       pipMode ? true : false
@@ -321,6 +322,43 @@ FlightMap {
         }
     }
 
+    // Add ATAK Markers
+    MapItemView {
+        model: QGroundControl.atakMarkerManager.atakMarkers
+
+        delegate: ATAKMarkerMapItem {
+            size:           pipMode ? ScreenTools.defaultFontPixelHeight * 0.5 : ScreenTools.defaultFontPixelHeight * 1.3
+            marker:         object
+            coordinate:     object.coordinate
+            altitude:       object.altitude
+            callsign:       object.callsign
+            heading:        object.heading
+            isLocal:        object.isLocal
+            uid:            object.uid
+            map:            _root
+            z:              QGroundControl.zOrderATAKMarkers
+
+
+        }
+        function mouseAction(mouse)
+        {
+            orbitMapCircle.hide()
+           // gotoLocationItem.hide()
+            clickCoord = object.coordinate
+            //show the clicked location on the map
+            mapClickIconItem.show(clickCoord)
+            //open side dialog
+            mainWindow.showComponentDialog(
+            mapClickActionDialogComponent,
+            qsTr("Map Click Action"),
+            mainWindow.showDialogDefaultWidth,
+            StandardButton.Close)
+
+        }
+    }
+
+
+
     // Add the items associated with each vehicles flight plan to the map
     Repeater {
         model: QGroundControl.multiVehicleManager.vehicles
@@ -399,7 +437,7 @@ FlightMap {
         anchorPoint.x:  sourceItem.anchorPointX
         anchorPoint.y:  sourceItem.anchorPointY
         coordinate:     _activeVehicle ? _activeVehicle.nvTargetCoordinate : QtPositioning.coordinate()       
-        visible:        targetVisible()
+        visible:        targetVisible() & _mainWindowIsMap
 
         sourceItem: MissionItemIndexLabel {
             checked:    true
@@ -461,6 +499,7 @@ FlightMap {
         anchorPoint.x:  sourceItem.anchorPointX
         anchorPoint.y:  sourceItem.anchorPointY
         sourceItem: MissionItemIndexLabel {
+            visible:    _mainWindowIsMap
             checked:    true
             index:      -1
             label:      qsTr("Guided Point", "Guided mode point")
@@ -589,7 +628,7 @@ FlightMap {
         id:             guidedMapCircle
         mapControl:     parent
         mapCircle:      _guidedCircle
-        visible:        _activeVehicle ? inGotoFlightMode : false
+        visible:        _activeVehicle ? inGotoFlightMode && _mainWindowIsMap : false
         borderColor:    qgcPal.colorGreen
         centerDragHandleVisible: false
         interactive:             false
@@ -727,7 +766,9 @@ FlightMap {
         z:              QGroundControl.zOrderMapItems
         anchorPoint.x:  sourceItem.anchorPointX
         anchorPoint.y:  sourceItem.anchorPointY
+        property bool readytoShow
         sourceItem: MissionItemIndexLabel {
+            visible:   _mainWindowIsMap
             checked:    true
             index:      -1
             label:      qsTr("PTC", "Point Camera to Location")
@@ -782,9 +823,11 @@ FlightMap {
     // Handle map clicks, opens a right side dialog
     MouseArea {
         id: mapMouseArea
+
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
+        propagateComposedEvents: true
         property var clickCoord
 
         onPressed:
@@ -844,63 +887,31 @@ FlightMap {
                         anchors.left:       parent.left
                         anchors.right:      parent.right
                         spacing:            ScreenTools.defaultFontPixelHeight
-
-                        //todo, this button should only show when the aircraft is in certain conditions
-                        //add sections: Position Info (lat/lon and mgrs display, copy to clipboard), Navigation Actions (guided, roi, orbit), ATAK Actions
-                        QGCLabel {
-                            Layout.fillWidth:       true
-                            text:                   qsTr("Camera Actions:")
-                            font.family:            ScreenTools.demiboldFontFamily
-                            visible:                !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
-                        }
-
-                        QGCButton {
-                            Layout.fillWidth:   true
-                            backRadius:         4
-                            text:               qsTr("Point at location")
-                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
-                            onClicked: {
-                                mapClickIconItem.hide()
-                                hideDialog()
-                                nvPTCLocationItem.show(mapMouseArea.clickCoord)
-                                if(_activeVehicle)
-                                    joystickManager.cameraManagement.pointToCoordinate(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
-
+                        visible:            true
+                        RowLayout {
+                            QGCColoredImage {
+                                 width:                  ScreenTools.defaultFontPixelHeight * 2.5
+                                 height:                 ScreenTools.defaultFontPixelHeight * 2.5
+                                 sourceSize.height:      ScreenTools.defaultFontPixelHeight * 2.5
+                                 Layout.leftMargin:      ScreenTools.defaultFontPixelWidth
+                                 source:                 "/res/guidedIcon.svg"
+                                 visible:                globals.guidedControllerFlyView.showGotoLocation
+                                 color:                  qgcPal.text
                             }
-                        }
-                        QGCButton {
-                            Layout.fillWidth:   true
-                            backRadius:         4
-                            text:               qsTr("Point at location, then Hold")
-                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
-                            onClicked: {
-                                mapClickIconItem.hide()
-                                hideDialog()
-                                nvPTCLocationItem.show(mapMouseArea.clickCoord)
-                                if(_activeVehicle)
-                                    joystickManager.cameraManagement.pointToCoordinateAndHold(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
-
+                            QGCLabel {
+                                Layout.fillWidth:       true
+                                text:                   qsTr(" Navigation")
+                                font.pointSize:         ScreenTools.largeFontPointSize
+                                font.family:    ScreenTools.demiboldFontFamily
+                                visible:                globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
                             }
-                        }
-                        Rectangle {
-                            Layout.fillWidth:   true
-                            color:              qgcPal.text
-                            height:             1
-                            visible:            QGroundControl.videoManager.hasVideo && !QGroundControl.videoManager.fullScreen
-                        }
-
-                        QGCLabel {
-                            Layout.fillWidth:       true
-                            text:                   qsTr("Navigation Actions:")
-                            font.family:    ScreenTools.demiboldFontFamily
-                            //horizontalAlignment:    Text.AlignHCenter
-                            visible:                globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
                         }
                         RowLayout {
                             QGCButton {
                                 Layout.fillWidth:   true
                                 backRadius:         4
-                                text:               qsTr("Go to location")
+                                recommended:        true
+                                text:               qsTr("Go to Location")
                                 visible:            globals.guidedControllerFlyView.showGotoLocation
                                 onClicked: {
                                     mapClickIconItem.hide()
@@ -913,52 +924,13 @@ FlightMap {
 
                                 }
                             }
-                            QGCColoredImage {
-                                 id:                     hamburger
-                                 //anchors.margins:        _margin
-                                 //anchors.right:          parent.right
-                                 //anchors.verticalCenter: topRowLayout.verticalCenter
-                                 width:                  _hamburgerSize
-                                 height:                 _hamburgerSize
-                                 sourceSize.height:      _hamburgerSize
-                                 source:                 "qrc:/qmlimages/Hamburger.svg"
-                                 visible:                true
-                                 color:                  qgcPal.text
 
-                                 QGCMouseArea {
-                                     fillItem:   hamburger
-                                     onClicked: {
-                                         //currentItemScope.focus = true
-                                         _clickedCoordinate = mapClickIconItem.coordinate
-                                         mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Guided Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
-
-                                         //if needs expand, then use the popup menu below, but for now going directly to Edit Position
-                                         //hamburgerMenu.popup()
-                                     }
-
-                                     QGCMenu {
-                                         id: hamburgerMenu
-
-                                         QGCMenuItem {
-                                             text:           qsTr("Edit position...")
-                                             visible:        true
-                                             onTriggered:
-                                             {
-                                                 _clickedCoordinate = mapClickIconItem.coordinate
-                                                 mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
-                                             }
-                                         }
-
-
-                                     }
-                                 }
-                             }
                         }
 
                         QGCButton {
                             Layout.fillWidth:   true
                             backRadius:         4
-                            text:               qsTr("Go to and point camera at location")
+                            text:               qsTr("Go to and Point Camera at Location")
                             visible:            globals.guidedControllerFlyView.showGotoLocation && !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
                             onClicked: {
                                 mapClickIconItem.hide()
@@ -1003,84 +975,96 @@ FlightMap {
                                 globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionROI, mapMouseArea.clickCoord, roiLocationItem)
                             }
                         }
+                        /*
                         Rectangle {
                             Layout.fillWidth:   true
                             color:              qgcPal.text
                             height:             1
                             visible:            globals.guidedControllerFlyView.showGotoLocation | globals.guidedControllerFlyView.showOrbit | globals.guidedControllerFlyView.showROI
                         }
-                        QGCLabel {
-                            Layout.fillWidth:       true
-                            text:                   qsTr("Position Information:")
-                            font.family:    ScreenTools.demiboldFontFamily
-                            visible:                true
-                        }
-
-                        QGCLabel {
-                            Layout.fillWidth:       true
-
-                            text:                   mapMouseArea.clickCoord ? qsTr("Lat,Lon: ") + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7) : ""
-                            //horizontalAlignment:    Text.AlignHCenter
-                            visible:                true
-                        }
-
-                        QGCLabel {
-
-                            Layout.fillWidth:       true
-                            text:                   mapMouseArea.clickCoord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)  : ""
-                            //horizontalAlignment:    Text.AlignHCenter
-                            visible:                true
-                        }
-
-                        QGCLabel {
-
-                            Layout.fillWidth:       true
-                            text:                   (mapMouseArea.clickCoord && _activeVehicle) ? qsTr("Range: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString  : ""
-                            visible:                true
-                        }
-
-                        QGCLabel {
-                            Layout.topMargin: 1
-                            Layout.fillWidth:       true
-                            text:                   (mapMouseArea.clickCoord && _activeVehicle) ? qsTr("Bearing: ") + _activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °" : ""
-                            visible:                true
-                        }
-                        QGCButton {
-                            Layout.fillWidth:   true
-                            backRadius:         4
-                            text:               qsTr("Copy Coordinates to Clipboard")
-                            visible:            true
-                            onClicked: {
-                                textEdit.text = mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7)
-                                textEdit.selectAll()
-                                textEdit.copy()
-                                mapClickIconItem.hide()
-                                hideDialog()
-                            }
-                        }
-                        TextEdit {
-                               id: textEdit
-                               visible: false
-                        }
 
                         Rectangle {
                             Layout.fillWidth:   true
                             color:              qgcPal.text
                             height:             1
+                            visible:            _nextVisionGimbalAvailable && !QGroundControl.videoManager.fullScreen
                         }
-
-
-                        QGCLabel {
-                            Layout.fillWidth:       true
-                            text:                   qsTr("ATAK Target Actions:")
-                            font.family:    ScreenTools.demiboldFontFamily
-                            visible:                true
+*/
+                        //todo, this button should only show when the aircraft is in certain conditions
+                        RowLayout {
+                            QGCColoredImage {
+                                 width:                  ScreenTools.defaultFontPixelHeight * 2.5
+                                 height:                 ScreenTools.defaultFontPixelHeight * 2.5
+                                 sourceSize.height:      ScreenTools.defaultFontPixelHeight * 2.5
+                                 Layout.leftMargin:      ScreenTools.defaultFontPixelWidth
+                                 source:                 "/res/gimbal2.svg"
+                                 visible:                !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                                 color:                  qgcPal.text
+                            }
+                            QGCLabel {
+                                Layout.fillWidth:       true
+                                text:                   qsTr(" Camera")
+                                font.family:            ScreenTools.demiboldFontFamily
+                                font.pointSize:         ScreenTools.largeFontPointSize
+                                visible:                !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                            }
                         }
 
                         QGCButton {
                             Layout.fillWidth:   true
                             backRadius:         4
-                            text:               qsTr("Create ATAK Target")
+                            text:               qsTr("Point at Location")
+                            recommended:        true
+                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                hideDialog()
+                                nvPTCLocationItem.show(mapMouseArea.clickCoord)
+                                if(_activeVehicle)
+                                    joystickManager.cameraManagement.pointToCoordinate(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
+
+                            }
+                        }
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            backRadius:         4
+                            text:               qsTr("Point at Location, then Hold")
+                            visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                            onClicked: {
+                                mapClickIconItem.hide()
+                                hideDialog()
+                                nvPTCLocationItem.show(mapMouseArea.clickCoord)
+                                if(_activeVehicle)
+                                    joystickManager.cameraManagement.pointToCoordinateAndHold(mapMouseArea.clickCoord.latitude, mapMouseArea.clickCoord.longitude)
+
+                            }
+                        }
+
+                        RowLayout
+                        {
+                            QGCColoredImage {
+                                 width:                  ScreenTools.defaultFontPixelHeight * 2.5
+                                 height:                 ScreenTools.defaultFontPixelHeight * 2.5
+                                 sourceSize.height:      ScreenTools.defaultFontPixelHeight * 2.5
+                                 Layout.leftMargin:      ScreenTools.defaultFontPixelWidth
+                                 source:                 "/res/taklogo.svg"
+                                 visible:                true
+                                 color:                  qgcPal.text
+                            }
+                            QGCLabel {
+                                Layout.fillWidth:       true
+                                text:                   qsTr(" TAK Marker")
+                                font.family:            ScreenTools.demiboldFontFamily
+                                font.pointSize:         ScreenTools.largeFontPointSize
+                                visible:                true
+                            }
+                        }
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            backRadius:         4
+                            text:               qsTr("Create TAK Marker")
                             visible:            true
                             onClicked:{
                                  hideDialog()
@@ -1088,6 +1072,108 @@ FlightMap {
                                  mainWindow.showPopupDialogFromComponent(atakDialogComponent)
                           }
                         }
+                    }
+                }
+                ColumnLayout
+                {
+                    anchors.bottom:         parent.bottom
+                    anchors.bottomMargin:   ScreenTools.defaultFontPixelHeight
+                    width:                  parent.width
+                    RowLayout {
+                        Layout.leftMargin:      ScreenTools.defaultFontPixelHeight
+                        QGCLabel {
+                            Layout.fillWidth:       true
+
+                            text:                   qsTr("Position")
+                            font.pointSize:         ScreenTools.largeFontPointSize
+                            font.family:    ScreenTools.demiboldFontFamily
+                            visible:                true
+                        }
+                        QGCButton {
+                            Layout.fillWidth:   false
+                            backRadius:         4
+                            text:               qsTr("Edit")
+                            visible:            true
+                            onClicked:{
+                                _clickedCoordinate = mapClickIconItem.coordinate
+                                mainWindow.showComponentDialog(editPositionDialog, qsTr("Edit Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+                          }
+                        }
+                    }
+                    RowLayout {
+                        Layout.leftMargin:      ScreenTools.defaultFontPixelHeight
+                        QGCLabel {
+                            Layout.fillWidth:       true
+
+                            text:                   mapMouseArea.clickCoord ? qsTr("Lat,Lon: ") + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7) : ""
+                            //horizontalAlignment:    Text.AlignHCenter
+                            visible:                true
+                        }
+                        QGCColoredImage {
+                             id:                     positionCopyPaste
+                             width:                  _copyContentSize
+                             height:                 _copyContentSize
+                             sourceSize.height:      _copyContentSize
+                             source:                 "/res/content_copy.svg"
+                             visible:                true
+                             color:                  qgcPal.text
+
+                             QGCMouseArea {
+                                 fillItem:   positionCopyPaste
+                                 onClicked: {
+
+                                     textEdit.text = mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7)
+                                     textEdit.selectAll()
+                                     textEdit.copy()
+                                     mapClickIconItem.hide()
+                                     hideDialog()
+
+                                 }
+
+                             }
+                         }
+                    }
+                    RowLayout {
+                        Layout.leftMargin:      ScreenTools.defaultFontPixelHeight
+                        QGCLabel {
+                            Layout.fillWidth:       true
+                            text:                   mapMouseArea.clickCoord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)  : ""
+                            visible:                true
+                        }
+                        QGCColoredImage {
+                             id:                     positionCopyPasteMGRS
+                             width:                  _copyContentSize
+                             height:                 _copyContentSize
+                             sourceSize.height:      _copyContentSize
+                             source:                 "/res/content_copy.svg"
+                             visible:                true
+                             color:                  qgcPal.text
+
+                             QGCMouseArea {
+                                 fillItem:   positionCopyPasteMGRS
+                                 onClicked: {
+
+                                     textEdit.text = gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)
+                                     textEdit.selectAll()
+                                     textEdit.copy()
+                                     mapClickIconItem.hide()
+                                     hideDialog()
+
+                                 }
+
+                             }
+                         }
+                    }
+
+                    QGCLabel {
+                        Layout.leftMargin:      ScreenTools.defaultFontPixelHeight
+                        Layout.fillWidth:       true
+                        text:                   (mapMouseArea.clickCoord && _activeVehicle) ? qsTr("Range and Bearing: ") + mapMouseArea.clickCoord.distanceTo(_activeVehicle.coordinate).toFixed(1) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString + " ∠" +_activeVehicle.coordinate.azimuthTo(mapMouseArea.clickCoord).toFixed(1) + " °"  : ""
+                        visible:                true
+                    }
+                    TextEdit {
+                           id: textEdit
+                           visible: false
                     }
                 }
             }
@@ -1132,12 +1218,13 @@ FlightMap {
         property real centerInset: visible ? parent.height - y : 0
     }
 
+
     Component {
         id: atakDialogComponent
 
 
         QGCPopupDialog {
-            title:      qsTr("Create ATAK Target")
+            title:      qsTr("Create TAK Marker")
             buttons:    StandardButton.Close
             ColumnLayout {
                 id: atakCol
@@ -1204,7 +1291,7 @@ FlightMap {
                         }
                     }
                     QGCButton {
-                        text:       qsTr("Send to ATAK")
+                        text:       qsTr("Send to TAK")
                         onClicked: {
                            atakController.send(mapMouseArea.clickCoord, atakUid.text)
                            hideDialog();

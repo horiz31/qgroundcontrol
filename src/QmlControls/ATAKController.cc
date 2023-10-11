@@ -11,12 +11,14 @@
 #include "QGCApplication.h"
 #include "SettingsManager.h"
 #include <QDebug>
+#include "ATAKMarkerManager.h"
 
 //the atak mcast address and port should come from settings
 ATAKController::ATAKController(void)
 {
 
-    qDebug() << "Setting up ATAK Controller";
+
+    _toolbox = qgcApp()->toolbox();
     //hostile targets
     _cotMap.insert(QStringLiteral("SAM"), "a-h-A-W-M-S-A");
     _cotMap.insert(QStringLiteral("Radar"), "a-h-G-E-S-R");
@@ -33,10 +35,13 @@ ATAKController::ATAKController(void)
     _cotMap.insert(QStringLiteral("Infantry Light"), "a-h-G-U-C-I-L");
     _cotMap.insert(QStringLiteral("Infantry Motorized"), "a-h-G-U-C-I-M");
     //neutral civ targets
-    _cotMap.insert(QStringLiteral("Civ. Vehicle"), "a-n-G-E-V-C");
-    _cotMap.insert(QStringLiteral("Bridge"), "a-n-G-I-c-b");
-    _cotMap.insert(QStringLiteral("Residence"), "a-n-G-I-c-rah");
-    _cotMap.insert(QStringLiteral("Electric Power Facility"), "a-n-G-I-U-E");
+    _cotMap.insert(QStringLiteral("Structure (Civ)"), "a-n-G-I-c");
+    _cotMap.insert(QStringLiteral("Vehicle (Civ)"), "a-n-G-E-V-C");
+    _cotMap.insert(QStringLiteral("Road"), "a-.-G-I-r");
+    _cotMap.insert(QStringLiteral("Bridge"), "a-.-G-I-c-b");
+    _cotMap.insert(QStringLiteral("Residence (Civ)"), "a-n-G-I-c-rah");
+
+
 
     //now for each key in map, append to QStringList I can find to the model
     //note this method will automatically sort by key name, that is ok for this use case but if I don't want
@@ -46,6 +51,7 @@ ATAKController::ATAKController(void)
         _cotTypes.append(i.key());
         ++i;
     }
+
 
     //stale times, save in seconds
     _minuteMap.append(QPair(QStringLiteral("10 minutes"), 10 * 60));
@@ -76,9 +82,9 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     _atakMcastPort = settings->atakServerPort()->rawValue().toInt();
 
     if (uid.isEmpty())
-        _uid = QString("EchoMav.") + GetRandomString();
+        _uid = QString("EchoMAV.") + GetRandomString();
     else
-        _uid = QString("EchoMav.") + uid;
+        _uid = QString("EchoMAV.") + uid;
 
     //qDebug() << "Sending ATAK mcast message";
     //qDebug() << "The specified type is" << _cotTypes[_cotType] << "and the CoT code is"<< _cotMap.value(_cotTypes[_cotType]);
@@ -113,11 +119,26 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     writer.writeEndElement();
     writer.writeEndDocument();
 
-    //qDebug() << "XML OUT is" << output;
-
     //now send out udp mcast to atak mcast address and to localhost:4242
     udpSocket4.writeDatagram(output.toUtf8(), QHostAddress(QHostAddress::LocalHost), 4242);
     udpSocket4.writeDatagram(output.toUtf8(), _atakMcastAddress, _atakMcastPort);
+
+    //append to an array of atak_local markers for display on the map
+
+    ATAKMarker::ATAKMarkerInfo_t atakMarkerInfo;
+
+    atakMarkerInfo.uid = _uid;
+    atakMarkerInfo.callsign = _uid;
+    atakMarkerInfo.type = _cotMap.value(_cotTypes[_cotType]);
+    atakMarkerInfo.location = coordinate;
+    atakMarkerInfo.altitude = qQNaN();
+    atakMarkerInfo.heading = qQNaN();
+    atakMarkerInfo.staleTime = QDateTime::currentDateTime().toTimeSpec(Qt::UTC).addSecs(_minuteMap[_staleMinutes].second).toMSecsSinceEpoch();
+    atakMarkerInfo.startTime = QDateTime::currentMSecsSinceEpoch();
+    atakMarkerInfo.isLocal = true;
+
+    _toolbox->atakMarkerManager()->atakMarkerUpdate(atakMarkerInfo);
+
 }
 
 void

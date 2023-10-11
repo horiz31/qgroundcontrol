@@ -133,6 +133,27 @@ WindowsBuild {
 }
 
 #
+# [REQUIRED] protobuf library
+# TDB libs for linux/mac
+WindowsBuild {
+    INCLUDEPATH += $$SOURCE_DIR/libs/protobuf/windows/include
+    LIBS += -L$$SOURCE_DIR/libs/protobuf/windows/lib
+    LIBS += -llibprotobuf
+
+    SOURCES += \
+    $$SOURCE_DIR/libs/protobuf/windows/include/cotevent.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/contact.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/detail.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/group.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/precisionlocation.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/status.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/takcontrol.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/takmessage.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/takv.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/windows/include/track.pb.cc
+}
+
+#
 # [REQUIRED] LZMA decompression library
 HEADERS+= \
     libs/xz-embedded/linux/include/linux/xz.h \

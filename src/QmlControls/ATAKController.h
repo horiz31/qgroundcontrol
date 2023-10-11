@@ -14,6 +14,7 @@
 #include <QtNetwork>
 #include <QGeoCoordinate>
 #include "FactPanelController.h"
+#include "ATAKMarker.h"
 
 
 class ATAKController : public FactPanelController
@@ -61,6 +62,8 @@ private:
     QUdpSocket udpSocket4;
     QHostAddress _atakMcastAddress;
     int _atakMcastPort;
+
+    QGCToolbox*         _toolbox = nullptr;
 
 signals:
 private:

@@ -387,6 +387,7 @@ INCLUDEPATH += .
 INCLUDEPATH += \
     include/ui \
     src \
+    src/ATAK \
     src/ADSB \
     src/api \
     src/AnalyzeView \
@@ -452,7 +453,6 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 }
 
 SOURCES += \
-    src/QmlControls/EngineRunupController.cc \
     src/Vehicle/VehicleEscStatusFactGroup.cc \
     src/api/QGCCorePlugin.cc \
     src/api/QGCOptions.cc \
@@ -577,6 +577,8 @@ DebugBuild { PX4FirmwarePlugin { PX4FirmwarePluginFactory { APMFirmwarePlugin { 
 # Main QGC Headers and Source files
 
 HEADERS += \
+    src/ATAK/ATAKMarker.h \
+    src/ATAK/ATAKMarkerManager.h \
     src/ADSB/ADSBVehicle.h \
     src/ADSB/ADSBVehicleManager.h \
     src/AnalyzeView/LogDownloadController.h \
@@ -838,6 +840,8 @@ AndroidBuild {
 }
 
 SOURCES += \
+    src/ATAK/ATAKMarker.cc \
+    src/ATAK/ATAKMarkerManager.cc \
     src/ADSB/ADSBVehicle.cc \
     src/ADSB/ADSBVehicleManager.cc \
     src/AnalyzeView/LogDownloadController.cc \

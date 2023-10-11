@@ -1180,7 +1180,7 @@ Rectangle {
                     Item { width: 1; height: _margins; visible: adsbSectionLabel.visible }
                     QGCLabel {
                         id:         atakSectionLabel
-                        text:       qsTr("ATAK CoT Settings")
+                        text:       qsTr("ATAK CoT Situational Awareness Settings")
                         visible:    QGroundControl.settingsManager.atakVehicleManagerSettings.visible
                     }
                     Rectangle {
@@ -1198,7 +1198,7 @@ Rectangle {
                             anchors.right:      parent.right
                             font.pointSize:     ScreenTools.smallFontPointSize
                             wrapMode:           Text.WordWrap
-                            text:               qsTr("Note: Adjust the destination host:port for sending ATAK CoT messages.")
+                            text:               qsTr("Note: Set the host:port for sending and receiving ATAK CoT (SA) messages.")
                         }
 
 

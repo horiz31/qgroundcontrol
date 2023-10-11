@@ -193,6 +193,13 @@
     "longDesc":         "Specify if the gimbal should switch to pilot view when the flight mode is changed to FBWA or FBWB",
     "type":             "bool",
     "default":     true
+},
+{
+    "name":             "osd",
+    "shortDesc":        "Enable the On Screen Display",
+    "longDesc":         "Specify if the gimbal should show the On Screen Display",
+    "type":             "bool",
+    "default":     false
 }
 ]
 }

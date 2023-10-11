@@ -43,6 +43,7 @@ public:
     DEFINE_SETTINGFACT(fovOverlay)
     DEFINE_SETTINGFACT(targetOverlay)
     DEFINE_SETTINGFACT(pilotViewOnFBW)
+    DEFINE_SETTINGFACT(osd)
 
 
     enum VideoDecoderOptions {

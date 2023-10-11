@@ -38,6 +38,8 @@ Button {
 
     property color _currentContentColor:  (checked || pressed) ? qgcPal.buttonHighlightText : qgcPal.buttonText
 
+    property bool _checkListNotComplete: control.text == "Checklist" && _checklistFailed && _isDisarmed
+
     signal dropped(int index)
 
     onCheckedChanged: toolStripAction.checked = checked
@@ -90,9 +92,28 @@ Button {
 
     background: Rectangle {
         id:             buttonBkRect
-        color:          (control.checked || control.pressed) ?
-                            qgcPal.buttonHighlight :
-                            (control.hovered ? qgcPal.toolStripHoverColor : qgcPal.toolbarBackground)
+        color:          getBackColor()
         anchors.fill:   parent
+
+        function getBackColor()
+        {
+            if (_checkListNotComplete)
+                return qgcPal.colorOrange
+            else
+                return (control.checked || control.pressed) ?
+                                        qgcPal.buttonHighlight :
+                                        (control.hovered ? qgcPal.toolStripHoverColor : qgcPal.toolbarBackground)
+        }
+
+        PropertyAnimation on opacity {
+            easing.type:    Easing.OutQuart
+            from:           0.5
+            to:             1
+            loops:          Animation.Infinite
+            running:        _checkListNotComplete
+            alwaysRunToEnd: true
+            duration:       2000
+        }
     }
+
 }
