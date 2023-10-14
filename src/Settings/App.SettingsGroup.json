@@ -261,6 +261,13 @@
     "default":     true
 },
 {
+    "name":             "enforceJoystickRequired",
+    "shortDesc": "Enforce joystick required",
+    "longDesc":  "If this option is enabled a joystick will be required for the preflight checklist to be passed.",
+    "type":             "bool",
+    "default":     true
+},
+{
     "name":             "enforceChecklist",
     "shortDesc": "Preflight checklist must pass before arming",
     "longDesc":  "If this option is enabled the preflight checklist must pass before arming.",

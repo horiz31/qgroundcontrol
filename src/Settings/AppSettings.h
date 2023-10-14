@@ -62,6 +62,7 @@ public:
     DEFINE_SETTINGFACT(savePath)
     DEFINE_SETTINGFACT(useChecklist)
     DEFINE_SETTINGFACT(enforceChecklist)
+    DEFINE_SETTINGFACT(enforceJoystickRequired)
     DEFINE_SETTINGFACT(mapboxToken)
     DEFINE_SETTINGFACT(mapboxAccount)
     DEFINE_SETTINGFACT(mapboxStyle)

@@ -54,7 +54,8 @@ WindowsBuild {
     COPY_FILE_LIST = \
         $$SOURCE_DIR\\libs\\sdl2\\msvc\\lib\\x64\\SDL2.dll \
         $$SOURCE_DIR\\libs\\OpenSSL\\windows\\libcrypto-1_1-x64.dll \
-        $$SOURCE_DIR\\libs\\OpenSSL\\windows\\libssl-1_1-x64.dll
+        $$SOURCE_DIR\\libs\\OpenSSL\\windows\\libssl-1_1-x64.dll \
+        $$SOURCE_DIR\\libs\\protobuf\\windows\\lib\\libprotobuf.dll
 
     for(COPY_FILE, COPY_FILE_LIST) {
         QMAKE_POST_LINK += $$escape_expand(\\n) $$QMAKE_COPY \"$$COPY_FILE\" \"$$DESTDIR\"

@@ -17,6 +17,7 @@ import QGroundControl.Controls      1.0
 import QGroundControl.FlightDisplay 1.0
 import QGroundControl.Vehicle       1.0
 
+
 Item {
     property var model: listModel
     property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
@@ -95,7 +96,7 @@ Item {
 
 
             PreFlightJoystickCheck {
-                allowTelemetryFailureOverride:    false
+                allowTelemetryFailureOverride:    !QGroundControl.settingsManager.appSettings.enforceJoystickRequired.value
              }
 
              PreFlightQHoverCheck {

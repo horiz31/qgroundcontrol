@@ -116,6 +116,14 @@ Rectangle {
 
                                 property Fact _enforceChecklist: QGroundControl.settingsManager.appSettings.enforceChecklist
                             }
+                            FactCheckBox {
+                                text:           qsTr("Enforce Joystick Required")
+                                fact:           _enforceJoystickRequired
+                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value && QGroundControl.settingsManager.appSettings.enforceChecklist.value
+                                visible:        useCheckList.visible && _enforceJoystickRequired.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+
+                                property Fact _enforceJoystickRequired: QGroundControl.settingsManager.appSettings.enforceJoystickRequired
+                            }
 
                             FactCheckBox {
                                 text:       qsTr("Keep Map Centered On Vehicle")
