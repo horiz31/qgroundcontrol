@@ -387,6 +387,7 @@ INCLUDEPATH += .
 INCLUDEPATH += \
     include/ui \
     src \
+    src/Annotations \
     src/ATAK \
     src/ADSB \
     src/api \
@@ -434,6 +435,8 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 #
 
 HEADERS += \
+    src/Annotations/Annotation.h \
+    src/Annotations/AnnotationManager.h \
     src/QmlControls/QmlUnitsConversion.h \
     src/Vehicle/VehicleEscStatusFactGroup.h \
     src/api/QGCCorePlugin.h \
@@ -453,6 +456,8 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 }
 
 SOURCES += \
+    src/Annotations/Annotation.cc \
+    src/Annotations/AnnotationManager.cc \
     src/Vehicle/VehicleEscStatusFactGroup.cc \
     src/api/QGCCorePlugin.cc \
     src/api/QGCOptions.cc \
@@ -577,6 +582,8 @@ DebugBuild { PX4FirmwarePlugin { PX4FirmwarePluginFactory { APMFirmwarePlugin { 
 # Main QGC Headers and Source files
 
 HEADERS += \
+    src/Annotations/Annotation.h \
+    src/Annotations/AnnotationManager.h \
     src/ATAK/ATAKMarker.h \
     src/ATAK/ATAKMarkerManager.h \
     src/ADSB/ADSBVehicle.h \
@@ -669,6 +676,7 @@ HEADERS += \
     src/QmlControls/EditPositionDialogController.h \
     src/QmlControls/GPSUnitsController.h \
     src/QmlControls/ATAKController.h \
+    src/QmlControls/AnnotationController.h \
     src/QmlControls/EngineRunupController.h \
     src/QmlControls/FlightPathSegment.h \
     src/QmlControls/HorizontalFactValueGrid.h \
@@ -840,6 +848,8 @@ AndroidBuild {
 }
 
 SOURCES += \
+    src/Annotations/Annotation.cc \
+    src/Annotations/AnnotationManager.cc \
     src/ATAK/ATAKMarker.cc \
     src/ATAK/ATAKMarkerManager.cc \
     src/ADSB/ADSBVehicle.cc \
@@ -928,6 +938,7 @@ SOURCES += \
     src/QmlControls/EditPositionDialogController.cc \
     src/QmlControls/GPSUnitsController.cc \
     src/QmlControls/ATAKController.cc \
+    src/QmlControls/AnnotationController.cc \
     src/QmlControls/EngineRunupController.cc \
     src/QmlControls/FlightPathSegment.cc \
     src/QmlControls/HorizontalFactValueGrid.cc \

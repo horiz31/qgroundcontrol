@@ -54,9 +54,10 @@ ATAKController::ATAKController(void)
 
 
     //stale times, save in seconds
+
+    _minuteMap.append(QPair(QStringLiteral("1 hour"), 60 * 60));
     _minuteMap.append(QPair(QStringLiteral("10 minutes"), 10 * 60));
     _minuteMap.append(QPair(QStringLiteral("30 minutes"), 30 * 60));
-    _minuteMap.append(QPair(QStringLiteral("1 hour"), 60 * 60));
     _minuteMap.append(QPair(QStringLiteral("2 hours"), 120 * 60));
     _minuteMap.append(QPair(QStringLiteral("4 hours"), 240 * 60));
     _minuteMap.append(QPair(QStringLiteral("8 hours"), 480 * 60));

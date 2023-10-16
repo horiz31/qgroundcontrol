@@ -18,6 +18,7 @@
 #include "AirspaceManager.h"
 #include "ADSBVehicleManager.h"
 #include "ATAKMarkerManager.h"
+#include "AnnotationManager.h"
 #include "QGCPalette.h"
 #include "QmlUnitsConversion.h"
 #if defined(QGC_ENABLE_PAIRING)
@@ -70,6 +71,7 @@ public:
     Q_PROPERTY(AirspaceManager*     airspaceManager         READ    airspaceManager         CONSTANT)
     Q_PROPERTY(ADSBVehicleManager*  adsbVehicleManager      READ    adsbVehicleManager      CONSTANT)
     Q_PROPERTY(ATAKMarkerManager*   atakMarkerManager       READ    atakMarkerManager       CONSTANT)
+    Q_PROPERTY(AnnotationManager*   annotationManager       READ    annotationManager       CONSTANT)
     Q_PROPERTY(QGCCorePlugin*       corePlugin              READ    corePlugin              CONSTANT)
     Q_PROPERTY(MissionCommandTree*  missionCommandTree      READ    missionCommandTree      CONSTANT)
     Q_PROPERTY(FactGroup*           gpsRtk                  READ    gpsRtkFactGroup         CONSTANT)
@@ -165,6 +167,7 @@ public:
     AirspaceManager*        airspaceManager     ()  { return _airspaceManager; }
     ADSBVehicleManager*     adsbVehicleManager  ()  { return _adsbVehicleManager; }
     ATAKMarkerManager*      atakMarkerManager   ()  { return _atakMarkerManager; }
+    AnnotationManager*      annotationManager   ()  { return _annotationManager; }
     QmlUnitsConversion*     unitsConversion     ()  { return &_unitsConversion; }
 #if defined(QGC_ENABLE_PAIRING)
     bool                    supportsPairing     ()  { return true; }
@@ -265,6 +268,7 @@ private:
     MicrohardManager*       _microhardManager       = nullptr;
     ADSBVehicleManager*     _adsbVehicleManager     = nullptr;
     ATAKMarkerManager*      _atakMarkerManager      = nullptr;
+    AnnotationManager*      _annotationManager      = nullptr;
     QGCPalette*             _globalPalette          = nullptr;
     QmlUnitsConversion      _unitsConversion;
 #if defined(QGC_ENABLE_PAIRING)

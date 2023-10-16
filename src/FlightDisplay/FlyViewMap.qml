@@ -97,14 +97,16 @@ FlightMap {
         id: editPositionDialog
 
         EditPositionDialog {
-            coordinate: _clickedCoordinate
+
+            coordinate: _clickedCoordinate                
             onCoordinateChanged:
             {
                 if (coordinate !== mapMouseArea.clickCoord)
                 {
-                    console.log("coordinate changed")
                     mapClickIconItem.update(coordinate)
                     mapMouseArea.clickCoord = coordinate
+                    _disableVehicleTracking = true;
+                    _root.center = coordinate
                 }
             }
         }
@@ -116,6 +118,11 @@ FlightMap {
     ATAKController {
         id: atakController
     }
+
+    AnnotationController {
+        id: annotationController
+    }
+
     onPipModeChanged: _adjustMapZoomForPipMode()
 
     onVisibleChanged: {
@@ -321,6 +328,41 @@ FlightMap {
             z:              QGroundControl.zOrderVehicles
         }
     }
+
+    // Add Annotation Markers
+    MapItemView {
+        model: QGroundControl.annotationManager.annotations
+
+        delegate: AnnotationMapItem {
+            size:           pipMode ? ScreenTools.defaultFontPixelHeight * 0.5 : ScreenTools.defaultFontPixelHeight * 1.3
+            marker:         object
+            coordinate:     object.coordinate
+            altitude:       object.altitude
+            displayName:    object.displayName
+            uid:            object.uid
+            iconColor:      object.color
+            map:            _root
+            z:              QGroundControl.zOrderATAKMarkers
+
+
+        }
+        function mouseAction(mouse)
+        {
+            orbitMapCircle.hide()
+           // gotoLocationItem.hide()
+            clickCoord = object.coordinate
+            //show the clicked location on the map
+            mapClickIconItem.show(clickCoord)
+            //open side dialog
+            mainWindow.showComponentDialog(
+            mapClickActionDialogComponent,
+            qsTr("Map Click Action"),
+            mainWindow.showDialogDefaultWidth,
+            StandardButton.Close)
+
+        }
+    }
+
 
     // Add ATAK Markers
     MapItemView {
@@ -1072,6 +1114,38 @@ FlightMap {
                                  mainWindow.showPopupDialogFromComponent(atakDialogComponent)
                           }
                         }
+
+                        RowLayout
+                        {
+                            QGCColoredImage {
+                                 width:                  ScreenTools.defaultFontPixelHeight * 2.5
+                                 height:                 ScreenTools.defaultFontPixelHeight * 2.5
+                                 sourceSize.height:      ScreenTools.defaultFontPixelHeight * 2.5
+                                 Layout.leftMargin:      ScreenTools.defaultFontPixelWidth
+                                 source:                 "/res/annotationIcon.svg"
+                                 visible:                true
+                                 color:                  qgcPal.text
+                            }
+                            QGCLabel {
+                                Layout.fillWidth:       true
+                                text:                   qsTr(" Annotation")
+                                font.family:            ScreenTools.demiboldFontFamily
+                                font.pointSize:         ScreenTools.largeFontPointSize
+                                visible:                true
+                            }
+                        }
+
+                        QGCButton {
+                            Layout.fillWidth:   true
+                            backRadius:         4
+                            text:               qsTr("Create Annotation")
+                            visible:            true
+                            onClicked:{
+                                 hideDialog()
+                                 mapClickIconItem.hide()
+                                 mainWindow.showPopupDialogFromComponent(annotationDialogComponent)
+                            }
+                        }
                     }
                 }
                 ColumnLayout
@@ -1226,6 +1300,7 @@ FlightMap {
         QGCPopupDialog {
             title:      qsTr("Create TAK Marker")
             buttons:    StandardButton.Close
+            onVisibleChanged: if(visible) atakUid.focus = true
             ColumnLayout {
                 id: atakCol
                 Layout.fillWidth:   true
@@ -1256,9 +1331,13 @@ FlightMap {
                     QGCLabel {
                         text:           qsTr("Target Name (UID):")
                     }
-                    QGCTextField {  //probably needs to be a factbox
+                    QGCTextField {
                         id:    atakUid
                         placeholderText:    qsTr("Optional")
+                        Keys.onReturnPressed: {
+                            atakController.send(mapMouseArea.clickCoord, atakUid.text)
+                            hideDialog();
+                        }
                     }
                     QGCLabel {
                         text:           qsTr("Time Until Invalid:")
@@ -1294,6 +1373,95 @@ FlightMap {
                         text:       qsTr("Send to TAK")
                         onClicked: {
                            atakController.send(mapMouseArea.clickCoord, atakUid.text)
+                           hideDialog();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: annotationDialogComponent
+
+
+        QGCPopupDialog {
+            title:      qsTr("Create Annotation")
+            buttons:    StandardButton.Close
+            onVisibleChanged: if(visible) annotationName.focus = true
+            ColumnLayout {
+                id: annotationCol
+                Layout.fillWidth:   true
+                QGCLabel {
+                    text:           qsTr("Location: " + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7))
+                }
+                Item {
+                    Layout.fillWidth:   true
+                    height: ScreenTools.defaultFontPixelWidth * 1
+                }
+                GridLayout {
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 2
+                    columns: 2
+
+
+                    QGCLabel {
+                        text:           qsTr("Color:")
+                    }
+                    QGCComboBox {
+                        id:             annotationCombo
+                        model:          annotationController.colorList
+                        currentIndex:   annotationController.color
+                        sizeToContents: true
+                        onActivated: {
+                            annotationController.color = index;
+                        }
+                    }
+                    QGCLabel {
+                        text:           qsTr("Name:")
+                    }
+                    QGCTextField {  //probably needs to be a factbox
+                        id:    annotationName
+                        placeholderText:    qsTr("")
+                        Keys.onReturnPressed: {
+                            annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text)
+                            hideDialog()
+                        }
+                    }
+                    QGCLabel {
+                        text:           qsTr("Altitude (AGL, feet):")
+                    }
+                    QGCTextField {  //probably needs to be a factbox
+                        id:    annotationAltitude
+                        placeholderText:    qsTr("Optional")
+                        Keys.onReturnPressed: {
+                            annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text)
+                            hideDialog()
+                        }
+                    }
+
+
+                }
+                Item {
+                    Layout.fillWidth:   true
+                    height: ScreenTools.defaultFontPixelWidth * 1
+                }
+                GridLayout {
+                    Layout.fillWidth:   true
+                    Layout.alignment:   Qt.AlignHCenter
+                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 2
+                    columns: 2
+
+                    QGCButton {
+                        text:       qsTr("Cancel")
+                        onClicked: {
+                          hideDialog();
+                        }
+                    }
+                    QGCButton {
+                        text:       qsTr("Create")
+                        enabled:    annotationName.text !== ""
+                        onClicked: {
+                           annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text)
                            hideDialog();
                         }
                     }

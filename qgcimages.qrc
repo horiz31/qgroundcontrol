@@ -201,5 +201,6 @@
         <file alias="APM/EchomavOutdoorImage">src/FirmwarePlugin/APM/echomav_outdoor.png</file>
         <file alias="clearpath.svg">resources/clearpath.svg</file>
         <file alias="atakMarker.svg">src/FlightMap/Images/atakMarker.svg</file>
+        <file alias="annotation.svg">src/FlightMap/Images/annotation.svg</file>
     </qresource>
 </RCC>

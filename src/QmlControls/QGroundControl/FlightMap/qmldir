@@ -31,3 +31,4 @@ ProximityRadarMapView       1.0 ProximityRadarMapView.qml
 SplitIndicator              1.0 SplitIndicator.qml
 VehicleMapItem              1.0 VehicleMapItem.qml
 ATAKMarkerMapItem           1.0 ATAKMarkerMapItem.qml
+AnnotationMapItem           1.0 AnnotationMapItem.qml

@@ -320,7 +320,7 @@ Item {
                     Layout.fillWidth:           true
                     Layout.alignment:           Qt.AlignHCenter
                     maximumValue:               QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(33.5).toFixed(0)
-                    minimumValue:               QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(20).toFixed(0)
+                    minimumValue:               QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(22.35).toFixed(0)
                     value:                      vehicle ? QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(vehicle.targetAirSpeedSetPoint.value).toFixed(0) : 0
                     updateValueWhileDragging:   true
                     visible:                    true
