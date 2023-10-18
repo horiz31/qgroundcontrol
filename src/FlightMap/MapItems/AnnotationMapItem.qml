@@ -27,6 +27,7 @@ MapQuickItem {
     property real   size:           ScreenTools.defaultFontPixelHeight * 1.5        /// Size for icon, typically specified by the parent
     property string uid
     property string iconColor:          marker ? marker.iconColor : "#000000"
+    property string type:           marker ? marker.type : "point"
 
     property var  _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     property bool _inGotoFlightMode: _activeVehicle ? _activeVehicle.flightMode === _activeVehicle.gotoFlightMode : false
@@ -43,6 +44,7 @@ MapQuickItem {
         width:      markerIcon.width
         height:     markerIcon.height
         opacity:    1.0
+
 
         Rectangle {
             id:                 markerShadow
@@ -61,6 +63,9 @@ MapQuickItem {
             color:              Qt.rgba(0.94,0.91,0,0.5)
             source:             markerShadow
         }
+
+
+
         QGCColoredImage {
             id:                 markerIcon
             height:             ScreenTools.defaultFontPixelHeight * 1.5

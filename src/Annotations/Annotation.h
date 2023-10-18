@@ -26,6 +26,7 @@ public:
         QString         type;
         QGeoCoordinate  location;
         double          altitude;
+        double          radius;
         QColor          color;
     } AnnotationInfo_t;
 
@@ -36,6 +37,8 @@ public:
     Q_PROPERTY(QString          type        READ type           NOTIFY typeChanged)
     Q_PROPERTY(QGeoCoordinate   coordinate  READ coordinate     NOTIFY coordinateChanged)
     Q_PROPERTY(double           altitude    READ altitude       NOTIFY altitudeChanged)     // NaN for not available
+    Q_PROPERTY(double           radius      READ radius         NOTIFY radiusChanged)     // NaN for not available
+
     Q_PROPERTY(QColor           color        READ color        NOTIFY colorChanged)      // NaN for not available
 
     QString         uid         (void) const { return static_cast<QString>(_uid); }
@@ -43,6 +46,7 @@ public:
     QString         type        (void) const { return _type; }
     QGeoCoordinate  coordinate  (void) const { return _coordinate; }
     double          altitude    (void) const { return _altitude; }
+    double          radius    (void) const { return _radius; }
     QColor          color       (void) const { return _color; }
 
     QString         _uid;
@@ -56,7 +60,8 @@ public:
 signals:
     void coordinateChanged  ();
     void displayNameChanged    ();
-    void altitudeChanged    ();
+    void altitudeChanged    ();   
+    void radiusChanged    ();
     void colorChanged     ();
     void typeChanged        ();
 
@@ -66,6 +71,7 @@ private:
     QString         _type;
     QGeoCoordinate  _coordinate;
     double          _altitude;
+    double          _radius;
     QColor          _color;
 
 };

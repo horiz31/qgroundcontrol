@@ -9,7 +9,6 @@
 
 #include "AnnotationController.h"
 #include "QGCApplication.h"
-#include "SettingsManager.h"
 #include <QDebug>
 #include "AnnotationManager.h"
 
@@ -27,14 +26,23 @@ AnnotationController::AnnotationController(void)
     _colorMap.append(QPair(QStringLiteral("Purple"), QColor("purple")));
     _colorMap.append(QPair(QStringLiteral("White"), QColor("white")));
 
+    _typeMap.append(QPair(QStringLiteral("Point"), QString("point")));
+    _typeMap.append(QPair(QStringLiteral("Circle"), QString("circle")));
+
+
     //now for each key in list, append to a QStringList I can bind to the model
     for( int j=0; j<_colorMap.count(); ++j )
     {
         _colorList.append(_colorMap[j].first);
     }
+
+    for( int j=0; j<_typeMap.count(); ++j )
+    {
+        _typeList.append(_typeMap[j].first);
+    }
 }
 
-void AnnotationController::create(QGeoCoordinate coordinate, QString displayName, QString altitude)
+void AnnotationController::create(QGeoCoordinate coordinate, QString displayName, QString altitude, QString radius)
 {
     if (displayName.length() == 0)
         return;
@@ -49,10 +57,18 @@ void AnnotationController::create(QGeoCoordinate coordinate, QString displayName
     else
         annotationInfo.altitude = qQNaN();
 
+
+    double convertedRadius = radius.toDouble(&validate);
+    if (validate)
+        annotationInfo.radius = convertedRadius;
+    else
+        annotationInfo.radius = qQNaN();
+
     annotationInfo.uid = GetRandomString();
     annotationInfo.displayName = displayName;
     annotationInfo.color = _colorMap[_colorIndex].second;
     annotationInfo.location = coordinate;
+    annotationInfo.type = _typeMap[_typeIndex].second;
 
     _toolbox->annotationManager()->annotationUpdate(annotationInfo);
 
@@ -62,6 +78,12 @@ void
 AnnotationController::setColor(int idx)
 {
     _colorIndex = idx;
+}
+
+void
+AnnotationController::setType(int idx)
+{
+    _typeIndex = idx;
 }
 
 void
@@ -76,6 +98,12 @@ AnnotationController::setAltitude(double altitude)
     _altitude = altitude;
 }
 
+void
+AnnotationController::setRadius(double radius)
+{
+    _radius = radius;
+}
+
 QString
 AnnotationController::uid()
 {
@@ -86,6 +114,12 @@ int
 AnnotationController::color()
 {
     return _colorIndex;
+}
+
+int
+AnnotationController::type()
+{
+    return _typeIndex;
 }
 
 QString

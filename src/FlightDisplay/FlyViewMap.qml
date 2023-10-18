@@ -329,6 +329,20 @@ FlightMap {
         }
     }
 
+
+    //Annotation Circle Markers support
+    MapItemView {
+        model: QGroundControl.annotationManager.annotations
+        delegate: MapCircle {
+            visible:        object.type === "circle"
+            center:         object.coordinate
+            radius:         object.radius
+            color:          object.color
+            opacity:        0.3
+            border.width:  0
+        }
+    }
+
     // Add Annotation Markers
     MapItemView {
         model: QGroundControl.annotationManager.annotations
@@ -1417,6 +1431,41 @@ FlightMap {
                         }
                     }
                     QGCLabel {
+                        text:           qsTr("Type:")
+                    }
+                    QGCComboBox {
+                        id:             annotationTypeCombo
+                        model:          annotationController.typeList
+                        currentIndex:   annotationController.type
+                        sizeToContents: true
+                        onActivated: {
+                            annotationController.type = index;
+                            if (currentIndex === 1)
+                            {
+                                annotationRadius.visible = true
+                                annotationRadiusLabel.visible = true
+                            }
+                            else
+                            {
+                                annotationRadius.visible = false
+                                annotationRadiusLabel.visible = false
+                            }
+                        }
+                        onCurrentIndexChanged: {
+                            if (currentIndex === 1)
+                            {
+                                annotationRadius.visible = true
+                                annotationRadiusLabel.visible = true
+                            }
+                            else
+                            {
+                                annotationRadius.visible = false
+                                annotationRadiusLabel.visible = false
+                            }
+                        }
+
+                    }
+                    QGCLabel {
                         text:           qsTr("Name:")
                     }
                     QGCTextField {  //probably needs to be a factbox
@@ -1428,13 +1477,24 @@ FlightMap {
                         }
                     }
                     QGCLabel {
+                        id:     annotationRadiusLabel
+                        visible:        annotationTypeCombo.index === 1
+                        text:           qsTr("Radius (m):")
+                    }
+                    QGCTextField {
+                        id:    annotationRadius
+                        visible:            annotationTypeCombo.index === 1
+                        placeholderText:    qsTr("")
+
+                    }
+                    QGCLabel {
                         text:           qsTr("Altitude (AGL, feet):")
                     }
                     QGCTextField {  //probably needs to be a factbox
                         id:    annotationAltitude
                         placeholderText:    qsTr("Optional")
                         Keys.onReturnPressed: {
-                            annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text)
+                            annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text, annotationRadius.text)
                             hideDialog()
                         }
                     }
@@ -1461,7 +1521,7 @@ FlightMap {
                         text:       qsTr("Create")
                         enabled:    annotationName.text !== ""
                         onClicked: {
-                           annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text)
+                           annotationController.create(mapMouseArea.clickCoord, annotationName.text, annotationAltitude.text, annotationRadius.text)
                            hideDialog();
                         }
                     }

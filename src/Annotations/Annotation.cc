@@ -17,7 +17,9 @@ Annotation::Annotation(const AnnotationInfo_t& AnnotationInfo, QObject* parent)
     : QObject       (parent)
     , _uid  (AnnotationInfo.uid)
     , _displayName     (AnnotationInfo.displayName)
+    , _type        ("point")
     , _altitude     (qQNaN())
+    , _radius       (qQNaN())
     , _color       (QColor("Black"))
 {
     update(AnnotationInfo);
@@ -45,6 +47,10 @@ void Annotation::update(const AnnotationInfo_t& AnnotationInfo)
     if (!QGC::fuzzyCompare(AnnotationInfo.altitude, _altitude)) {
         _altitude = AnnotationInfo.altitude;
         emit altitudeChanged();
+    }
+    if (!QGC::fuzzyCompare(AnnotationInfo.radius, _radius)) {
+        _radius = AnnotationInfo.radius;
+        emit radiusChanged();
     }
     if (_color != AnnotationInfo.color) {
         _color = AnnotationInfo.color;

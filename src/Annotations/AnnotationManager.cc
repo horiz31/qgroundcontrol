@@ -20,6 +20,7 @@ QDataStream &operator<<(QDataStream &out, const Annotation::AnnotationInfo_t& an
     out << annotationData.displayName;
     out << annotationData.location;
     out << annotationData.altitude;
+    out << annotationData.radius;
     out << annotationData.color;
     out << annotationData.type;
 
@@ -32,12 +33,14 @@ QDataStream &operator>>(QDataStream &in, Annotation::AnnotationInfo_t& annotatio
     QString uid;
     QGeoCoordinate location;
     double altitude;
+    double radius;
     QColor color;
     QString type;
     in >> uid;
     in >> displayName;
     in >> location;
     in >> altitude;
+    in >> radius;
     in >> color;
     in >> type;
 
@@ -45,6 +48,7 @@ QDataStream &operator>>(QDataStream &in, Annotation::AnnotationInfo_t& annotatio
     annotationData.displayName = displayName;
     annotationData.location = location;
     annotationData.altitude = altitude;
+    annotationData.radius = radius;
     annotationData.color = color;
     annotationData.type = type;
 
@@ -56,8 +60,6 @@ AnnotationManager::AnnotationManager(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
 {
 }
-
-
 
 void AnnotationManager::setToolbox(QGCToolbox* toolbox)
 {
@@ -113,6 +115,7 @@ void AnnotationManager::_save()
             temp.displayName = myAnnotation->displayName();
             temp.location = myAnnotation->coordinate();
             temp.altitude = myAnnotation->altitude();
+            temp.radius = myAnnotation->radius();
             temp.color = myAnnotation->color();
             temp.type = myAnnotation->type();
             //qDebug() << "writing annotation"<<temp.displayName;
@@ -128,12 +131,8 @@ void AnnotationManager::_save()
 
 }
 
-//load the annotations from a file
-
 void AnnotationManager::_load()
 {
-    //load a QList
-    //_Annotations.
     //qDebug() << "loading annotations from file";
     QFile file("annotations.dat");
     if (file.open(QIODevice::ReadOnly))
