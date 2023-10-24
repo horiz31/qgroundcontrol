@@ -87,6 +87,7 @@ signals:
     void sendComplete               (bool error);
     void resumeMissionReady         (void);
     void resumeMissionUploadFail    (void);
+    void currentlyLanding           (bool isLanding);
 
 private slots:
     void _mavlinkMessageReceived(const mavlink_message_t& message);
@@ -153,6 +154,7 @@ protected:
     QList<MissionItem*> _writeMissionItems;     ///< Set of mission items currently being written to vehicle
     int                 _currentMissionIndex;
     int                 _lastCurrentIndex;
+    bool                 _currentlyLanding = false;
 
 private:
     void _setTransactionInProgress(TransactionType_t type);

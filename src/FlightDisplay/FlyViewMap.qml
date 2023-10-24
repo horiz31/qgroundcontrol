@@ -473,7 +473,15 @@ FlightMap {
             sourceItem: MissionItemIndexLabel {
                 id:         itemIndexLabel
                 label:      qsTr("R", "rally point map item label")
+                onClicked:
+                {
+                    guidedPlanMapCircle.setCenter(object.coordinate)
+                    guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                    guidedPlanMapCircle.setClockwise(true)
+                    globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, object.coordinate, gotoLocationItem, guidedPlanMapCircle)
+                }
             }
+
         }
     }
 

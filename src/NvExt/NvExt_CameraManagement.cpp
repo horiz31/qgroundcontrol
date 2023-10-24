@@ -4,6 +4,7 @@
 #include "QGCApplication.h"
 #include "TerrainQuery.h"
 #include "SettingsManager.h"
+#include "MissionController.h"
 #include <QTimer>
 
 
@@ -29,6 +30,7 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
     if(activeVehicle)
     {
         connect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);
+        connect(activeVehicle->missionManager(),     &MissionManager::currentlyLanding, this, &CameraManagement::_landingChanged);
         float time = QDateTime::currentSecsSinceEpoch();
         /* Sending the system time to the vehicle */
         sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemTime,time,0,0,0,0,0);
@@ -51,12 +53,24 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
     }
 }
 
+void CameraManagement::_landingChanged(bool isLanding)
+{
+    if (isLanding && qgcApp()->toolbox()->settingsManager()->videoSettings()->nadirViewOnLand()->rawValue().toBool() == true)
+    {
+        //point the camera nadir
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Nadir,0,0,0,0,0);
+    }
+}
+
+
 void CameraManagement::_flightModeChanged()
 {
     if ((this->activeVehicle->flightMode() == "FBW A" || this->activeVehicle->flightMode() == "FBW B") && qgcApp()->toolbox()->settingsManager()->videoSettings()->pilotViewOnFBW()->rawValue().toBool() == true)
         sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Stow,0,0,0,0,0);
 
-    //    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_PilotView,-20,0,0,0,0,0);
+    if (this->activeVehicle->flightMode() == "QuadPlane Land" && qgcApp()->toolbox()->settingsManager()->videoSettings()->nadirViewOnLand()->rawValue().toBool() == true)
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Nadir,0,0,0,0,0);
+
 }
 
 void CameraManagement::_activeCamJoystickChanged(Joystick* activeCamJoystick)

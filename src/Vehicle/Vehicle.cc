@@ -1639,7 +1639,7 @@ void Vehicle::_handleExtendedSysState(mavlink_message_t& message)
         break;
     case MAV_LANDED_STATE_LANDING:
         _setFlying(true);
-        _setLanding(true);
+        _setLanding(true);        
         break;
     default:
         break;

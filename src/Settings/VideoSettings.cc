@@ -120,6 +120,7 @@ DECLARE_SETTINGSFACT(VideoSettings, videoPlaybackMode)
 DECLARE_SETTINGSFACT(VideoSettings, fovOverlay)
 DECLARE_SETTINGSFACT(VideoSettings, targetOverlay)
 DECLARE_SETTINGSFACT(VideoSettings, pilotViewOnFBW)
+DECLARE_SETTINGSFACT(VideoSettings, nadirViewOnLand)
 DECLARE_SETTINGSFACT(VideoSettings, osd)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)

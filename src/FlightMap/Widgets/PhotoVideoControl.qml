@@ -811,6 +811,18 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
                     }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Downward view on Land")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.nadirViewOnLand.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.nadirViewOnLand.rawValue = checked ? true : false
+                    }
 
 
 

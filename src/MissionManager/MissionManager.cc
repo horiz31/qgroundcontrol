@@ -77,6 +77,10 @@ void MissionManager::writeArduPilotGuidedMissionItem(const QGeoCoordinate& gotoC
     emit inProgressChanged(true);
 }
 
+void MissionManager::setCurrentlyLanding(bool isLanding)
+{
+    emit currentlyLanding(isLanding);
+}
 
 void MissionManager::generateResumeMission(int resumeIndex)
 {
@@ -247,7 +251,7 @@ void MissionManager::_updateMissionIndex(int index)
     if (index != _currentMissionIndex) {
         qCDebug(MissionManagerLog) << "_updateMissionIndex currentIndex:" << index;
         _currentMissionIndex = index;
-        emit currentIndexChanged(_currentMissionIndex);
+        emit currentIndexChanged(_currentMissionIndex);                
     }
 
     if (_currentMissionIndex != _lastCurrentIndex && _cachedLastCurrentIndex != _currentMissionIndex) {

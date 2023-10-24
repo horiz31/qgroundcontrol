@@ -20,6 +20,7 @@ import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 import QGroundControl.Palette       1.0
 
+
 // Editor for Fixed Wing Landing Pattern complex mission item
 Rectangle {
     id:         _root
@@ -40,9 +41,11 @@ Rectangle {
     property string _setToVehicleHeadingStr:    qsTr("Set to vehicle heading")
     property string _setToVehicleLocationStr:   qsTr("Set to vehicle location")
     property string _setToVehicleHomeStr:       qsTr("Set to vehicle home")
+    property string _setManualLocationStr:   qsTr("Set coordinates manually")
     property bool   _showCameraSection:         !_missionVehicle.apmFirmware
     property int    _altitudeMode:              missionItem.altitudesAreRelative ? QGroundControl.AltitudeModeRelative : QGroundControl.AltitudeModeAbsolute
     property int    _warningLandingDistance:    190
+    property var    _currentVehiclePosition
 
 
     Column {
@@ -198,6 +201,16 @@ Rectangle {
                     Layout.columnSpan:  2
                     onClicked:          missionItem.landingCoordinate = globals.activeVehicle.homePosition
                 }
+                QGCButton {
+                    text:               _setManualLocationStr
+                    visible:            globals.activeVehicle ? (globals.activeVehicle.homePosition ? true : false) : false
+                    Layout.columnSpan:  2
+                    onClicked: {
+                        missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
+                        _currentVehiclePosition = globals.activeVehicle.coordinate
+                        mainWindow.showComponentDialog(editLandingPositionDialog, qsTr("Edit Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+                    }
+                }
 
                 Connections {
                     target:             missionItem.landingDistance
@@ -208,12 +221,8 @@ Rectangle {
                             distanceWarning.visible = false
                         }
                 }
-                QGCButton {
-                    text:               _setToVehicleLocationStr
-                    visible:            globals.activeVehicle
-                    Layout.columnSpan:  2
-                    onClicked:          missionItem.landingCoordinate = globals.activeVehicle.coordinate
-                }
+
+
             }
         }
 
@@ -343,6 +352,33 @@ Rectangle {
                     missionItem.landingCoordinate = globals.activeVehicle.homePosition
                     missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
                     missionItem.setLandingHeadingToTakeoffHeading()
+                }
+            }
+            QGCButton {
+                anchors.horizontalCenter:   parent.horizontalCenter
+                text:                       _setManualLocationStr
+                visible:                    globals.activeVehicle ? globals.activeVehicle.homePosition : false
+                onClicked: {
+                    missionItem.landingHeading.rawValue = globals.activeVehicle.heading.rawValue
+                    _currentVehiclePosition = globals.activeVehicle.coordinate
+                    mainWindow.showComponentDialog(editLandingPositionDialog, qsTr("Edit Position"), mainWindow.showDialogDefaultWidth, StandardButton.Close)
+                }
+            }
+
+        }
+        Component {
+            id: editLandingPositionDialog
+
+            EditPositionDialog {
+                coordinate: _currentVehiclePosition
+                onCoordinateChanged:
+                {
+                    if (coordinate !== _currentVehiclePosition)
+                    {
+                        console.log("coorindate changed")
+                        missionItem.landingCoordinate = coordinate
+                        missionItem.setLandingHeadingToTakeoffHeading()
+                    }
                 }
             }
         }

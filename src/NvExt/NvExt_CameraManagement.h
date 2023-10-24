@@ -205,6 +205,8 @@ public:
 
     void _flightModeChanged();
 
+    void _landingChanged(bool isLanding);
+
     Q_INVOKABLE void pointToCoordinate(float lat,float lon);
     Q_INVOKABLE void pointToCoordinateAndHold(float lat,float lon);
     Q_INVOKABLE void trackOnPosition(float posX,float posY, int chan);

@@ -2024,7 +2024,7 @@ void MissionController::_managerVehicleChanged(Vehicle* managerVehicle)
     connect(_missionManager, &MissionManager::currentIndexChanged,      this, &MissionController::_currentMissionIndexChanged);
     connect(_missionManager, &MissionManager::lastCurrentIndexChanged,  this, &MissionController::resumeMissionIndexChanged);
     connect(_missionManager, &MissionManager::resumeMissionReady,       this, &MissionController::resumeMissionReady);
-    connect(_missionManager, &MissionManager::resumeMissionUploadFail,  this, &MissionController::resumeMissionUploadFail);
+    connect(_missionManager, &MissionManager::resumeMissionUploadFail,  this, &MissionController::resumeMissionUploadFail);    
     connect(_managerVehicle, &Vehicle::defaultCruiseSpeedChanged,       this, &MissionController::_recalcMissionFlightStatusSignal, Qt::QueuedConnection);
     connect(_managerVehicle, &Vehicle::defaultHoverSpeedChanged,        this, &MissionController::_recalcMissionFlightStatusSignal, Qt::QueuedConnection);
     connect(_managerVehicle, &Vehicle::vehicleTypeChanged,              this, &MissionController::complexMissionItemNamesChanged);
@@ -2205,6 +2205,8 @@ void MissionController::_currentMissionIndexChanged(int sequenceNumber)
                  _speakOneShot2 = true;
             }
         }
+
+        MissionController::_isActiveItemLanding(currentMissionIndex());
         emit currentMissionIndexChanged(currentMissionIndex());
     }
 }
@@ -2395,6 +2397,44 @@ bool MissionController::_isROICancelItem(SimpleMissionItem* simpleItem)
              static_cast<int>(simpleItem->missionItem().param1()) == MAV_ROI_NONE);
 }
 
+void MissionController::_isActiveItemLanding(int index)
+{
+
+    bool hasLanding = false;
+    for (int viIndex=0; viIndex<_visualItems->count(); viIndex++)
+    {
+
+        VisualMissionItem*  pVI =        qobject_cast<VisualMissionItem*>(_visualItems->get(viIndex));
+        LandingComplexItem* otherLanding = qobject_cast<LandingComplexItem*>(pVI);
+        if (otherLanding){
+                if (index == otherLanding->lastSequenceNumber())
+                {
+                    hasLanding = true;
+                    break;
+                }
+            }
+    }
+
+    if (hasLanding)
+    {
+        if (!_currentlyLanding)
+        {
+            _currentlyLanding = true;
+            _missionManager->setCurrentlyLanding(true);
+        }
+    }
+    else
+    {
+        if (_currentlyLanding)
+        {            
+            _currentlyLanding = false;
+            _missionManager->setCurrentlyLanding(false);
+        }
+
+    }
+
+
+}
 void MissionController::_searchForLandingPattern()
 {
     bool foundLand = false;
@@ -2453,7 +2493,6 @@ void MissionController::_searchForLandingPattern()
 
     if (foundLand != _doesContainLanding)
     {
-
         _doesContainLanding = foundLand;
         emit doesContainLandingChanged();
     }

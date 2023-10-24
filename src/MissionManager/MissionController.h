@@ -109,6 +109,7 @@ public:
     Q_PROPERTY(double               minAMSLAltitude                 MEMBER _minAMSLAltitude             NOTIFY minAMSLAltitudeChanged)          ///< Minimum altitude associated with this mission. Used to calculate percentages for terrain status.
     Q_PROPERTY(double               maxAMSLAltitude                 MEMBER _maxAMSLAltitude             NOTIFY maxAMSLAltitudeChanged)          ///< Maximum altitude associated with this mission. Used to calculate percentages for terrain status.
     Q_PROPERTY(bool                 doesContainLanding              READ doesContainLanding             NOTIFY doesContainLandingChanged)
+    Q_PROPERTY(bool                 currentlyLanding                READ currentlyLanding               NOTIFY currentlyLandingChanged)
     Q_PROPERTY(QGroundControlQmlGlobal::AltMode globalAltitudeMode         READ globalAltitudeMode         WRITE setGlobalAltitudeMode NOTIFY globalAltitudeModeChanged)
     Q_PROPERTY(QGroundControlQmlGlobal::AltMode globalAltitudeModeDefault  READ globalAltitudeModeDefault  NOTIFY globalAltitudeModeChanged) ///< Default to use for newly created items
     Q_PROPERTY(int                   startLandingSequenceNumber            READ startLandingSequenceNumber NOTIFY startLandingSequenceNumberChanged)
@@ -233,6 +234,7 @@ public:
     QString             structureScanComplexItemName(void) const;
     int                 startLandingSequenceNumber  (void) const {return _startLandingSequenceNumber;}
     bool                doesContainLanding          (void) const { return _doesContainLanding; }
+    bool                currentlyLanding            (void) const { return _currentlyLanding; }
     bool                isInsertTakeoffValid        (void) const;
     double              minAMSLAltitude             (void) const { return _minAMSLAltitude; }
     double              maxAMSLAltitude             (void) const { return _maxAMSLAltitude; }
@@ -287,6 +289,7 @@ signals:
     void takeoffMissionItemChanged          (void);
     void missionBoundingCubeChanged         (void);
     void doesContainLandingChanged          (void);
+    void currentlyLandingChanged            (void);
     void missionItemCountChanged            (int missionItemCount);
     void onlyInsertTakeoffValidChanged      (void);
     void isInsertTakeoffValidChanged        (void);
@@ -355,6 +358,7 @@ private:
     void                    _insertComplexMissionItemWorker     (const QGeoCoordinate& mapCenterCoordinate, ComplexMissionItem* complexItem, int visualItemIndex, bool makeCurrentItem);
     bool                    _isROIBeginItem                     (SimpleMissionItem* simpleItem);
     bool                    _isROICancelItem                    (SimpleMissionItem* simpleItem);
+    void                    _isActiveItemLanding                (int index);
     FlightPathSegment*      _createFlightPathSegmentWorker      (VisualItemPair& pair, bool mavlinkTerrainFrame);
     void                    _allItemsRemoved                    (void);
     void                    _firstItemAdded                     (void);
@@ -390,6 +394,7 @@ private:
     VisualMissionItem*          _currentPlanViewItem =          nullptr;
     TakeoffMissionItem*         _takeoffMissionItem =           nullptr;
     bool                        _doesContainLanding =           false;
+    bool                        _currentlyLanding =             false;
     QTimer                      _updateTimer;
     QGCGeoBoundingCube          _travelBoundingCube;
     QGeoCoordinate              _takeoffCoordinate;

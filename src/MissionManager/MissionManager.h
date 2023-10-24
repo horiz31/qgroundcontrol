@@ -20,7 +20,7 @@ class MissionManager : public PlanManager
 public:
     MissionManager(Vehicle* vehicle);
     ~MissionManager();
-        
+
     /// Current mission item as reported by MISSION_CURRENT
     int currentIndex(void) const { return _currentMissionIndex; }
 
@@ -36,6 +36,8 @@ public:
     /// from mission start to resumeIndex in the generate mission.
     void generateResumeMission(int resumeIndex);
 
+    void setCurrentlyLanding(bool isLanding);
+
 private slots:
     void _mavlinkMessageReceived(const mavlink_message_t& message);
 
@@ -47,4 +49,5 @@ private:
     void _handleHeartbeat(const mavlink_message_t& message);
 
     int _cachedLastCurrentIndex;
+
 };

@@ -195,6 +195,13 @@
     "default":     true
 },
 {
+    "name":             "nadirViewOnLand",
+    "shortDesc":        "Switch to Downward view on Landings",
+    "longDesc":         "Specify if the gimbal should switch to downward view when the aircraft is landing",
+    "type":             "bool",
+    "default":     true
+},
+{
     "name":             "osd",
     "shortDesc":        "Enable the On Screen Display",
     "longDesc":         "Specify if the gimbal should show the On Screen Display",
