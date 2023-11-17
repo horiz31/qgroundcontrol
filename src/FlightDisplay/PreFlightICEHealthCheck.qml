@@ -169,13 +169,13 @@ PreFlightCheckButton {
 
                             Timer {
                                 id:             iceRunUpTimer
-                                interval:       500
+                                interval:       250
                                 repeat:         true
 
                                 onTriggered: {
-                                    _joyValue = (iceMotorThrottle.value * 10) + 1000  //scale slider to 1000-2000
-                                    //console.log("timer: sending joystick throttle value of " + _joyValue)
-                                    globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 1000 to 2000
+                                    _joyValue = (iceMotorThrottle.value * 10)  //scale slider to 0-1000
+                                    console.log("timer: sending joystick throttle value of " + _joyValue)
+                                    globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 0 to 1000
                                 }
 
                             }
@@ -274,8 +274,8 @@ PreFlightCheckButton {
 
                 globals.activeVehicle.flightMode = "Manual"
 
-                _joyValue = (iceMotorThrottle.value * 10) + 1000  //scale slider to 1000-2000
-                globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 1000 to 2000
+                _joyValue = (iceMotorThrottle.value * 10)  //scale slider to 0 to 1000
+                globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 0 to 1000
                 iceRunUpTimer.start()  //this is needed to send rc override periodically
 
                 _isMotorTestRunning = true;
@@ -287,14 +287,17 @@ PreFlightCheckButton {
                 if (_isMotorTestRunning)
                 {
                     iceRunUpTimer.stop()
-                    globals.activeVehicle.sendRcOverrideThrottle(900)  //turn off
+                    //set throttle level 0
+                    for (var i = 0; i < 4; i++)  {
+                      globals.activeVehicle.sendRcOverrideThrottle(0)  //turn off multiple times to make sure one gets in
+                    }
+
                     globals.activeVehicle.setEngineRunUp(false)
 
-                    //set throttle level 0
                     //set mode back to previous mode
                     //if joysticks were enabled, re-enable
 
-                     globals.activeVehicle.flightMode = _modeInitialState
+                    globals.activeVehicle.flightMode = _modeInitialState
                     if (_joyStickInitialState && globals.activeVehicle && fromJoystick===false)
                     {
                         globals.activeVehicle.joystickEnabled = true
@@ -304,6 +307,8 @@ PreFlightCheckButton {
                         QGroundControl.settingsManager.appSettings.virtualJoystick.value = true;
                     //mark the state as passed
                     _manualState = _statePassed
+
+                    globals.activeVehicle.sendRcOverrideThrottle(0)  //turn off one more time to ensure if comms glitch it makes it
                 }
                 _isMotorTestRunning = false;
             }

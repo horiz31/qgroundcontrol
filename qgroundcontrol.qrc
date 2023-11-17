@@ -307,6 +307,7 @@
         <file alias="QGroundControl/FlightDisplay/ChecklistWarningIndicator.qml">src/FlightDisplay/ChecklistWarningIndicator.qml</file>
         <file alias="QGroundControl/FlightMap/ATAKMarkerMapItem.qml">src/FlightMap/MapItems/ATAKMarkerMapItem.qml</file>
         <file alias="QGroundControl/FlightMap/AnnotationMapItem.qml">src/FlightMap/MapItems/AnnotationMapItem.qml</file>
+        <file alias="QGroundControl/FlightDisplay/RangeFinderDisplay.qml">src/FlightDisplay/RangeFinderDisplay.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

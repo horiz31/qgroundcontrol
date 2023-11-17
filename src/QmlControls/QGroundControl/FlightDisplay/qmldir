@@ -47,6 +47,7 @@ ProximityRadarValues            1.0 ProximityRadarValues.qml
 ProximityRadarVideoView         1.0 ProximityRadarVideoView.qml
 TerrainProgress                 1.0 TerrainProgress.qml
 TelemetryValuesBar              1.0 TelemetryValuesBar.qml
+RangeFinderDisplay              1.0 RangeFinderDisplay.qml
 VehicleWarnings                 1.0 VehicleWarnings.qml
 WindIndicator                   1.0 WindIndicator.qml
 ObstacleDistanceOverlay         1.0 ObstacleDistanceOverlay.qml

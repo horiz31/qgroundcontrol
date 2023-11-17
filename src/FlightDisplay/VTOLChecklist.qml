@@ -77,11 +77,12 @@ Item {
             }
 
             PreFlightSensorsHealthCheck {
+                allowTelemetryFailureOverride:    true
             }
 
             PreFlightGPSCheck {
                 failureSatCount:        9
-                allowOverrideSatCount:  true
+                allowOverrideSatCount:  true            
             }
             PreFlightCheckButton {
                 name:            qsTr("Compass")

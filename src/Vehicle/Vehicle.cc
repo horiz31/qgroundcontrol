@@ -104,6 +104,7 @@ const char* Vehicle::_svBattPercentRemainingFactName =   "svBattPercentRemaining
 const char* Vehicle::_targetAirSpeedSetPointFactName =   "targetAirSpeedSetPoint";
 const char* Vehicle::_imuTemperatureFactName =   "imuTemperature";
 const char* Vehicle::_engineRunUpFactName =   "engineRunUp";
+const char* Vehicle::_rangefinderFactName =   "rangefinder";
 
 const char* Vehicle::_gimbalFactGroupName =             "nvGimbal";
 const char* Vehicle::_gpsFactGroupName =                "gps";
@@ -175,6 +176,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _targetAirSpeedSetPointFact   (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
     , _imuTemperatureFact           (0, _imuTemperatureFactName,           FactMetaData::valueTypeDouble)
     , _engineRunUpFact              (0, _engineRunUpFactName,           FactMetaData::valueTypeBool)
+    , _rangefinderFact              (0, _rangefinderFactName,              FactMetaData::valueTypeDouble)
 
     , _gpsFactGroup                 (this)
     , _gps2FactGroup                (this)
@@ -423,6 +425,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _targetAirSpeedSetPointFact       (0, _targetAirSpeedSetPointFactName,     FactMetaData::valueTypeDouble)
     , _imuTemperatureFact               (0, _imuTemperatureFactName,             FactMetaData::valueTypeDouble)
     , _engineRunUpFact                  (0, _engineRunUpFactName,                FactMetaData::valueTypeBool)
+    , _rangefinderFact                  (0, _rangefinderFactName,                FactMetaData::valueTypeDouble)
     , _gpsFactGroup                     (this)
     , _gps2FactGroup                    (this)
     , _windFactGroup                    (this)
@@ -555,6 +558,7 @@ void Vehicle::_commonInit()
     _addFact(&_targetAirSpeedSetPointFact,       _targetAirSpeedSetPointFactName);
     _addFact(&_imuTemperatureFact,       _imuTemperatureFactName);
     _addFact(&_engineRunUpFact,       _engineRunUpFactName);
+    _addFact(&_rangefinderFact,          _rangefinderFactName);
 
     _hobbsFact.setRawValue(QVariant(QString("0000:00:00")));
     _addFact(&_hobbsFact,               _hobbsFactName);
@@ -1031,6 +1035,9 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
     case MAVLINK_MSG_ID_OBSTACLE_DISTANCE:
         _handleObstacleDistance(message);
+        break;
+    case MAVLINK_MSG_ID_RANGEFINDER:
+        _handleRangefinder(message);
         break;
 
     case MAVLINK_MSG_ID_EVENT:
@@ -4138,7 +4145,9 @@ void Vehicle::_setupAutoDisarmSignalling()
 void Vehicle::_getSystemSerialNumber()
 {
     QString brdSerialParam("BRD_SERIAL_NUM");
-
+    // Board serial number is used to encode unique serial number as well as the vehicle type
+    // This GCS is only compatible with
+    // EchoMAV MK1
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, brdSerialParam))
     {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,brdSerialParam);
@@ -4956,6 +4965,13 @@ void Vehicle::_handleObstacleDistance(const mavlink_message_t& message)
     _objectAvoidance->update(&o);
 }
 
+void Vehicle::_handleRangefinder(const mavlink_message_t& message)
+{
+    mavlink_rangefinder_t o;
+    mavlink_msg_rangefinder_decode(&message, &o);
+    _rangefinderFact.setRawValue(o.distance);
+}
+
 void Vehicle::updateFlightDistance(double distance)
 {
     _flightDistanceFact.setRawValue(_flightDistanceFact.rawValue().toDouble() + distance);
@@ -5023,9 +5039,7 @@ void Vehicle::clearAllParamMapRC(void)
 
 void Vehicle::sendRcOverrideThrottle(int throttle)
 {
-    //on SuperVolo, the throttle is channel 1
-    //this is used only in preflight engine runup
-    //make sure you know what you are doing, the Supervolo in manual mode plus > 1000 on RC channel 1 will start the engine
+
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
     if (!sharedLink) {
         qCDebug(VehicleLog)<< "sendJoystickThrottle: primary link gone!";
@@ -5038,22 +5052,20 @@ void Vehicle::sendRcOverrideThrottle(int throttle)
 
     mavlink_message_t message;
 
-    mavlink_msg_rc_channels_override_pack_chan(
-                static_cast<uint8_t>(_mavlink->getSystemId()),
-                static_cast<uint8_t>(_mavlink->getComponentId()),
-                sharedLink->mavlinkChannel(),
-                &message,
-                static_cast<uint8_t>(_id),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(throttle),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),
-                static_cast<int16_t>(0),0,0,0,0,0,0,0,0,0,0,0
-                );
+    mavlink_msg_manual_control_pack_chan(
+        static_cast<uint8_t>(_mavlink->getSystemId()),
+        static_cast<uint8_t>(_mavlink->getComponentId()),
+        sharedLink->mavlinkChannel(),
+        &message,
+        static_cast<uint8_t>(_id),
+        static_cast<int16_t>(0),
+        static_cast<int16_t>(0),
+        static_cast<int16_t>(throttle),
+        static_cast<int16_t>(0),
+        0,
+        0, 0, 0, 0);
     sendMessageOnLinkThreadSafe(sharedLink.get(), message);
+
 }
 
 void Vehicle::sendJoystickDataThreadSafe(float roll, float pitch, float yaw, float thrust, quint16 buttons)

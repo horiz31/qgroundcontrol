@@ -151,7 +151,6 @@ Item {
         color:              qgcPal.window
         visible:            false
     }
-
     FlyViewMap {
         id:                     mapControl
         planMasterController:   _planController

@@ -15,6 +15,7 @@ import QGroundControl.Controls              1.0
 import QGroundControl.MultiVehicleManager   1.0
 import QGroundControl.ScreenTools           1.0
 import QGroundControl.Palette               1.0
+import QGroundControl.Vehicle               1.0
 
 //-------------------------------------------------------------------------
 //-- Simple Serial Number Indicator
@@ -42,7 +43,7 @@ Item {
              font.family:        ScreenTools.normalFontFamily
              anchors.verticalCenter: parent.verticalCenter
              function getName(){
-                if (_activeVehicle.vehicleModel === 0)
+                if (_activeVehicle.vehicleModel === Vehicle.Unknown)
                 {
                     if (_activeVehicle.brdSerialNumber !== 0)
                     {
@@ -57,9 +58,9 @@ Item {
                 {
                     if (_activeVehicle.brdSerialNumber !== 0)
                     {
-                        if (_activeVehicle.vehicleModel === 0)
+                        if (_activeVehicle.vehicleModel === Vehicle.Unknown)
                             return " Vehicle " + _activeVehicle.brdSerialNumber + " "
-                        else if (_activeVehicle.vehicleModel === 1)
+                        else if (_activeVehicle.vehicleModel === Vehicle.EchoMAVMK1)
                             return " MK1 " + _activeVehicle.brdSerialNumber + " "
                     }
                     else

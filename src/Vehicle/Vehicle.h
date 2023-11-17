@@ -175,7 +175,7 @@ public:
     //enum for the model of aircraft, which comes from the BRD_SERIAL_NUM param
     enum Model {
         Unknown = 0,
-        SuperVolo,
+        EchoMAVMK1,
     };
     Q_ENUM(Model)
 
@@ -346,6 +346,7 @@ public:
     Q_PROPERTY(Fact* targetAirSpeedSetPoint READ targetAirSpeedSetPoint CONSTANT)
     Q_PROPERTY(Fact* imuTemperature     READ imuTemperature CONSTANT)
     Q_PROPERTY(Fact* engineRunUp        READ engineRunUp CONSTANT)
+    Q_PROPERTY(Fact* rangefinder        READ rangefinder CONSTANT)
 
     Q_PROPERTY(FactGroup*           nvGimbal        READ gimbalFactGroup            CONSTANT)
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
@@ -741,6 +742,7 @@ public:
     Fact* targetAirSpeedSetPoint            () { return &_targetAirSpeedSetPointFact; }
     Fact* imuTemperature                    () { return &_imuTemperatureFact; }
     Fact* engineRunUp                       () { return &_engineRunUpFact; }
+    Fact* rangefinder                       () { return &_rangefinderFact; }
 
     FactGroup* gimbalFactGroup              () { return &_gimbalFactGroup; }
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
@@ -1153,6 +1155,7 @@ private:
     void _handleOrbitExecutionStatus    (const mavlink_message_t& message);
     void _handleGimbalOrientation       (const mavlink_message_t& message);
     void _handleObstacleDistance        (const mavlink_message_t& message);
+    void _handleRangefinder             (const mavlink_message_t& message);
     void _handleEvent(uint8_t comp_id, std::unique_ptr<events::parser::ParsedEvent> event);
     // ArduPilot dialect messages
 #if !defined(NO_ARDUPILOT_DIALECT)
@@ -1498,6 +1501,7 @@ private:
     Fact _targetAirSpeedSetPointFact;
     Fact _imuTemperatureFact;
     Fact _engineRunUpFact;
+    Fact _rangefinderFact;
 
     VehicleGPSFactGroup             _gpsFactGroup;
     VehicleGPS2FactGroup            _gps2FactGroup;
@@ -1560,6 +1564,7 @@ private:
     static const char* _targetAirSpeedSetPointFactName;
     static const char* _imuTemperatureFactName;
     static const char* _engineRunUpFactName;
+    static const char* _rangefinderFactName;
 
     static const char* _gimbalFactGroupName;
     static const char* _gpsFactGroupName;

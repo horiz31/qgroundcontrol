@@ -240,10 +240,9 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 expectedSeq = _message.seq;
             }
             // And if we didn't encounter that sequence number, record the error
-            //int foo = 0;
-            if (_message.seq != expectedSeq)
-            {
-                //foo = 1;
+
+            if (_message.seq != expectedSeq && _message.sysid != 255)  //NextVision TRIP sends as 255, next vision system reports don't use packet sequence, so don't calc lostMessages for that systemid as it will screw up the telemetry lost display
+            {               
                 int lostMessages = 0;
                 //-- Account for overflow during packet loss
                 if(_message.seq < expectedSeq) {
@@ -255,6 +254,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                 totalLossCounter[mavlinkChannel] += static_cast<uint64_t>(lostMessages);
             }
 
+
             // And update the last sequence number for this system/component pair
             lastIndex[_message.sysid][_message.compid] = _message.seq;;
             // Calculate new loss ratio
@@ -264,7 +264,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
             receiveLossPercent = (receiveLossPercent * 0.5f) + (runningLossPercent[mavlinkChannel] * 0.5f);
             runningLossPercent[mavlinkChannel] = receiveLossPercent;
 
-            //qDebug() << foo << _message.seq << expectedSeq << lastSeq << totalLossCounter[mavlinkChannel] << totalReceiveCounter[mavlinkChannel] << totalSentCounter[mavlinkChannel] << "(" << _message.sysid << _message.compid << ")";
+            //qDebug() << foo << _message.seq << expectedSeq << lastSeq << totalLossCounter[mavlinkChannel] << totalReceiveCounter[mavlinkChannel] << "(" << _message.sysid << _message.compid << ")";
 
             //-----------------------------------------------------------------
             // MAVLink forwarding

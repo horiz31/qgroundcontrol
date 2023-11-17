@@ -19,6 +19,7 @@ import QGroundControl.Controls      1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.FlightDisplay 1.0
 import QGroundControl.FlightMap     1.0
+import QGroundControl.Vehicle       1.0
 
 import QtQuick.VirtualKeyboard 2.4
 
@@ -31,6 +32,8 @@ ApplicationWindow {
     minimumHeight:  ScreenTools.isMobile ? Screen.height : Math.min(ScreenTools.defaultFontPixelWidth * 50, Screen.height)
     visible:        true
 
+
+    property var    _activeVehicle:         QGroundControl.multiVehicleManager.activeVehicle
 
     Component.onCompleted: {
         //-- Full screen on mobile or tiny screens
@@ -492,7 +495,32 @@ ApplicationWindow {
         }
     }
 
+    Rectangle {
+        id:             noLicense
+        anchors.fill:   parent
+        color:          Qt.rgba(0,0,0,1.0)
+        visible:        getVisible()
+        QGCLabel {
+            text:               qsTr("ERROR: UNSUPPORTED VEHICLE TYPE\nThis GCS is designed to be used only with the EchoMAV MK1\nFor more information, contact support@echomav.com ")
+            font.family:        ScreenTools.demiboldFontFamily
+            color:              "white"
+            font.pointSize:     ScreenTools.largeFontPointSize
+            anchors.centerIn:   parent
+        }
+
+        function getVisible()
+        {
+            if (_activeVehicle)
+            {
+                if (_activeVehicle.parameterManager.parametersReady && _activeVehicle.vehicleModel !== Vehicle.EchoMAVMK1)
+                    return true;
+            }
+            return false;
+        }
+    }
+
     FlyView {
+        visible:        !noLicense.visible
         id:             flightView
         anchors.fill:   parent
     }

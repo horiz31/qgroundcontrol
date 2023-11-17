@@ -217,6 +217,18 @@ Item {
 
     }
 
+
+
+
+    RangeFinderDisplay {
+        id:     rangeFinderDisplay
+        visible: true
+        anchors.horizontalCenter: telemetryPanel.horizontalCenter
+        anchors.bottom: telemetryPanel.top
+        anchors.bottomMargin: 100
+    }
+
+
     TelemetryValuesBar {
         id:                 telemetryPanel
         x:                  recalcXPosition()

@@ -17,8 +17,6 @@ import QGroundControl.Controls      1.0
 import QGroundControl.Palette       1.0
 
 
-
-
 Rectangle {
     id:                 telemetryPanel
     height:             telemetryLayout.height + (_toolsMargin * 2)
@@ -153,6 +151,8 @@ Rectangle {
             propagateComposedEvents:    true
         }
 */
+
+
 
 
          RowLayout
