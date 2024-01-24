@@ -968,12 +968,10 @@ void Joystick::_handleAxis()
             }
 
             if (_accumulator) {
-                //static float throttle_accu = 0.f;
-                _throttle_accu += throttle * (40 / 3000.f); //for throttle to change from min to max it will take 3000ms (40ms is a loop time)
-                _throttle_accu = std::max(static_cast<float>(-1.f), std::min(_throttle_accu, static_cast<float>(1.f)));
-                //qDebug() << "throttle is " << _throttle_accu;
-                float mimimumThrottle = _minThrottleFBW * 1.0e-2;
-                //qDebug() << "min throttle is " << mimimumThrottle;
+                if (std::abs(throttle) > 0.1)  //add a little deadband to prevent accumulator creep on joysticks with noise
+                    _throttle_accu += throttle * (40 / 3000.f); //for throttle to change from min to max it will take 3000ms (40ms is a loop time)
+                _throttle_accu = std::max(static_cast<float>(-1.f), std::min(_throttle_accu, static_cast<float>(1.f)));                
+                float mimimumThrottle = _minThrottleFBW * 1.0e-2;                
                 _throttle_accu = std::max(mimimumThrottle, _throttle_accu);
                 throttle = _throttle_accu;
             }

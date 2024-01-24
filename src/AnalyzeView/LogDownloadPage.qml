@@ -55,12 +55,14 @@ AnalyzePage {
                 selectionMode:      SelectionMode.MultiSelection
                 Layout.fillWidth:   true
 
+
                 TableViewColumn {
                     title: qsTr("Id")
                     width: ScreenTools.defaultFontPixelWidth * 6
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignHCenter
+                        color: "white"
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.id : ""
@@ -73,7 +75,8 @@ AnalyzePage {
                     width: ScreenTools.defaultFontPixelWidth * 34
                     horizontalAlignment: Text.AlignHCenter
                     delegate: Text  {
-                        text: {
+                        color: "white"
+                        text: {                            
                             var o = logController.model.get(styleData.row)
                             if (o) {
                                 //-- Have we received this entry already?
@@ -96,6 +99,7 @@ AnalyzePage {
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignRight
+                        color: "white"
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.sizeStr : ""
@@ -109,6 +113,7 @@ AnalyzePage {
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignHCenter
+                        color: "white"
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.status : ""

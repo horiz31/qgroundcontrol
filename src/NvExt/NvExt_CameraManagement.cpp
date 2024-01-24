@@ -368,9 +368,12 @@ void CameraManagement::sendGimbalCommand(float cam_roll_yaw,float cam_pitch)
     }
     SharedLinkInterfacePtr sharedLink = weakLink.lock();
 
+
+
     /* check if joystick is enabled */
     if ( activeVehicle->joystickCamEnabled() )
     {
+        //qDebug() << "(1) ground crossing altitude" << (float)this->gndCrsAltitude;
         mavlink_message_t message;
         mavlink_msg_command_long_pack_chan(1,
                                        0,
@@ -391,6 +394,8 @@ void CameraManagement::sendGimbalVirtualCommand(float cam_roll_yaw,float cam_pit
         return;
     }
     SharedLinkInterfacePtr sharedLink = weakLink.lock();
+
+    //qDebug() << "(2) ground crossing altitude" << (float)this->gndCrsAltitude;
 
     /* check if virtual joystick is enabled */
     if ( qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->rawValue().toBool() == true )
@@ -460,6 +465,8 @@ void CameraManagement::getAltAtCoord(float lat,float lon)
     if( _terrainTileManager->requestCahcedData(coord,terrainAltitude) )
         this->gndCrsAltitude = terrainAltitude;     /* save the value, will be transmitted to the TRIP2 in the next Gimbal or GndAlt message */
 
+    //qDebug() << "ground crossing altitude" << (float)this->gndCrsAltitude;
+
     if ( !activeVehicle )
         return;
 
@@ -476,7 +483,9 @@ void CameraManagement::getAltAtCoord(float lat,float lon)
         if (weakLink.expired()) {
             return;
         }
-        SharedLinkInterfacePtr sharedLink = weakLink.lock();        
+
+        //qDebug() << "(3) ground crossing altitude" << (float)this->gndCrsAltitude;
+        SharedLinkInterfacePtr sharedLink = weakLink.lock();
         /* when the virtual joystick is disabled send the ground altitude from here instead */
         mavlink_msg_command_long_pack_chan(1,
                                            0,
@@ -511,7 +520,7 @@ void CameraManagement::pointToCoordinate(float lat,float lon)
     else
     {
         sendMavCommandLong(MAV_CMD_DO_SET_ROI_LOCATION,0.0,0.0,0.0,0.0,_coord.latitude(),_coord.longitude(),terrainAltitude);
-        //qDebug() << "00 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << terrainAltitude;
+        qDebug() << "00 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << terrainAltitude;
     }
 }
 
@@ -519,7 +528,7 @@ void CameraManagement::_terrainDataReceived(bool success, QList<double> heights)
 {
     double _terrainAltitude = success ? heights[0] : 0;
     sendMavCommandLong(MAV_CMD_DO_SET_ROI_LOCATION,0.0,0.0,0.0,0.0,_coord.latitude(),_coord.longitude(),_terrainAltitude);
-    //qDebug() << "11 PTC On lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << _terrainAltitude;
+    qDebug() << "Terrain Data For lat= " << (int)(_coord.latitude() * 10000000.0) << " lon = " << (int)(_coord.longitude() * 10000000.0 )<< " alt = " << _terrainAltitude;
     //sender()->deleteLater();
 }
 

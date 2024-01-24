@@ -101,7 +101,7 @@
     "shortDesc": "Save telemetry log even if vehicle was not armed",
     "longDesc":  "If this option is enabled a telemtry log will be saved even if vehicle was never armed.",
     "type":             "bool",
-    "default":     false
+    "default":     true
 },
 {
     "name":             "audioMuted",
@@ -456,6 +456,13 @@
     "default":     "localhost:14445"
 },
 {
+    "name":             "multicastTelemetryGroup",
+    "shortDescription": "Multicast telemetry group",
+    "longDescription":  "Multicast address to bind to for telemetry. The app will automatically bind to all multicast-enabled interfaces.",
+    "type":             "string",
+    "default":          "224.10.10.10"
+},
+{
     "name":                 "rssiRadioSelect",
     "shortDesc":            "RSSI Source",
     "longDesc":             "Select the source of the RSSI (Received Signal Strength Indicator) .",
@@ -499,6 +506,13 @@
     "longDescription":  "Doodle radio IP Address.",
     "type":             "string",
     "default":          "172.20.1.1"
+},
+{
+    "name":             "hcuMessagesMuted",
+    "shortDesc":        "Mute HCU message audio output",
+    "longDesc":         "If this option is enabled, HCU messages will be muted.",
+    "type":             "bool",
+    "default":          false
 },
 {
     "name":             "lowAltitudeMuted",

@@ -72,6 +72,7 @@
         <file alias="guidedIcon.svg">resources/guidedIcon.svg</file>
         <file alias="annotationIcon.svg">resources/annotationIcon.svg</file>
         <file alias="rangefinderWarning.svg">resources/rangefinderWarning.svg</file>
+        <file alias="wind.svg">resources/wind.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

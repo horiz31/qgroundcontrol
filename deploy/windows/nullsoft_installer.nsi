@@ -58,6 +58,11 @@ SetCompressor /SOLID /FINAL lzma
 
 !insertmacro MUI_LANGUAGE "English"
 
+Section "Visual Studio Runtime"
+  DetailPrint "Installing VS Runtime..."
+  ExecWait "vc_redist_x86.exe /install /passive"
+SectionEnd
+
 Section
   DetailPrint "Checking for 32 bit uninstaller"  
   SetRegView 32
@@ -71,7 +76,8 @@ check64BitUninstall:
   StrCmp $R0 "" doInstall
 
 doUninstall:
-  DetailPrint "Uninstalling previous version..."  ExecWait "$R0 /S -LEAVE_DATA=1 _?=$INSTDIR"
+  DetailPrint "Uninstalling previous version..."
+  ExecWait "$R0 /S -LEAVE_DATA=1 _?=$INSTDIR"
   IntCmp $0 0 doInstall
 
   MessageBox MB_OK|MB_ICONEXCLAMATION \

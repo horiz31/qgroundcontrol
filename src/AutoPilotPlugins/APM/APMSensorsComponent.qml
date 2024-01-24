@@ -47,7 +47,7 @@ SetupPage {
             readonly property string accelHelp:     qsTr("For Accelerometer calibration you will need to place your vehicle on all six sides on a perfectly level surface and hold it still in each orientation for a few seconds.")
             readonly property string levelHelp:     qsTr("To level the horizon you need to place the vehicle in its level flight position and press OK.")
 
-            readonly property string statusTextAreaDefaultText: qsTr("Start the individual calibration steps by clicking one of the buttons to the left.")
+            readonly property string statusTextAreaDefaultText: qsTr("Start the individual calibration/test steps by clicking one of the buttons to the left.")
 
             // Used to pass help text to the preCalibrationDialog dialog
             property string preCalibrationDialogHelp
@@ -744,7 +744,136 @@ SetupPage {
                         } // Column
                     } // QGCFlickable
                 } // QGCViewDialog
-            } // Component - compassMotDialogComponent
+            } // Component - idleAutotuneDialogComponent
+
+            Component {
+                id: engineRunupDialogComponent
+
+                QGCViewDialog {
+                    id: engineRunupDialog
+
+                    function accept() {
+                        controller.engineRunup(iceMotorThrottle.value)
+                        engineRunupDialog.hideDialog()
+                    }
+
+                    QGCFlickable {
+                        anchors.fill:   parent
+                        contentHeight:  columnLayout.height
+                        clip:           true
+
+                        Column {
+                            id:                 columnLayout
+                            anchors.margins:    ScreenTools.defaultFontPixelWidth
+                            anchors.left:       parent.left
+                            anchors.right:      parent.right
+                            anchors.top:        parent.top
+                            spacing:            ScreenTools.defaultFontPixelHeight
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("Engine Runup testing - to be used by advanced users to debug/test engine performance. ")
+                            }
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("CAUTION: Runups on the ground WILL overheat the engine if ran continuously without cooling. ") +
+                                                qsTr("Please monitor the engine temps during the runup!")
+                            }
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("WARNING: During this procedure, the vehicle will be put in manual mode and the engine will start! ") +
+                                                qsTr("The aircraft should be on an elevated surface so that the rear prop is clear. The aircraft should be SECURED so it will not move as the engine runs.")
+                            }
+
+                            //add slider here for throttle
+                            Row{
+                                //anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: ScreenTools.defaultFontPixelWidth
+                                QGCLabel {
+                                    text:           qsTr("Set Throttle Level:")
+                                }
+                                QGCSlider {
+                                    id:                         iceMotorThrottle
+                                    width:                      ScreenTools.defaultFontPixelWidth * 15
+                                    maximumValue:               100
+                                    minimumValue:               55
+                                    stepSize:                   10
+                                    value:                      70
+                                    updateValueWhileDragging:   true
+                                    visible:                    true
+                                    onValueChanged:             {
+                                        iceMotorThrottleValue.text = value + "%"
+                                    }
+                                }
+                                QGCLabel {
+                                    id:   iceMotorThrottleValue
+                                    text:           iceMotorThrottle.value + "%"
+                                }
+                            }
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("Click OK to set the target throttle position to be used during the Engine Runup.")
+                            }
+                        } // Column
+                    } // QGCFlickable
+                } // QGCViewDialog
+            } // Component - EngineRunUpDialogComponent
+
+            Component {
+                id: quadMotorDialogComponent
+
+                QGCViewDialog {
+                    id: quadMotorDialog
+
+                    function accept() {
+                        controller.quadMotorRunup()
+                        quadMotorDialog.hideDialog()
+                    }
+
+                    QGCFlickable {
+                        anchors.fill:   parent
+                        contentHeight:  columnLayout.height
+                        clip:           true
+
+                        Column {
+                            id:                 columnLayout
+                            anchors.margins:    ScreenTools.defaultFontPixelWidth
+                            anchors.left:       parent.left
+                            anchors.right:      parent.right
+                            anchors.top:        parent.top
+                            spacing:            ScreenTools.defaultFontPixelHeight
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("Quad Motor Testing - to be used to test the quad VTOL motors. ")
+                            }
+
+                            QGCLabel {
+                                anchors.left:   parent.left
+                                anchors.right:  parent.right
+                                wrapMode:       Text.WordWrap
+                                text:           qsTr("WARNING: Starting this test will cause the electric VTOL motors to spin at a low rpm, sequentially for 2 seconds each. ") +
+                                                qsTr("Please ensure the props are removed or the area around the props are clear before proceeding!")
+                            }
+
+
+                        } // Column
+                    } // QGCFlickable
+                } // QGCViewDialog
+            } // Component - quadMotorDialogComponent
 
             Component {
                 id: calibratePressureDialogComponent
@@ -878,6 +1007,19 @@ SetupPage {
                         text:       qsTr("Idle Autotune")
                         visible:    globals.activeVehicle ? globals.activeVehicle.vtol : false
                         onClicked:  mainWindow.showComponentDialog(idleAutotuneDialogComponent, qsTr("Idle Position Autotune"), mainWindow.showDialogDefaultWidth, StandardButton.Cancel | StandardButton.Ok)
+                    }
+                    QGCButton {
+                        width:      _buttonWidth
+                        text:       qsTr("Engine Runup")
+                        visible:    globals.activeVehicle ? globals.activeVehicle.vtol : false
+                        onClicked:  mainWindow.showComponentDialog(engineRunupDialogComponent, qsTr("Engine Runup"), mainWindow.showDialogDefaultWidth, StandardButton.Cancel | StandardButton.Ok)
+                    }
+
+                    QGCButton {
+                        width:      _buttonWidth
+                        text:       qsTr("Quad Motor Test")
+                        visible:    globals.activeVehicle ? globals.activeVehicle.vtol : false
+                        onClicked:  mainWindow.showComponentDialog(quadMotorDialogComponent, qsTr("Quad Motor Test"), mainWindow.showDialogDefaultWidth, StandardButton.Cancel | StandardButton.Ok)
                     }
                 } // Column - Cal Buttons
 

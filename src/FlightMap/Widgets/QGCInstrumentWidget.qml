@@ -22,10 +22,12 @@ ColumnLayout {
     id:         root
     spacing:    ScreenTools.defaultFontPixelHeight / 4
 
-    property real   _innerRadius:           (width - (_topBottomMargin * 3)) / 4
+    property real   _innerRadius:           (width - (_topBottomMargin * 3)) / 2
     property real   _outerRadius:           _innerRadius + _topBottomMargin
     property real   _spacing:               ScreenTools.defaultFontPixelHeight * 0.33
     property real   _topBottomMargin:       (width * 0.05) / 2
+
+
 
     QGCPalette { id: qgcPal }
 
@@ -47,6 +49,8 @@ ColumnLayout {
             anchors.verticalCenter: parent.verticalCenter
         }
 
+
+
         QGCCompassWidget {
             id:                     compass
             anchors.leftMargin:     _spacing
@@ -57,7 +61,9 @@ ColumnLayout {
         }
     }
 
+
+/*
     TerrainProgress {
         Layout.fillWidth: true
-    }
+    } */
 }

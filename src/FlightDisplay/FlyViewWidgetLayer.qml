@@ -53,6 +53,7 @@ Item {
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
     property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 22
+    property real   _windPanelWidth:        ScreenTools.defaultFontPixelWidth * 11
     property bool   _isCheckListWindowVisible: false
     property var    _checkListWindow
     property real   _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
@@ -60,6 +61,9 @@ Item {
     property bool   _enforceChecklist:          _useChecklist && QGroundControl.settingsManager.appSettings.enforceChecklist.rawValue
     property bool   _checklistFailed: _activeVehicle ? (_useChecklist ? (_enforceChecklist ? (_activeVehicle.checkListState !== Vehicle.CheckListPassed ? true : false) : false) : false) : false
     property bool   _isDisarmed: _activeVehicle ? _activeVehicle.armed === false : true
+    property var _windDirection: _activeVehicle ? _activeVehicle.wind.direction.value.toFixed(0) : 0
+    property var _windSpeed: _activeVehicle ? _activeVehicle.wind.speed.value.toFixed(0) : 0
+    property var _windUnits: _activeVehicle ? _activeVehicle.wind.speed.units : ""
 
     //Create the pre-flight checklist after vehicle created and params loaded. Then the checklist stays in memory and its state is preserved
     Connections {
@@ -134,6 +138,7 @@ Item {
         visible:            !multiVehiclePanelSelector.showSingleVehiclePanel
     }
 
+
     FlyViewInstrumentPanel {
         id:                         instrumentPanel
         anchors.margins:            _toolsMargin
@@ -146,6 +151,66 @@ Item {
 
         property real rightInset: visible ? parent.width - x : 0
     }
+
+    //new wind panel
+    Rectangle {
+        visible:    !QGroundControl.videoManager.fullScreen
+        id:                 newWind
+        radius:             _windPanelWidth
+        width:              _windPanelWidth
+        anchors.horizontalCenter: instrumentPanel.left
+        anchors.verticalCenter: instrumentPanel.verticalCenter
+        height:             _windPanelWidth
+        color:              QGroundControl.globalPalette.window
+
+        //Prevent all clicks from going through to lower layers
+        DeadMouseArea {
+            anchors.fill: parent
+        }
+
+    }
+
+
+    Column {
+        visible:    !QGroundControl.videoManager.fullScreen
+        z:                  QGroundControl.zOrderTopMost
+        anchors.left: newWind.left
+        anchors.leftMargin: ScreenTools.defaultFontPixelWidth * 2.5
+        anchors.verticalCenter: newWind.verticalCenter
+
+        QGCLabel {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible:     true
+            text:        qsTr("Wind")
+            font.family: ScreenTools.demiboldFontFamily
+        }
+        Image {
+            id:                 windIcon
+            source:             "/res/wind-arrow.svg"
+            mipmap:             true
+            height:  ScreenTools.defaultFontPixelHeight * 1.5
+            width:   ScreenTools.defaultFontPixelHeight * 1.5
+            anchors.horizontalCenter: parent.horizontalCenter
+
+
+            transform: Rotation {
+                origin.x: windIcon.width / 2
+                origin.y: windIcon.height / 2
+                angle: _windDirection
+            }
+        }
+
+
+        QGCLabel {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text:        _windSpeed + " " + _windUnits
+            font.family: ScreenTools.demiboldFontFamily
+            visible:     _activeVehicle ? (isNaN(_windSpeed) ? false : true) : false
+        }
+
+    }
+
+
 
     PhotoVideoControl {
         id:                     photoVideoControl
@@ -192,10 +257,12 @@ Item {
 */
 
     //Wind Inidicator, Super Volo integration
+    //Replaced by the wind controller above
+    /*
     WindIndicator {
-        visible:    !QGroundControl.videoManager.fullScreene
+        visible:    !QGroundControl.videoManager.fullScreen
         z:          QGroundControl.zOrderTopMost
-    }
+    }*/
 
     FlyViewThrottleIndicator {
         id:                 throttlePanel
@@ -216,8 +283,6 @@ Item {
         visible:                    _checklistFailed && _isDisarmed
 
     }
-
-
 
 
     RangeFinderDisplay {

@@ -90,6 +90,8 @@ public:
     Q_INVOKABLE void nextClicked                (void);
     Q_INVOKABLE bool usingUDPLink               (void);
     Q_INVOKABLE void idleAutoTune               (void);
+    Q_INVOKABLE void engineRunup                (int throttle);
+    Q_INVOKABLE void quadMotorRunup             (void);
 
     bool compassSetupNeeded (void) const;
     bool accelSetupNeeded   (void) const;
@@ -104,6 +106,8 @@ public:
         CalTypePressure,
         CalTypeAccelFast,
         CallTypeIdleMotor,
+        CallTypeEngineRunup,
+        CallTypeQuadTest,
         CalTypeNone
     } CalType_t;
     Q_ENUM(CalType_t)
@@ -140,6 +144,11 @@ private slots:
     void _mavlinkMessageReceived(LinkInterface* link, mavlink_message_t message);
     void _mavCommandResult      (int vehicleId, int component, int command, int result, bool noReponseFromVehicle);
     void _rcOverrideTimerTick   ();
+    void _rcOverrideTimerEngineRunupTick  ();
+    void _motorTestTimer1Tick ();
+    void _motorTestTimer2Tick ();
+    void _motorTestTimer3Tick ();
+    void _motorTestTimer4Tick ();
 
 private:
     void _startLogCalibration               (void);
@@ -152,7 +161,8 @@ private:
     void _handleMagCalProgress              (mavlink_message_t& message);
     void _handleMagCalReport                (mavlink_message_t& message);
     void _handleCommandLong                 (mavlink_message_t& message);
-    void _restorePreviousCompassCalFitness  (void); 
+    void _restorePreviousCompassCalFitness  (void);
+    void _startMotorTest                    (int motor);
 
     enum StopCalibrationCode {
         StopCalibrationSuccess,
@@ -221,6 +231,13 @@ private:
     QString _initialFlightMode;
     bool    _initialJoystickMode;
     QTimer  _rcOverrideTimer;
+    QTimer  _rcOverrideTimerEngineRunup;
     bool    _initialVirtualJoystickMode;
     int     _tickCount;
+    int     _runUpThrottle;
+    int    _motorTestThrottle = 20;  //percent throttle to use for motor runup
+    int    _motorTestDurationSec= 2;  //seconds for the motor test to last
+    int    _testDelayDurationSec= 4;  //seconds to delay between each motor test message
+    bool   _motorCancelFlag = false;
+
 };

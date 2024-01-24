@@ -20,7 +20,9 @@ import QGroundControl.FlightDisplay 1.0
 
 MapQuickItem {
     id:             _root
-    visible:        proximityValues.telemetryAvailable && coordinate.isValid
+    property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
+
+    visible:        _activeVehicle ? proximityValues.telemetryAvailable && coordinate.isValid && (_activeVehicle.vehicleModel !== Vehicle.EchoMAVMK1) : false  //the MK1 may have downware looking lidar, but not full 360 distance sensors as the UI presents
 
     property var    vehicle                                                         /// Vehicle object, undefined for ADSB vehicle
     property var    map

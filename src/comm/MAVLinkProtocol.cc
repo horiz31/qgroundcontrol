@@ -305,10 +305,6 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     _stopLogging();
                     _logSuspendError = true;
                 }
-                else
-                {
-                   //qDebug() << "Writing message id " << _message.msgid << "to log";
-                }
 
                 // Check for the vehicle arming going by. This is used to trigger log save.
                 if (!_vehicleWasArmed && _message.msgid == MAVLINK_MSG_ID_HEARTBEAT) {
@@ -339,14 +335,45 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
             }
 
             /* 248 = V2_EXTENSION  message id, used for NextVision gimbal */
+
             // NextVision
             if (_message.msgid == 248 ) {
 
-               /* First, take the message as GND_CRS_REPORT (the shortest one), for extracting the report_type */
+               //First, take the message as GND_CRS_REPORT (the shortest one), for extracting the report_type
                 mavlink_nvext_gnd_crs_report_t gnd_crs_report;
                 mavlink_nvext_gnd_crs_report_decode(&_message,&gnd_crs_report);
+
                 if(gnd_crs_report.report_type == MavExtReport_GndCrs)
                 {
+                    //qDebug() << "got ground crossing report and decoded: " << gnd_crs_report.gnd_crossing_lat << "," << gnd_crs_report.gnd_crossing_lon;
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->getAltAtCoord(gnd_crs_report.gnd_crossing_lat,gnd_crs_report.gnd_crossing_lon);
+
+                    if (gnd_crs_report.gnd_crossing_lat != 400)  //400 means that the camera does not think the LOS crosses the ground
+                    {
+                        //probably smart to save copies of ground crossing lat/lon/
+                        //get ground crossing lat
+                        emit nvGrounndCrossingLatChanged(gnd_crs_report.gnd_crossing_lat);
+
+                        //get ground crossing lon
+                        emit nvGrounndCrossingLonChanged(gnd_crs_report.gnd_crossing_lon);
+
+                        //get ground crossing alt
+                        emit nvGrounndCrossingAltChanged(gnd_crs_report.gnd_crossing_alt);
+
+                        //get slant range crossing
+                        emit nvSlantRangeChanged(gnd_crs_report.slant_range);
+                    }
+                    else
+                    {
+                        //qDebug() << "ground crossing not detected by trip6";
+                    }
+                }
+                /*
+                if(gnd_crs_report.report_type == MavExtReport_GndCrs)
+                {
+
+                    qDebug() << "got ground crossing report and decoded: " << gnd_crs_report.gnd_crossing_lat << "," << gnd_crs_report.gnd_crossing_lon;
+
                     qgcApp()->toolbox()->joystickManager()->cameraManagement()->getAltAtCoord(gnd_crs_report.gnd_crossing_lat,gnd_crs_report.gnd_crossing_lon);
                     //get ground crossing lat
                     emit nvGrounndCrossingLatChanged(gnd_crs_report.gnd_crossing_lat);
@@ -361,7 +388,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     emit nvSlantRangeChanged(gnd_crs_report.slant_range);
 
 
-                }
+                }*/
                 else if(gnd_crs_report.report_type == MavExtReport_LOS)
                 {
                     float los_upper_left_corner_lat,los_upper_left_corner_lon;
@@ -379,7 +406,7 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     memcpy(&los_lower_left_corner_lat, &buf[38],4);
                     memcpy(&los_lower_left_corner_lon, &buf[42],4);
 
-                    /* the line of sight coordinates */
+                    // the line of sight coordinates
                     QList<QGeoCoordinate> coords ;
                     if((double)los_upper_left_corner_lat < 360)
                      coords << QGeoCoordinate((double)los_upper_left_corner_lat,(double)los_upper_left_corner_lon);
@@ -389,15 +416,15 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                        coords << QGeoCoordinate((double)los_lower_right_corner_lat,(double)los_lower_right_corner_lon);
                    if((double)los_lower_left_corner_lat != 400)
                        coords << QGeoCoordinate((double)los_lower_left_corner_lat,(double)los_lower_left_corner_lon);
-                   /* emit for updating the vehicle that the camera line of sight was changed  */
+                   // emit for updating the vehicle that the camera line of sight was changed
                    if(coords.size() == 4)
                    {
-                       /* emit for updating the vehicle that the camera line of sight was changed  */
+                       // emit for updating the vehicle that the camera line of sight was changed
                        emit lineOfSightChanged(coords);
                    }
                    else
                    {
-                       /* in case of less than 4 points, report 0 points. (will be fixed in the future) */
+                       // in case of less than 4 points, report 0 points. (will be fixed in the future)
                        QList<QGeoCoordinate> emptyCoords ;
                        emit lineOfSightChanged(emptyCoords);
                    }

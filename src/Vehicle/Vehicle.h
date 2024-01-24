@@ -1193,6 +1193,8 @@ private:
     void _getDoodleRSSI                 ();
     void _getDoodleRSSIstep2            (QString value, QString value2);
     void _lowAltitudeWarningTick        ();
+    void _lowBatteryWarningTick         ();
+    void _lowFuelWarningTick              ();
 
     QWebSocket _persistentWebSocket;
 
@@ -1400,6 +1402,8 @@ private:
     QTimer _MPU5WebSocketTimer;
     QTimer _DoodleRssiTimer;
     QTimer _lowAltitudeTimer;
+    QTimer _lowBatteryTimer;
+    QTimer _lowFuelTimer;
 
     /// Callback for waitForMavlinkMessage
     ///     @param resultHandleData     Opaque data passed in to waitForMavlinkMessage call

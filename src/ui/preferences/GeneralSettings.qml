@@ -742,7 +742,13 @@ Rectangle {
                                     visible:    _audioMuted.visible
                                     property Fact _audioMuted: QGroundControl.settingsManager.appSettings.audioMuted
                                 }
-
+                                FactCheckBox {
+                                    id:         hcuMute
+                                    text:       qsTr("Mute HCU messages")
+                                    fact:       _hcuMessagesMuted
+                                    visible:    _hcuMessagesMuted.visible
+                                    property Fact _hcuMessagesMuted: QGroundControl.settingsManager.appSettings.hcuMessagesMuted
+                                }
                                 FactCheckBox {
                                     id:         lowAlt
                                     text:       qsTr("Mute low altitude warnings")
@@ -750,6 +756,7 @@ Rectangle {
                                     visible:    _lowAltitudeMuted.visible
                                     property Fact _lowAltitudeMuted: QGroundControl.settingsManager.appSettings.lowAltitudeMuted
                                 }
+
                                 QGCLabel {
                                     text:       qsTr("Altitude for low warning:")
                                     visible:    guidedMinAltField.visible
@@ -983,6 +990,15 @@ Rectangle {
                                     visible:                nmeaPortCombo.currentText === gpsUdpPort
                                     Layout.preferredWidth:  _valueFieldWidth
                                     fact:                   QGroundControl.settingsManager.autoConnectSettings.nmeaUdpPort
+                                }
+                                QGCLabel {
+                                    text:                   qsTr("Multicast Telemetry Group")
+                                    visible:                true
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   QGroundControl.settingsManager.appSettings.multicastTelemetryGroup
+                                    visible:                true
                                 }
                             }
                         }

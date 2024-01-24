@@ -308,11 +308,22 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(&_DoodleRssiTimer, &QTimer::timeout, this, &Vehicle::_getDoodleRSSI);
 
     //Low Altitude Warning Timer
-    _lowAltitudeTimer.setInterval(10000);
+    _lowAltitudeTimer.setInterval(10000);  //every 10s
     _lowAltitudeTimer.setSingleShot(false);
     _lowAltitudeTimer.start();
     connect(&_lowAltitudeTimer, &QTimer::timeout, this, &Vehicle::_lowAltitudeWarningTick);
 
+    //low Fuel warning Timer
+    _lowFuelTimer.setInterval(60000);  //every minute
+    _lowFuelTimer.setSingleShot(false);
+    _lowFuelTimer.start();
+    connect(&_lowFuelTimer, &QTimer::timeout, this, &Vehicle::_lowFuelWarningTick);
+
+    //low battery warning Timer
+    _lowBatteryTimer.setInterval(10000); //every 10s
+    _lowBatteryTimer.setSingleShot(false);
+    _lowBatteryTimer.start();
+    connect(&_lowBatteryTimer, &QTimer::timeout, this, &Vehicle::_lowBatteryWarningTick);
 
     _mav = uas();
 
@@ -1198,6 +1209,9 @@ void Vehicle::_chunkedStatusTextCompleted(uint8_t compId)
         readAloud = true;
     }
     else if (severity <= MAV_SEVERITY_WARNING) {  //was MAV_SEVERITY_NOTICE
+        readAloud = true;
+    }
+    else if (messageText.startsWith("HCU: ") && _settingsManager->appSettings()->hcuMessagesMuted()->rawValue().toBool()==false) {   //announce any HCU message
         readAloud = true;
     }
 
@@ -4873,11 +4887,46 @@ void Vehicle::_getDoodleRSSIstep2(QString token, QString urlString)
     });
 }
 
+void Vehicle::_lowBatteryWarningTick()
+{
+    if (batteries()->count() > 0 && _armed && _flying)
+    {
+        VehicleBatteryFactGroup* group = batteries()->value<VehicleBatteryFactGroup*>(0);
+        int battRemaining = group->percentRemaining()->rawValue().toInt();
+        //qDebug() << "battery level " << battRemaining;
+        if (battRemaining <= 25)
+        {
+            QString warningText = QString("Warning, low battery %1 percent").arg(battRemaining);
+            qgcApp()->toolbox()->audioOutput()->say(warningText);
+        }
+        //qDebug() << "battery level " << battRemaining;
+    }
+
+}
+
+void Vehicle::_lowFuelWarningTick()
+{
+
+    if (batteries()->count() >= 2 && _vehicleModel == EchoMAVMK1 && _armed && _flying)
+    {
+        //get battery 1, which is used for storing fuel
+        VehicleBatteryFactGroup* group = batteries()->value<VehicleBatteryFactGroup*>(1);
+        int fuelRemaining = group->percentRemaining()->rawValue().toInt();
+        if (fuelRemaining <= 5 && _armed)
+        {
+            QString warningText = QString("Warning, low fuel %1 percent").arg(fuelRemaining);
+            qgcApp()->toolbox()->audioOutput()->say(warningText);
+        }
+        //qDebug() << "fuel level " << fuelRemaining;
+    }
+
+
+}
 void Vehicle::_lowAltitudeWarningTick()
 {
 
     double lowerLimit = _settingsManager->appSettings()->lowAltitudeLevel()->rawValue().toDouble();
-    if (_lowAltitudeWarningEnable && (_altitudeRelativeFact.rawValue().toDouble() < lowerLimit) && (_settingsManager->appSettings()->lowAltitudeMuted()->rawValue().toBool()==false))
+    if (_armed && _lowAltitudeWarningEnable && (_altitudeRelativeFact.rawValue().toDouble() < lowerLimit) && (_settingsManager->appSettings()->lowAltitudeMuted()->rawValue().toBool()==false))
     {
         QString warningText;
         if (QString::compare(qgcApp()->toolbox()->settingsManager()->unitsSettings()->verticalDistanceUnits()->enumStringValue(), "Feet")==0)
@@ -4970,6 +5019,7 @@ void Vehicle::_handleRangefinder(const mavlink_message_t& message)
     mavlink_rangefinder_t o;
     mavlink_msg_rangefinder_decode(&message, &o);
     _rangefinderFact.setRawValue(o.distance);
+    //qDebug() << "rf distance" << o.distance;
 }
 
 void Vehicle::updateFlightDistance(double distance)

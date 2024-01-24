@@ -66,8 +66,10 @@ Item {
                        {
                            if (!_activeVehicle.flying)
                                return false
-                           else if (_activeVehicle.rangefinder.rawValue < 45)
+                           else if (_activeVehicle.rangefinder.rawValue < 45 && _activeVehicle.rangefinder.rawValue > 0.3)
                                return true
+                           else
+                               return false
                        }
                        return false
                    }

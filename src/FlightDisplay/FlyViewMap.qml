@@ -112,7 +112,7 @@ FlightMap {
         }
     }
 
-   GPSUnitsController {
+    GPSUnitsController {
         id: gpsUnitsController
     }
     ATAKController {
@@ -306,6 +306,8 @@ FlightMap {
         }
     }
     // Add distance sensor view
+    // Not used for the SuperVolo
+    /*
     MapItemView{
         model: QGroundControl.multiVehicleManager.vehicles
         delegate: ProximityRadarMapView {
@@ -315,6 +317,7 @@ FlightMap {
             z:              QGroundControl.zOrderVehicles
         }
     }
+    */
     // Add ADSB vehicles to the map
     MapItemView {
         model: QGroundControl.adsbVehicleManager.adsbVehicles

@@ -62,6 +62,7 @@ APMSensorsComponentController::APMSensorsComponentController(void)
     _compassCal.setVehicle(_vehicle);
     connect(&_compassCal, &APMCompassCal::vehicleTextMessage, this, &APMSensorsComponentController::_handleUASTextMessage);
     connect(&_rcOverrideTimer, &QTimer::timeout, this, &APMSensorsComponentController::_rcOverrideTimerTick);
+    connect(&_rcOverrideTimerEngineRunup, &QTimer::timeout, this, &APMSensorsComponentController::_rcOverrideTimerEngineRunupTick);
 
     APMAutoPilotPlugin * apmPlugin = qobject_cast<APMAutoPilotPlugin*>(_vehicle->autopilotPlugin());
 
@@ -86,18 +87,25 @@ APMSensorsComponentController::~APMSensorsComponentController()
     _restorePreviousCompassCalFitness();
 }
 
+void APMSensorsComponentController::_rcOverrideTimerEngineRunupTick()
+{
+    //tick for engine runup controller
+    Fact* _cylinderTemp = _vehicle->hcuFactGroup()->getFact("cylinderTemp");
+    _appendStatusLog(tr("Current engine temperature is %1 deg F...").arg(_cylinderTemp->rawValueString()));
+}
+
 void APMSensorsComponentController::_rcOverrideTimerTick()
 {
 
     if (_tickCount < 10 )
     {
-        _vehicle->sendRcOverrideThrottle((60 * 10) + 1000);  //60% throttle for ~5 seconds
+        _vehicle->sendRcOverrideThrottle((60 * 10));  //60% throttle for ~5 seconds
         if (_tickCount == 0)
             _vehicle->say(tr("Setting throttle to 60%..."));
     }
     else
     {
-        _vehicle->sendRcOverrideThrottle((8 * 10) + 1000);
+        _vehicle->sendRcOverrideThrottle((8 * 10));
 
         if (_tickCount == 5 * 2) //5 seconds, tick is at 500ms
         {
@@ -114,12 +122,13 @@ void APMSensorsComponentController::_rcOverrideTimerTick()
     else
     {
         _progressBar->setProperty("value", 1);
+
         if (_tickCount >= 130)
         {
             _vehicle->say(tr("Idle autotune complete"));
             _appendStatusLog(tr("Idle autotune has succesfully completed!"));
             _rcOverrideTimer.stop();
-            _vehicle->sendRcOverrideThrottle(900);  //min throttle
+            _vehicle->sendRcOverrideThrottle(0);  //min throttle
             _vehicle->setEngineRunUp(false);
             _vehicle->setFlightMode(_initialFlightMode);
             _stopCalibration(StopCalibrationCode::StopCalibrationSuccessShowLog);
@@ -168,7 +177,7 @@ void APMSensorsComponentController::_startVisualCalibration(void)
     _nextButton->setEnabled(false);
 
     _resetInternalState();
-    
+
     _progressBar->setProperty("value", 0);
 
     connect(qgcApp()->toolbox()->mavlinkProtocol(), &MAVLinkProtocol::messageReceived, this, &APMSensorsComponentController::_mavlinkMessageReceived);
@@ -217,6 +226,7 @@ void APMSensorsComponentController::_stopCalibration(APMSensorsComponentControll
 
     if (code == StopCalibrationSuccess) {
         _resetInternalState();
+
         _progressBar->setProperty("value", 1);
         if (parameterExists(FactSystem::defaultComponentId, QStringLiteral("COMPASS_LEARN"))) {
             getParameterFact(FactSystem::defaultComponentId, QStringLiteral("COMPASS_LEARN"))->setRawValue(0);
@@ -441,6 +451,29 @@ void APMSensorsComponentController::idleAutoTune(void)
 
  }
 
+void APMSensorsComponentController::quadMotorRunup(void)
+{
+    _calTypeInProgress = CallTypeQuadTest;
+    _startLogCalibration();
+    _nextButton->setEnabled(true);
+    _cancelButton->setEnabled(true);
+    _appendStatusLog(tr("WARNING: The VTOL motors will run, ensure all props are clear or removed before proceeding."));
+    _appendStatusLog(tr("Press Next to start the test."));
+
+}
+
+void APMSensorsComponentController::engineRunup(int throttle)
+ {
+    _runUpThrottle = throttle * 10;
+    _calTypeInProgress = CallTypeEngineRunup;
+    _startLogCalibration();
+    _nextButton->setEnabled(true);
+    _cancelButton->setEnabled(true);
+    _appendStatusLog(tr("WARNING: The engine will be started, ensure the prop is clear before proceeding."));
+    _appendStatusLog(tr("Press Next to start the test."));
+
+}
+
 void APMSensorsComponentController::calibratePressure(void)
 {
     _calTypeInProgress = CalTypePressure;
@@ -519,12 +552,29 @@ void APMSensorsComponentController::cancelCalibration(void)
     } else if (_calTypeInProgress == CalTypeOnboardCompass) {
         _vehicle->sendMavCommand(_vehicle->defaultComponentId(), MAV_CMD_DO_CANCEL_MAG_CAL, true /* showError */);
         _stopCalibration(StopCalibrationCancelled);
+    } else if (_calTypeInProgress == CallTypeEngineRunup) {
+
+        //stop the engine temp monitor timer
+        _rcOverrideTimerEngineRunup.stop();
+        //send throttle disable multiple times
+        for (int i=0;i<4;i++){
+            _vehicle->sendRcOverrideThrottle(0);
+        }
+        //set mode to initial value
+        _vehicle->setFlightMode(_initialFlightMode);
+        //return joysticks to previous state
+        _vehicle->setJoystickEnabled(_initialJoystickMode);
+        qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(_initialVirtualJoystickMode);
+        _stopCalibration(StopCalibrationCancelled);
+        _appendStatusLog(tr("Engine Runup Stopped."));
+//        _stopCalibration(StopCalibrationCode::StopCalibrationSuccess);
+
     } else if (_calTypeInProgress == CallTypeIdleMotor) {
         //set throttle to 0
         //set mode back to what it was before the cal
         _appendStatusLog(tr("Idle Autotune canceled!"));
         _rcOverrideTimer.stop();
-        _vehicle->sendRcOverrideThrottle(900);  //min throttle
+        _vehicle->sendRcOverrideThrottle(0);  //min throttle
         _vehicle->setEngineRunUp(false);
         _vehicle->setFlightMode(_initialFlightMode);
         _stopCalibration(StopCalibrationCode::StopCalibrationSuccess);
@@ -533,6 +583,11 @@ void APMSensorsComponentController::cancelCalibration(void)
         _vehicle->setJoystickEnabled(_initialJoystickMode);
          qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(_initialVirtualJoystickMode);
 
+    }
+    else if (_calTypeInProgress == CallTypeQuadTest) {
+         _motorCancelFlag = true;
+         _stopCalibration(StopCalibrationCode::StopCalibrationSuccess);
+         _appendStatusLog(tr("Quad Motor Test Cancelled!"));
     }
     else {
         _waitingForCancel = true;
@@ -566,6 +621,59 @@ void APMSensorsComponentController::nextClicked(void)
 
         if (_calTypeInProgress == CalTypeCompassMot) {
             _stopCalibration(StopCalibrationSuccess);
+        }
+
+        if (_calTypeInProgress == CallTypeQuadTest)
+        {
+            _motorCancelFlag = false;
+            //start the quad motor test sequence
+            _progressBar->setProperty("value", 0);
+            _appendStatusLog(tr("Starting test, press Cancel to abort..."));
+
+            //Timers are one-shot and when finished call the next motor in sequence (unless cancelled)
+            QTimer::singleShot(_testDelayDurationSec * 1000, this, &APMSensorsComponentController::_motorTestTimer1Tick);
+            //send the quad motor test command
+            _startMotorTest(1);
+
+        }
+
+        if (_calTypeInProgress == CallTypeEngineRunup)
+        {
+            _vehicle->setEngineRunUp(true);
+            // remember current mode
+            _initialFlightMode = _vehicle->flightMode();
+
+            //remember joystick state
+            if (qgcApp()->toolbox()->joystickManager()->activeJoystick())
+                _initialJoystickMode = _vehicle->joystickEnabled();
+
+            _initialVirtualJoystickMode = qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->rawValue().toBool();
+
+            if (_initialVirtualJoystickMode)
+                qgcApp()->toolbox()->settingsManager()->appSettings()->virtualJoystick()->setRawValue(false);  //disable virtual joysticks if set
+
+            //if enabled, disable joysticks
+            if (_initialJoystickMode)
+                _vehicle->setJoystickEnabled(false);
+
+            _cancelButton->setEnabled(true);
+            _nextButton->setEnabled(false);
+            _appendStatusLog(tr("Setting mode to MANUAL..."));
+
+            //set mode to manual
+            _vehicle->setFlightMode("Manual");
+
+            _appendStatusLog(tr("Setting throttle position to %1%...").arg(_runUpThrottle/10));
+            _appendStatusLog(tr("Press Cancel at any time to stop the Runup..."));
+
+
+            _vehicle->sendRcOverrideThrottle(_runUpThrottle);  //TBD, this should come from a slider
+
+            //start a timer that monitors engine temp
+            _tickCount = 0;
+            _rcOverrideTimerEngineRunup.start(5000);
+            _progressBar->setProperty("value", (qreal)(50 / 100.0));
+
         }
         if (_calTypeInProgress == CallTypeIdleMotor)
         {
@@ -604,6 +712,59 @@ void APMSensorsComponentController::nextClicked(void)
             _appendStatusLog(tr("Waiting for 5 seconds..."));
         }
     }
+}
+
+void APMSensorsComponentController::_motorTestTimer1Tick(void)
+{
+    if (!_motorCancelFlag)
+    {
+        _progressBar->setProperty("value", (qreal)(25 / 100.0));
+        QTimer::singleShot(_testDelayDurationSec * 1000, this, &APMSensorsComponentController::_motorTestTimer2Tick);
+        //send the quad motor test command
+        _startMotorTest(2);
+    }
+
+}
+
+void APMSensorsComponentController::_motorTestTimer2Tick(void)
+{
+    if (!_motorCancelFlag)
+    {
+        _progressBar->setProperty("value", (qreal)(50 / 100.0));
+        QTimer::singleShot(_testDelayDurationSec * 1000, this, &APMSensorsComponentController::_motorTestTimer3Tick);
+        //send the quad motor test command
+        _startMotorTest(3);
+    }
+
+}
+void APMSensorsComponentController::_motorTestTimer3Tick(void)
+{
+    if (!_motorCancelFlag)
+    {
+        //send the quad motor test command
+        _progressBar->setProperty("value", (qreal)(75 / 100.0));
+        QTimer::singleShot(_testDelayDurationSec * 1000, this, &APMSensorsComponentController::_motorTestTimer4Tick);
+        _startMotorTest(4);
+    }
+
+}
+void APMSensorsComponentController::_motorTestTimer4Tick(void)
+{
+    _progressBar->setProperty("value", (qreal)(100 / 100.0));
+    //this marks a complete vtol motor test
+    _appendStatusLog(tr("Motor test complete."));
+    _stopCalibration(StopCalibrationSuccessShowLog);
+
+}
+
+void APMSensorsComponentController::_startMotorTest(int motor)
+{
+
+    _appendStatusLog(tr("Spinning Motor %1").arg(motor));
+
+     //        console.log("Starting motor test for motor " + motor);
+    _vehicle->motorTest(motor, _motorTestThrottle, _motorTestDurationSec, true);
+
 }
 
 bool APMSensorsComponentController::compassSetupNeeded(void) const

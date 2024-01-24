@@ -51,9 +51,13 @@ Item {
             }
         }
         PreFlightCheckGroup {
-            name: qsTr("Mission and Payload Checks")
+            name: qsTr("Mission, Payload and Failsafe Checks")
 
             PreFlightMissionCheck {
+                allowTelemetryFailureOverride:    true
+            }
+
+            PreFlightFailsafeCheck {
                 allowTelemetryFailureOverride:    true
             }
 

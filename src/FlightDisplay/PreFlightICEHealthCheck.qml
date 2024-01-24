@@ -8,7 +8,6 @@
  ****************************************************************************/
 
 import QtQuick 2.3
-
 import QGroundControl           1.0
 import QGroundControl.Controls  1.0
 import QGroundControl.Vehicle   1.0
@@ -19,6 +18,7 @@ import QtQuick.Dialogs      1.2
 import QGroundControl.Palette       1.0
 import QGroundControl.SettingsManager 1.0
 import QGroundControl.Controllers   1.0
+
 
 PreFlightCheckButton {
     name:               qsTr("Engine Run Up")
@@ -38,6 +38,7 @@ PreFlightCheckButton {
     property bool _cancelTest: false  //flag to keep track of the user requesting a test cancel
     property bool _isMotorTestStarting: false  //flat to keep track of if the test is running
     property bool _isMotorTestRunning: false
+    property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
 
 
     Button {
@@ -92,19 +93,53 @@ PreFlightCheckButton {
                             width:  1
                             height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
                         }
+
+
                         QGCLabel {
                             anchors.horizontalCenter: parent.horizontalCenter
                             width:          ScreenTools.defaultFontPixelWidth * 60
                             height:     ScreenTools.defaultFontPixelHeight * 4
                             wrapMode:       Text.WordWrap
-                            text:           qsTr("Use the button below to start the engine runup test. Alternatively, if you have the 'Hold for Engine Runup' joystick action configured, you can press and hold that button to start the test.")
+                            text:           qsTr("Use the slider below to start the engine runup test. Alternatively, if you have the 'Hold for Engine Runup' joystick button action configured, you can press and hold that button to start the test.")
                         }
                         Item {
                             width:  1
                             height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
                         }
 
+                        Row {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            spacing: ScreenTools.defaultFontPixelWidth
+                            QGCLabel { text: qsTr("Cylinder Temp (Target 150°F+): ")
+                                       font.pointSize: ScreenTools.mediumFontPointSize
+                                       font.family:    ScreenTools.demiboldFontFamily
+                            }
+                            QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.hcu.cylinderTemp.value) ? "---.- °F" : _activeVehicle.hcu.cylinderTemp.value.toFixed(1) + " F") : "---.- °F"
+                                       font.pointSize: ScreenTools.mediumFontPointSize
+                                       font.family:    ScreenTools.demiboldFontFamily
+                                       color:              getEngineColor()
 
+                                       function getEngineColor() {
+                                           if (!_activeVehicle)
+                                                return qgcPal.text
+
+                                           if (_activeVehicle.hcu.cylinderTemp.value > 275)
+                                               return qgcPal.colorRed
+                                           else if (_activeVehicle.hcu.cylinderTemp.value > 260)
+                                               return qgcPal.colorOrange
+                                           else if (_activeVehicle.hcu.cylinderTemp.value > 250)
+                                               return qgcPal.colorYellow
+                                           else if (_activeVehicle.hcu.cylinderTemp.value > 150)
+                                               return qgcPal.colorGreen
+                                           else
+                                               return qgcPal.colorBlue
+                                       }
+                            }
+                        }
+                        Item {
+                            width:  1
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * 1.5)
+                        }
                         Row{
                             anchors.horizontalCenter: parent.horizontalCenter
                             spacing: ScreenTools.defaultFontPixelWidth
@@ -117,7 +152,7 @@ PreFlightCheckButton {
                                 maximumValue:               100
                                 minimumValue:               55
                                 stepSize:                   10
-                                value:                      70
+                                value:                      75
                                 updateValueWhileDragging:   true
                                 visible:                    true
                                 onValueChanged:             {
@@ -129,6 +164,7 @@ PreFlightCheckButton {
                                 text:           iceMotorThrottle.value + "%"
                             }
                         }
+
                         Item {
                             width:  1
                             height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
@@ -141,13 +177,91 @@ PreFlightCheckButton {
                             font.family:    ScreenTools.demiboldFontFamily
                             text:           qsTr("Hold button for 2 seconds...")
                         }
+
+                        SliderSwitch {
+                            id:                     iceMotorTestButton
+                            confirmText:            qsTr("Slide to Start Engine RunUp")
+                            Layout.minimumWidth:    Math.max(implicitWidth, ScreenTools.defaultFontPixelWidth * 30)
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            onAccept: {
+                                visible = false
+                                startRunup(false)  //false in this case means source is not from joystick
+                                _isMotorTestStarting=true;
+                            }
+
+                            Timer {
+                                id:             iceRunUpTimer
+                                interval:       250
+                                repeat:         true
+
+                                onTriggered: {
+                                    _joyValue = (iceMotorThrottle.value * 10)  //scale slider to 0-1000
+                                    console.log("timer: sending joystick throttle value of " + _joyValue)
+                                    globals.activeVehicle.sendRcOverrideThrottle(_joyValue)  //scaled 0 to 1000
+                                }
+
+                            }
+
+                            Connections {
+                                target: engineRunupController
+                                onJoystickStartRunup: {
+                                    //console.log("qml got joystick runup start")
+                                    _cancelTest= false
+                                    _isJoystickRunupActive = true
+                                    //start oneshot timer
+                                    timer1.setTimeout(function(){}, 2 * 1000);
+                                }
+                                onJoystickStopRunup: {
+                                    //console.log("qml got joystick runup stop")
+                                    timer1.stop()
+                                    stopRunup(true)
+                                    _isJoystickRunupActive = false
+                                    _cancelTest = true
+                                    iceMotorJoystickRunupLabel.text = qsTr("Hold button for 2 seconds....")
+                                   }
+                            }
+
+                        }
+
+                        QGCButton {
+                            text:               qsTr("STOP ENGINE")
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: !iceMotorTestButton.visible
+                            warning: true
+                            onClicked: {
+
+                                stopRunup(false)
+                                _isMotorTestStarting = false
+                                iceMotorTestButton.visible = true
+                               }
+
+                            PropertyAnimation on opacity {
+                                easing.type:    Easing.OutQuart
+                                from:           0.5
+                                to:             1
+                                loops:          Animation.Infinite
+                                running:        true
+                                alwaysRunToEnd: true
+                                duration:       1000
+                            }
+
+
+                        }
+                        Item {
+                            width:  1
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
+                        }
+
+                        /*
                         DelayButton {
                             id: iceMotorTestButton
                             visible: !_isJoystickRunupActive
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.margins: 20
-
+                            font.pointSize: ScreenTools.mediumFontPointSize
+                            font.family:    ScreenTools.demiboldFontFamily
                             text: qsTr("Push and Hold To Start Engine")                            
                             palette {
                                    button: "red"
@@ -160,6 +274,11 @@ PreFlightCheckButton {
                                 text= qsTr("Release to Stop")
                                 progress = 0.0
                             }
+
+                            onDownChanged: {
+                                console.log("on down changed");
+                            }
+
                             onReleased: {
                                 if (_isMotorTestStarting)
                                     stopRunup(false)
@@ -198,6 +317,8 @@ PreFlightCheckButton {
                                    }
                             }
                         }
+
+                        */
                         Timer {
                             id: timer1
                             function setTimeout(cb, delayTime) {
@@ -237,6 +358,9 @@ PreFlightCheckButton {
                         text:               qsTr("Close")
                         onClicked: {
                             engineRunupController.disconnectJoystick()
+                            stopRunup(false)
+                            _isMotorTestStarting = false
+                            iceMotorTestButton.visible = true
                             hideDialog()
                         }
                     }
@@ -284,8 +408,8 @@ PreFlightCheckButton {
 
             function stopRunup(fromJoystick)
             {
-                if (_isMotorTestRunning)
-                {
+                //if (_isMotorTestRunning)
+                //{
                     iceRunUpTimer.stop()
                     //set throttle level 0
                     for (var i = 0; i < 4; i++)  {
@@ -309,10 +433,11 @@ PreFlightCheckButton {
                     _manualState = _statePassed
 
                     globals.activeVehicle.sendRcOverrideThrottle(0)  //turn off one more time to ensure if comms glitch it makes it
-                }
+                //}
                 _isMotorTestRunning = false;
             }
             function reject() {
+                stopRunup(false);
                 engineRunupController.disconnectJoystick()
                 hideDialog()
             }

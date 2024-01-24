@@ -65,6 +65,8 @@
 
 #ifdef Q_OS_WIN
 
+
+
 #include <windows.h>
 
 /// @brief CRT Report Hook installed using _CrtSetReportHook. We install this hook when
@@ -326,6 +328,8 @@ int main(int argc, char *argv[])
     // We statically link our own QtLocation plugin
 
 #ifdef Q_OS_WIN
+
+    qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");  //support dark mode if enabled by the OS
     // In Windows, the compiler doesn't see the use of the class created by Q_IMPORT_PLUGIN
 #pragma warning( disable : 4930 4101 )
 #endif

@@ -35,4 +35,5 @@ Column {
         width:              parent.width
         missionController:  _missionController
     }
+
 }
