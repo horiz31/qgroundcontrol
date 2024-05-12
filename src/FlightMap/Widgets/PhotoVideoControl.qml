@@ -860,8 +860,8 @@ Rectangle {
                         QGCButton {
                             text: "B&W"
                             onClicked: {
-                                joystickManager.cameraManagement.setSysIrPolarityToggleCommand()
-                                //joystickManager.cameraManagement.setSysIrBWPCommand()
+                                //joystickManager.cameraManagement.setSysIrPolarityToggleCommand()
+                                joystickManager.cameraManagement.setSysIrBWPCommand()
                             }
                         }
                         QGCButton {

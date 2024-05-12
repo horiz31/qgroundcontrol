@@ -644,7 +644,7 @@ void CameraManagement::setSysSensorIrCommand(void)
 void CameraManagement::setSysIrPolarityToggleCommand(void)
 {
     /* Set the system sensor */
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIrPolarity,MavExtCmdArg_TogglePolarity,0,0,0,0,0);
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIrPolarity,MavExtCmdArg_TogglePolarity,0,0,0,0,0);       
 }
 
 void CameraManagement::setSysIrPolarityWHCommand(void)

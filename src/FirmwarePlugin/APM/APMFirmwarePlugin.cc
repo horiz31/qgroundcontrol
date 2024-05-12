@@ -423,13 +423,13 @@ void APMFirmwarePlugin::initializeStreamRates(Vehicle* vehicle)
 
     if (qgcApp()->toolbox()->settingsManager()->appSettings()->apmStartMavlinkStreams()->rawValue().toBool()) {
 
-        APMMavlinkStreamRateSettings* streamRates = qgcApp()->toolbox()->settingsManager()->apmMavlinkStreamRateSettings();
+        //APMMavlinkStreamRateSettings* streamRates = qgcApp()->toolbox()->settingsManager()->apmMavlinkStreamRateSettings();
 
         struct StreamInfo_s {
             MAV_DATA_STREAM mavStream;
             int             streamRate;
         };
-
+/*
         StreamInfo_s rgStreamInfo[] = {
             { MAV_DATA_STREAM_RAW_SENSORS,      streamRates->streamRateRawSensors()->rawValue().toInt() },
             { MAV_DATA_STREAM_EXTENDED_STATUS,  streamRates->streamRateExtendedStatus()->rawValue().toInt() },
@@ -439,6 +439,18 @@ void APMFirmwarePlugin::initializeStreamRates(Vehicle* vehicle)
             { MAV_DATA_STREAM_EXTRA2,           streamRates->streamRateExtra2()->rawValue().toInt() },
             { MAV_DATA_STREAM_EXTRA3,           streamRates->streamRateExtra3()->rawValue().toInt() },
         };
+*/
+
+        qDebug() << "Setting up stream rates suitable for gimbal";
+        StreamInfo_s rgStreamInfo[] = {
+                                       { MAV_DATA_STREAM_RAW_SENSORS,      2},
+                                       { MAV_DATA_STREAM_EXTENDED_STATUS,  2 },
+                                       { MAV_DATA_STREAM_RC_CHANNELS,      2 },
+                                       { MAV_DATA_STREAM_POSITION,         10 },
+                                       { MAV_DATA_STREAM_EXTRA1,           25 },
+                                       { MAV_DATA_STREAM_EXTRA2,           2 },
+                                       { MAV_DATA_STREAM_EXTRA3,           2 },
+                                       };
 
         for (size_t i=0; i<sizeof(rgStreamInfo)/sizeof(rgStreamInfo[0]); i++) {
             const StreamInfo_s& streamInfo = rgStreamInfo[i];
@@ -455,6 +467,7 @@ void APMFirmwarePlugin::initializeStreamRates(Vehicle* vehicle)
     // The MAV_CMD_SET_MESSAGE_INTERVAL command is only supported on newer firmwares. So we set showError=false.
     // Which also means than on older firmwares you may be left with some missing features.
     vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HOME_POSITION, 1000000 /* 1 second interval in usec */);
+    vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HEARTBEAT, 500000 /* 0.5 second interval in usec */);
 
     instanceData->lastBatteryStatusTime = instanceData->lastHomePositionTime = QTime::currentTime();
 }
@@ -464,13 +477,13 @@ void APMFirmwarePlugin::requestDataStreams(Vehicle* vehicle)
 
     if (qgcApp()->toolbox()->settingsManager()->appSettings()->apmStartMavlinkStreams()->rawValue().toBool()) {
 
-        APMMavlinkStreamRateSettings* streamRates = qgcApp()->toolbox()->settingsManager()->apmMavlinkStreamRateSettings();
+       // APMMavlinkStreamRateSettings* streamRates = qgcApp()->toolbox()->settingsManager()->apmMavlinkStreamRateSettings();
 
         struct StreamInfo_s {
             MAV_DATA_STREAM mavStream;
             int             streamRate;
         };
-
+/*
         StreamInfo_s rgStreamInfo[] = {
             { MAV_DATA_STREAM_RAW_SENSORS,      streamRates->streamRateRawSensors()->rawValue().toInt() },
             { MAV_DATA_STREAM_EXTENDED_STATUS,  streamRates->streamRateExtendedStatus()->rawValue().toInt() },
@@ -480,6 +493,17 @@ void APMFirmwarePlugin::requestDataStreams(Vehicle* vehicle)
             { MAV_DATA_STREAM_EXTRA2,           streamRates->streamRateExtra2()->rawValue().toInt() },
             { MAV_DATA_STREAM_EXTRA3,           streamRates->streamRateExtra3()->rawValue().toInt() },
         };
+*/
+
+        StreamInfo_s rgStreamInfo[] = {
+                                       { MAV_DATA_STREAM_RAW_SENSORS,      2},
+                                       { MAV_DATA_STREAM_EXTENDED_STATUS,  2 },
+                                       { MAV_DATA_STREAM_RC_CHANNELS,      2 },
+                                       { MAV_DATA_STREAM_POSITION,         10 },
+                                       { MAV_DATA_STREAM_EXTRA1,           25 },
+                                       { MAV_DATA_STREAM_EXTRA2,           2 },
+                                       { MAV_DATA_STREAM_EXTRA3,           2 },
+                                       };
 
         for (size_t i=0; i<sizeof(rgStreamInfo)/sizeof(rgStreamInfo[0]); i++) {
             const StreamInfo_s& streamInfo = rgStreamInfo[i];
@@ -496,6 +520,7 @@ void APMFirmwarePlugin::requestDataStreams(Vehicle* vehicle)
     // The MAV_CMD_SET_MESSAGE_INTERVAL command is only supported on newer firmwares. So we set showError=false.
     // Which also means than on older firmwares you may be left with some missing features.
     vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HOME_POSITION, 1000000 /* 1 second interval in usec */);
+    vehicle->sendMavCommand(MAV_COMP_ID_AUTOPILOT1, MAV_CMD_SET_MESSAGE_INTERVAL, false /* showError */, MAVLINK_MSG_ID_HEARTBEAT, 500000 /* 0.5 second interval in usec */);
 
 
 }
