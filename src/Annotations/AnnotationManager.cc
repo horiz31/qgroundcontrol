@@ -8,10 +8,17 @@
  ****************************************************************************/
 
 #include "AnnotationManager.h"
-#include "QGCLoggingCategory.h"
 #include "QGCApplication.h"
-//#include "AnnotationManagerSettings.h"
 #include <QDebug>
+
+namespace
+{
+QString _getAnnotationFilePath()
+{
+    //Qt documentation tells us that this should never be empty
+    return  QDir{QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation).at(0)}.absoluteFilePath("annotations.dat");
+}
+}
 
 
 QDataStream &operator<<(QDataStream &out, const Annotation::AnnotationInfo_t& annotationData)
@@ -98,11 +105,10 @@ void AnnotationManager::annotationUpdate(const Annotation::AnnotationInfo_t anno
 //save the annotations to a file
 void AnnotationManager::_save()
 {
-    qDebug() << "saving" << _Annotations.count() << "annotations to file";
-    QDir appDirectory(QCoreApplication::applicationDirPath());
-    QString annotationPath = appDirectory.absoluteFilePath("annotations.dat");
-    //QFile file(annotationPath);
-    QFile file("annotations.dat");
+
+    QString filePath = ::_getAnnotationFilePath();
+    qDebug() << "saving " << _Annotations.count() << " annotations to file '"<<filePath<<"'";
+    QFile file = filePath;
     file.setPermissions(QFileDevice::WriteUser|QFileDevice::ReadUser|QFileDevice::WriteOwner|QFileDevice::ReadOwner);
     if (file.open(QIODevice::WriteOnly))
     {
@@ -136,13 +142,9 @@ void AnnotationManager::_save()
 
 void AnnotationManager::_load()
 {
-    qDebug() << "loading annotations from file";
-
-    QDir appDirectory(QCoreApplication::applicationDirPath());
-    QString annotationPath = appDirectory.absoluteFilePath("annotations.dat");
-    qDebug() << "loading"<< annotationPath;
-    //QFile file(annotationPath);
-    QFile file("annotations.dat");
+    QString filePath = ::_getAnnotationFilePath();
+    qDebug() << "loading annotations from file '"<<filePath<<"'";
+    QFile file = filePath;
     if (file.open(QIODevice::ReadOnly))
     {
         QDataStream in(&file);    // read the data serialized from the file
@@ -161,5 +163,3 @@ void AnnotationManager::_load()
         file.close();
     }
  }
-
-
