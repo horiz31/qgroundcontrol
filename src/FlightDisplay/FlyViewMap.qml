@@ -294,6 +294,78 @@ FlightMap {
         }
     }
 
+    MapQuickItem
+    {
+        id: measurementEndPoint
+        visible: false
+        anchorPoint.x: image.width
+        anchorPoint.y: image.height
+        sourceItem: Image
+        {
+            id: measurementEndPointImage
+        }
+    }
+
+    QGCMapLabel {
+        id:                         measurementText
+        visible:                    false
+        anchors.top:                measurementEndPoint.bottom
+        anchors.horizontalCenter:   measurementEndPoint.horizontalCenter
+        map:                        _root
+        text:                       ""
+        font.pointSize:             ScreenTools.mediumFontPointSize
+        z:          QGroundControl.zOrderTrajectoryLines+1
+    }
+
+    MapPolyline {
+        id:         measureDistanceLine
+        line.width: 3
+        line.color: "black"
+        z:          QGroundControl.zOrderTrajectoryLines
+        visible:    false
+        Connections
+        {
+            target: QGroundControl.annotationManager
+            function onShowMeasuredDistance(startPoint, endPoint, color, distance)
+            {
+                measureDistanceLine.addCoordinate(startPoint)
+                measureDistanceLine.addCoordinate(endPoint)
+                measurementEndPoint.coordinate = endPoint
+                if(QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+                {
+                    var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
+                    if(convertedDistance>=5280)
+                    {
+                        measurementText.text = (convertedDistance / 5280).toFixed(3)+ " " + qsTr("mi")
+                    }
+                    else
+                    {
+                        measurementText.text = convertedDistance.toFixed(3)+ " " + qsTr("ft")
+                    }
+                }
+                else
+                {
+                    if(distance>=1000)
+                    {
+                        measurementText.text = (distance / 1000).toFixed(3)+ " " + qsTr("km")
+                    }
+                    else
+                    {
+                         measurementText.text =distance.toFixed(3)+ " " + qsTr("m")
+                    }
+                }
+                measureDistanceLine.visible = true
+                measurementText.visible = true
+            }
+            function onHideMeasuredDistance()
+            {
+                measureDistanceLine.path = []
+                measureDistanceLine.visible = false
+                measurementText.visible = false
+            }
+        }
+    }
+
     // Add the vehicles to the map
     MapItemView {
         model: QGroundControl.multiVehicleManager.vehicles
@@ -899,8 +971,7 @@ FlightMap {
 
         onPressed:
         {
-            if (mouse.button == Qt.RightButton)
-                mouseAction(mouse)
+            mouseAction(mouse)
         }
 
         onPressAndHold: {
@@ -916,17 +987,22 @@ FlightMap {
 
         function mouseAction(mouse)
         {
-            orbitMapCircle.hide()
-           // gotoLocationItem.hide()
-            clickCoord = _root.toCoordinate(Qt.point(mouse.x, mouse.y), false /* clipToViewPort */)
-            //show the clicked location on the map
-            mapClickIconItem.show(clickCoord)
-            //open side dialog
-            mainWindow.showComponentDialog(
-            mapClickActionDialogComponent,
-            qsTr("Map Click Action"),
-            mainWindow.showDialogDefaultWidth,
-            StandardButton.Close)
+            var screenEndPoint = Qt.point(mouse.x, mouse.y);
+            if (mouse.button === Qt.RightButton)
+            {
+                orbitMapCircle.hide()
+               // gotoLocationItem.hide()
+                clickCoord = _root.toCoordinate(screenEndPoint, false /* clipToViewPort */)
+                //show the clicked location on the map
+                mapClickIconItem.show(clickCoord)
+                //open side dialog
+                mainWindow.showComponentDialog(
+                mapClickActionDialogComponent,
+                qsTr("Map Click Action"),
+                mainWindow.showDialogDefaultWidth,
+                StandardButton.Close)
+            }
+            QGroundControl.annotationManager.calculateDistance(mouse.button === Qt.LeftButton, _root.toCoordinate(screenEndPoint, false /* clipToViewPort */))
 
         }
         Component {

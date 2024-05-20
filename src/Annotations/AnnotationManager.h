@@ -33,6 +33,16 @@ public:
     // QGCTool overrides
     void setToolbox(QGCToolbox* toolbox) final;
     Q_INVOKABLE void deleteMarker       (const QString uid);
+    //Sets the uid of the start-point for measuring distance
+    //will emit displayMeasuredistanceMessage
+    Q_INVOKABLE void setMeasureDistanceAnchor(QString const& uid);
+    Q_INVOKABLE void calculateDistance(bool const isLMB, QGeoCoordinate const& endPoint);
+
+signals:
+    void showMeasureDistanceMessage();
+    void hideMeasureDistanceMessage();
+    void showMeasuredDistance(QGeoCoordinate startPoint, QGeoCoordinate endPoint, QColor color, qreal distance);
+    void hideMeasuredDistance();
 
 public slots:
     void annotationUpdate  (const Annotation::AnnotationInfo_t annotationInfo);
@@ -43,7 +53,9 @@ private slots:
 
 
 private:
+
     QmlObjectListModel              _Annotations;
     QMap<QString, Annotation*>      _annotationUidMap;
+    QString                         _measureDistanceStartUid;
 };
 

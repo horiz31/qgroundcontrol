@@ -65,6 +65,9 @@ QDataStream &operator>>(QDataStream &in, Annotation::AnnotationInfo_t& annotatio
 
 AnnotationManager::AnnotationManager(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
+    , _Annotations()
+    , _annotationUidMap()
+    , _measureDistanceStartUid()
 {
 }
 
@@ -86,6 +89,45 @@ void AnnotationManager::deleteMarker(QString uid)
             _save();
         }
     }
+}
+
+void AnnotationManager::setMeasureDistanceAnchor(QString const& uid)
+{
+    _measureDistanceStartUid = uid;
+    emit hideMeasuredDistance();
+    emit showMeasureDistanceMessage();
+}
+
+void AnnotationManager::calculateDistance(bool const isLMB, QGeoCoordinate const& endPoint)
+{
+    emit hideMeasureDistanceMessage();
+    qreal distance = -1;
+    QColor color{};
+    QGeoCoordinate startPoint{};
+    if( isLMB && endPoint.isValid() )
+    {
+        if( auto const findItr = _annotationUidMap.find(_measureDistanceStartUid); findItr != _annotationUidMap.end() )
+        {
+            if( auto const p_startPointAnnotation = findItr.value(); p_startPointAnnotation )
+            {
+                startPoint = p_startPointAnnotation->coordinate();
+                if(startPoint.isValid() )
+                {
+                    distance = startPoint.distanceTo(endPoint);
+                    color = p_startPointAnnotation->color();
+                }
+            }
+        }
+    }
+    if( distance >= 0 )
+    {
+        emit showMeasuredDistance(startPoint, endPoint, color, distance);
+    }
+    else
+    {
+        emit hideMeasuredDistance();
+    }
+    _measureDistanceStartUid = "";
 }
 
 void AnnotationManager::annotationUpdate(const Annotation::AnnotationInfo_t annotation)

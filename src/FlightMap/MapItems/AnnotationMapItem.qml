@@ -124,7 +124,17 @@ MapQuickItem {
                             mainWindow.showPopupDialogFromComponent(deleteMarkerDialog)
                         }
                     }
-
+                    QGCMenuItem {
+                        text:           qsTr("Measure Distance")
+                        visible:        true
+                        onTriggered:
+                        {
+                            //store the UID so that the next click will show the distance
+                            //Inside setMeasureDistanceAnchor, a signal should be emitted to show a message
+                            //indicating that the next click will display the distance
+                            QGroundControl.annotationManager.setMeasureDistanceAnchor(uid)
+                        }
+                    }
 
                 }
             }
