@@ -135,7 +135,7 @@ MapQuickItem {
                     }
                     QGCMenuItem {
                         text:           qsTr("Measure Distance To Aircraft")
-                        visible:        true
+                        visible:        _activeVehicle
                         onTriggered:
                         {
                             //store the start point and begin showing distance and heading from the aircraft

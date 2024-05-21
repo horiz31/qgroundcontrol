@@ -305,11 +305,13 @@ FlightMap {
     {
         id: measurementEndPoint
         visible: false
-        anchorPoint.x: image.width
-        anchorPoint.y: image.height
-        sourceItem: Image
-        {
-            id: measurementEndPointImage
+        anchorPoint.x: rect.width
+        anchorPoint.y: rect.height
+        sourceItem: Rectangle {  //invisible item to serve as measurement end point
+            id:     rect
+            width:  ScreenTools.defaultFontPixelHeight
+            height: width
+            color:  "black"
         }
     }
 
@@ -317,6 +319,7 @@ FlightMap {
         id:                         measurementText
         visible:                    false
         anchors.top:                measurementEndPoint.bottom
+        anchors.topMargin:          ScreenTools.defaultFontPixelHeight
         anchors.horizontalCenter:   measurementEndPoint.horizontalCenter
         map:                        _root
         text:                       ""
@@ -343,22 +346,22 @@ FlightMap {
                     var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
                     if(convertedDistance>=5280)
                     {
-                        measurementText.text = (convertedDistance / 5280).toFixed(2)+ " " + qsTr("mi")
+                        measurementText.text = (convertedDistance / 5280).toFixed(1)+ " " + qsTr("mi")
                     }
                     else
                     {
-                        measurementText.text = convertedDistance.toFixed(2)+ " " + qsTr("ft")
+                        measurementText.text = convertedDistance.toFixed(0)+ " " + qsTr("ft")
                     }
                 }
                 else
                 {
                     if(distance>=1000)
                     {
-                        measurementText.text = (distance / 1000).toFixed(2)+ " " + qsTr("km")
+                        measurementText.text = (distance / 1000).toFixed(1)+ " " + qsTr("km")
                     }
                     else
                     {
-                         measurementText.text =distance.toFixed(2)+ " " + qsTr("m")
+                         measurementText.text =distance.toFixed(0)+ " " + qsTr("m")
                     }
                 }
                 measureDistanceLine.visible = true
@@ -377,18 +380,21 @@ FlightMap {
     {
         id: measurementToAircraftEndPoint
         visible: false
-        anchorPoint.x: image.width
-        anchorPoint.y: image.height
-        sourceItem: Image
-        {
-            id: measurementToAircraftEndPointImage
+        anchorPoint.x: aircraftEnd.width
+        anchorPoint.y: aircraftEnd.height
+        sourceItem: Rectangle {  //invisible item to serve as measurement end point
+            id:     aircraftEnd
+            width:  ScreenTools.defaultFontPixelHeight
+            height: width
+            color:  "black"
         }
     }
 
     QGCMapLabel {
         id:                         measurementToAircraftText
-        visible:                    false
+        visible:                    false        
         anchors.top:                measurementToAircraftEndPoint.bottom
+        anchors.topMargin:          ScreenTools.defaultFontPixelHeight * 2
         anchors.horizontalCenter:   measurementToAircraftEndPoint.horizontalCenter
         map:                        _root
         text:                       ""
@@ -434,25 +440,25 @@ FlightMap {
                         var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
                         if(convertedDistance>=5280)
                         {
-                            measurementToAircraftText.text = (convertedDistance / 5280).toFixed(2)+ " " + qsTr("mi")
+                            measurementToAircraftText.text = (convertedDistance / 5280).toFixed(1)+ " " + qsTr("mi")
                         }
                         else
                         {
-                            measurementToAircraftText.text = convertedDistance.toFixed(2)+ " " + qsTr("ft")
+                            measurementToAircraftText.text = convertedDistance.toFixed(0)+ " " + qsTr("ft")
                         }
                     }
                     else
                     {
                         if(distance>=1000)
                         {
-                            measurementToAircraftText.text = (distance / 1000).toFixed(2)+ " " + qsTr("km")
+                            measurementToAircraftText.text = (distance / 1000).toFixed(1)+ " " + qsTr("km")
                         }
                         else
                         {
-                             measurementToAircraftText.text =distance.toFixed(2)+ " " + qsTr("m")
+                             measurementToAircraftText.text =distance.toFixed(0)+ " " + qsTr("m")
                         }
                     }
-                    measurementToAircraftText.text = measurementToAircraftText.text + " Heading: "+heading.toFixed(0)+"°"
+                    measurementToAircraftText.text = measurementToAircraftText.text + " ∠: "+heading.toFixed(0)+"°"
                     measureToAircraftDistanceLine.visible = true
                     measurementToAircraftText.visible = true
                 }

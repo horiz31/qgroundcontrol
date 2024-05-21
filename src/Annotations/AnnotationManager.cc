@@ -186,7 +186,7 @@ void AnnotationManager::_save()
 {
 
     QString filePath = ::_getAnnotationFilePath();
-    qDebug() << "saving " << _Annotations.count() << " annotations to file '"<<filePath<<"'";
+    //qDebug() << "saving " << _Annotations.count() << " annotations to file '"<<filePath<<"'";
     QFile file = filePath;
     file.setPermissions(QFileDevice::WriteUser|QFileDevice::ReadUser|QFileDevice::WriteOwner|QFileDevice::ReadOwner);
     if (file.open(QIODevice::WriteOnly))
@@ -194,7 +194,7 @@ void AnnotationManager::_save()
         QDataStream out(&file);   // we will serialize the data into the file
         //iterate through the annotations and write each as a line
         //first write the number of annoations
-        qDebug() << "writing count of" << _Annotations.count();
+        //qDebug() << "writing count of" << _Annotations.count();
         out << _Annotations.count();
         for( int i = 0; i < _Annotations.count(); i++ ) {
             Annotation* myAnnotation = (Annotation*)_Annotations.get(i);
@@ -206,7 +206,7 @@ void AnnotationManager::_save()
             temp.radius = myAnnotation->radius();
             temp.color = myAnnotation->color();
             temp.type = myAnnotation->type();
-            qDebug() << "writing annotation"<<temp.displayName;
+            //qDebug() << "writing annotation"<<temp.displayName;
             out << temp;
         }
 
@@ -222,7 +222,7 @@ void AnnotationManager::_save()
 void AnnotationManager::_load()
 {
     QString filePath = ::_getAnnotationFilePath();
-    qDebug() << "loading annotations from file '"<<filePath<<"'";
+    //qDebug() << "loading annotations from file '"<<filePath<<"'";
     QFile file = filePath;
     if (file.open(QIODevice::ReadOnly))
     {
@@ -230,11 +230,11 @@ void AnnotationManager::_load()
 
         int annotationCount;
         in >> annotationCount;
-        qDebug() << "Got" << annotationCount << "annotations to read in";
+        //qDebug() << "Got" << annotationCount << "annotations to read in";
         for( int i = 0; i < annotationCount; i++ ) {
             Annotation::AnnotationInfo_t annotation;
             in >> annotation;
-            qDebug() << "Read in annoation" << annotation.displayName;
+            //qDebug() << "Read in annoation" << annotation.displayName;
             Annotation* myAnnotation = new Annotation(annotation, this);
             _annotationUidMap[annotation.uid] = myAnnotation;
             _Annotations.append(myAnnotation);

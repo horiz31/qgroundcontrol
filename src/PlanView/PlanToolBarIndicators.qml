@@ -167,6 +167,7 @@ Item {
 
             QGCLabel { text: qsTr("Gradient:"); font.pointSize: _dataFontSize; }
             QGCLabel {
+                z: 100
                 text:                   _gradientText
                 font.pointSize:         _dataFontSize
                 Layout.minimumWidth:    _mediumValueWidth

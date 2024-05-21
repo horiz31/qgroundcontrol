@@ -441,7 +441,7 @@ void APMFirmwarePlugin::initializeStreamRates(Vehicle* vehicle)
         };
 */
 
-        qDebug() << "Setting up stream rates suitable for gimbal";
+        //qDebug() << "Setting up stream rates suitable for gimbal";
         StreamInfo_s rgStreamInfo[] = {
                                        { MAV_DATA_STREAM_RAW_SENSORS,      2},
                                        { MAV_DATA_STREAM_EXTENDED_STATUS,  2 },

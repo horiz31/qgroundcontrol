@@ -202,5 +202,6 @@
         <file alias="clearpath.svg">resources/clearpath.svg</file>
         <file alias="atakMarker.svg">src/FlightMap/Images/atakMarker.svg</file>
         <file alias="annotation.svg">src/FlightMap/Images/annotation.svg</file>
+        <file alias="clearmeasure.svg">resources/clearmeasure.svg</file>
     </qresource>
 </RCC>

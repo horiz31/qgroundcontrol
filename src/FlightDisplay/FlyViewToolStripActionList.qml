@@ -33,18 +33,19 @@ ToolStripActionList {
             onTriggered: displayPreFlightChecklist()
         },
         ClearFlightTrail {  onTriggered:  clearFlightPath()  },
+        ToolStripAction {
+            text:           qsTr("Stop Meas.")
+            iconSource:     "/qmlimages/clearmeasure.svg"
+            visible:        _showDistanceToAircraft
+            enabled:        _showDistanceToAircraft
+            onTriggered: clearMeasure()
+        },
         CenterMap {  onTriggered:  centerMap()  },
         GuidedActionTakeoff { },
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },
         GuidedActionPause { },
-        GuidedActionActionList { },
-        ToolStripAction {
-            text:           qsTr("Clear Dist")
-            iconSource:     "/qmlimages/clearpath.svg" //TODO change this
-            visible:        _showDistanceToAircraft
-            enabled:        _showDistanceToAircraft
-            onTriggered: clearMeasure()
-        }
+        GuidedActionActionList { }
+
     ]
 }
