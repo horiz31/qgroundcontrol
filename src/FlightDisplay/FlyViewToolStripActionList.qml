@@ -18,6 +18,7 @@ ToolStripActionList {
     signal displayPreFlightChecklist
     signal clearFlightPath
     signal centerMap
+    signal clearMeasure
 
 
     model: [
@@ -37,6 +38,13 @@ ToolStripActionList {
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },
         GuidedActionPause { },
-        GuidedActionActionList { }
+        GuidedActionActionList { },
+        ToolStripAction {
+            text:           qsTr("Clear Dist")
+            iconSource:     "/qmlimages/clearpath.svg" //TODO change this
+            visible:        _showDistanceToAircraft
+            enabled:        _showDistanceToAircraft
+            onTriggered: clearMeasure()
+        }
     ]
 }

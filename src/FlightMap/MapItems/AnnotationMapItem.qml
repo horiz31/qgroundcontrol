@@ -129,16 +129,21 @@ MapQuickItem {
                         visible:        true
                         onTriggered:
                         {
-                            //store the UID so that the next click will show the distance
-                            //Inside setMeasureDistanceAnchor, a signal should be emitted to show a message
-                            //indicating that the next click will display the distance
-                            QGroundControl.annotationManager.setMeasureDistanceAnchor(uid)
+                            //store the start point so that the next click will show the distance
+                            QGroundControl.annotationManager.setMeasureDistanceStartPoint(uid, false)
                         }
                     }
-
+                    QGCMenuItem {
+                        text:           qsTr("Measure Distance To Aircraft")
+                        visible:        true
+                        onTriggered:
+                        {
+                            //store the start point and begin showing distance and heading from the aircraft
+                            QGroundControl.annotationManager.setMeasureDistanceStartPoint(uid, true)
+                        }
+                    }
                 }
             }
-
         }
         /*
         Image {

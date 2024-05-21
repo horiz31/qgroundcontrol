@@ -67,7 +67,8 @@ AnnotationManager::AnnotationManager(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
     , _Annotations()
     , _annotationUidMap()
-    , _measureDistanceStartUid()
+    , _measureDistanceStartPoint()
+    , _measureDistanceToAircraftStartPoint()
 {
 }
 
@@ -91,43 +92,79 @@ void AnnotationManager::deleteMarker(QString uid)
     }
 }
 
-void AnnotationManager::setMeasureDistanceAnchor(QString const& uid)
+void AnnotationManager::setMeasureDistanceStartPoint(QString const& uid, bool toAircraft)
 {
-    _measureDistanceStartUid = uid;
-    emit hideMeasuredDistance();
-    emit showMeasureDistanceMessage();
+    QGeoCoordinate startPoint;
+    if( auto const findItr = _annotationUidMap.find(uid); findItr != _annotationUidMap.end() )
+    {
+        if( auto const p_startPointAnnotation = findItr.value(); p_startPointAnnotation )
+        {
+            startPoint = p_startPointAnnotation->coordinate();
+        }
+    }
+    if(toAircraft)
+    {
+         emit hideMeasuredDistanceToAircraft();
+        _measureDistanceToAircraftStartPoint=startPoint;
+        if(startPoint.isValid())
+        {
+            beginShowMeasureDistanceToAircraft(startPoint);
+        }
+    }
+    else
+    {
+        _measureDistanceStartPoint=startPoint;
+        emit hideMeasuredDistance();
+    }
 }
 
-void AnnotationManager::calculateDistance(bool const isLMB, QGeoCoordinate const& endPoint)
+void AnnotationManager::setMeasureDistanceEndPoint(bool const isLMB, QGeoCoordinate const& endPoint)
 {
-    emit hideMeasureDistanceMessage();
     qreal distance = -1;
-    QColor color{};
     QGeoCoordinate startPoint{};
     if( isLMB && endPoint.isValid() )
     {
-        if( auto const findItr = _annotationUidMap.find(_measureDistanceStartUid); findItr != _annotationUidMap.end() )
+        startPoint = _measureDistanceStartPoint;
+        if( startPoint.isValid() )
         {
-            if( auto const p_startPointAnnotation = findItr.value(); p_startPointAnnotation )
-            {
-                startPoint = p_startPointAnnotation->coordinate();
-                if(startPoint.isValid() )
-                {
-                    distance = startPoint.distanceTo(endPoint);
-                    color = p_startPointAnnotation->color();
-                }
-            }
+            distance = endPoint.distanceTo(startPoint);
         }
     }
     if( distance >= 0 )
     {
-        emit showMeasuredDistance(startPoint, endPoint, color, distance);
+        emit showMeasuredDistance(startPoint, endPoint, distance);
     }
     else
     {
         emit hideMeasuredDistance();
     }
-    _measureDistanceStartUid = "";
+    //set invalid
+    _measureDistanceStartPoint=QGeoCoordinate();
+}
+
+void AnnotationManager::setMeasureDistanceToAircraftEndPoint(QGeoCoordinate const& endPoint)
+{
+    qreal distance = -1;
+    qreal heading = -1;
+    QGeoCoordinate startPoint{};
+    if(endPoint.isValid())
+    {
+        startPoint = _measureDistanceToAircraftStartPoint;
+        if( startPoint.isValid() )
+        {
+            distance = endPoint.distanceTo(startPoint);
+            heading = endPoint.azimuthTo(startPoint);
+        }
+    }
+    //qDebug() << "distance = "<<distance<<", heading = "<<heading;
+    if( distance >= 0 )
+    {
+        emit updateMeasuredDistanceToAircraft(startPoint, endPoint, distance, heading);
+    }
+    else
+    {
+        emit hideMeasuredDistanceToAircraft();
+    }
 }
 
 void AnnotationManager::annotationUpdate(const Annotation::AnnotationInfo_t annotation)

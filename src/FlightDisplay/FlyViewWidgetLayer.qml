@@ -402,6 +402,7 @@ Item {
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
 
         onCenterMap:           { mapControl.zoomLevel = 16; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
+        onClearMeasure: {  _showDistanceToAircraft = false; QGroundControl.annotationManager.setMeasureDistanceStartPoint("", true);}
         property real leftInset: x + width
     }
 

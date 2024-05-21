@@ -223,8 +223,15 @@ FlightMap {
     }
 
     on_ActiveVehicleCoordinateChanged: {
-        if (_keepMapCenteredOnVehicle && _activeVehicleCoordinate.isValid && !_disableVehicleTracking) {
-            _root.center = _activeVehicleCoordinate
+        if(_activeVehicleCoordinate.isValid)
+        {
+            if (_keepMapCenteredOnVehicle && !_disableVehicleTracking) {
+                _root.center = _activeVehicleCoordinate
+            }
+            if(_showDistanceToAircraft)
+            {
+                QGroundControl.annotationManager.setMeasureDistanceToAircraftEndPoint(_activeVehicleCoordinate)
+            }
         }
     }
 
@@ -326,7 +333,7 @@ FlightMap {
         Connections
         {
             target: QGroundControl.annotationManager
-            function onShowMeasuredDistance(startPoint, endPoint, color, distance)
+            function onShowMeasuredDistance(startPoint, endPoint, distance)
             {
                 measureDistanceLine.addCoordinate(startPoint)
                 measureDistanceLine.addCoordinate(endPoint)
@@ -362,6 +369,93 @@ FlightMap {
                 measureDistanceLine.path = []
                 measureDistanceLine.visible = false
                 measurementText.visible = false
+            }
+        }
+    }
+
+    MapQuickItem
+    {
+        id: measurementToAircraftEndPoint
+        visible: false
+        anchorPoint.x: image.width
+        anchorPoint.y: image.height
+        sourceItem: Image
+        {
+            id: measurementToAircraftEndPointImage
+        }
+    }
+
+    QGCMapLabel {
+        id:                         measurementToAircraftText
+        visible:                    false
+        anchors.top:                measurementToAircraftEndPoint.bottom
+        anchors.horizontalCenter:   measurementToAircraftEndPoint.horizontalCenter
+        map:                        _root
+        text:                       ""
+        font.pointSize:             ScreenTools.mediumFontPointSize
+        z:          QGroundControl.zOrderTrajectoryLines+1
+    }
+
+    MapPolyline {
+        id:         measureToAircraftDistanceLine
+        line.width: 3
+        line.color: "black"
+        z:          QGroundControl.zOrderTrajectoryLines
+        visible:    false
+        Connections
+        {
+            target: QGroundControl.annotationManager
+            function onBeginShowMeasureDistanceToAircraft(startPoint)
+            {
+                _showDistanceToAircraft = true
+                if(_activeVehicle && _activeVehicle.coordinate.isValid)
+                {
+                    measureToAircraftDistanceLine.addCoordinate(startPoint)
+                    measureToAircraftDistanceLine.addCoordinate(_activeVehicle.coordinate)
+                    QGroundControl.annotationManager.setMeasureDistanceToAircraftEndPoint(_activeVehicle.coordinate)
+                }
+            }
+            function onHideMeasuredDistanceToAircraft()
+            {
+                _showDistanceToAircraft = false
+                measureToAircraftDistanceLine.path = []
+                measureToAircraftDistanceLine.visible = false
+                measurementToAircraftText.visible = false
+            }
+            function onUpdateMeasuredDistanceToAircraft(startPoint, endPoint, distance, heading)
+            {
+                if(_showDistanceToAircraft && startPoint.isValid && endPoint.isValid && distance>=0 && measureToAircraftDistanceLine.pathLength() === 2)
+                {
+                    measureToAircraftDistanceLine.replaceCoordinate(0, startPoint);
+                    measureToAircraftDistanceLine.replaceCoordinate(1, endPoint);
+                    measurementToAircraftEndPoint.coordinate = endPoint
+                    if(QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+                    {
+                        var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
+                        if(convertedDistance>=5280)
+                        {
+                            measurementToAircraftText.text = (convertedDistance / 5280).toFixed(3)+ " " + qsTr("mi")
+                        }
+                        else
+                        {
+                            measurementToAircraftText.text = convertedDistance.toFixed(3)+ " " + qsTr("ft")
+                        }
+                    }
+                    else
+                    {
+                        if(distance>=1000)
+                        {
+                            measurementToAircraftText.text = (distance / 1000).toFixed(3)+ " " + qsTr("km")
+                        }
+                        else
+                        {
+                             measurementToAircraftText.text =distance.toFixed(3)+ " " + qsTr("m")
+                        }
+                    }
+                    measurementToAircraftText.text = measurementToAircraftText.text + " Heading: "+heading.toFixed(3)
+                    measureToAircraftDistanceLine.visible = true
+                    measurementToAircraftText.visible = true
+                }
             }
         }
     }
@@ -1002,7 +1096,7 @@ FlightMap {
                 mainWindow.showDialogDefaultWidth,
                 StandardButton.Close)
             }
-            QGroundControl.annotationManager.calculateDistance(mouse.button === Qt.LeftButton, _root.toCoordinate(screenEndPoint, false /* clipToViewPort */))
+            QGroundControl.annotationManager.setMeasureDistanceEndPoint(mouse.button === Qt.LeftButton, _root.toCoordinate(screenEndPoint, false /* clipToViewPort */))
 
         }
         Component {
