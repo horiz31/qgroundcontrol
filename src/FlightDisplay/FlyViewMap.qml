@@ -321,7 +321,7 @@ FlightMap {
         map:                        _root
         text:                       ""
         font.pointSize:             ScreenTools.mediumFontPointSize
-        z:          QGroundControl.zOrderTrajectoryLines+1
+        z:          QGroundControl.zOrderTopMost
     }
 
     MapPolyline {
@@ -343,22 +343,22 @@ FlightMap {
                     var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
                     if(convertedDistance>=5280)
                     {
-                        measurementText.text = (convertedDistance / 5280).toFixed(3)+ " " + qsTr("mi")
+                        measurementText.text = (convertedDistance / 5280).toFixed(2)+ " " + qsTr("mi")
                     }
                     else
                     {
-                        measurementText.text = convertedDistance.toFixed(3)+ " " + qsTr("ft")
+                        measurementText.text = convertedDistance.toFixed(2)+ " " + qsTr("ft")
                     }
                 }
                 else
                 {
                     if(distance>=1000)
                     {
-                        measurementText.text = (distance / 1000).toFixed(3)+ " " + qsTr("km")
+                        measurementText.text = (distance / 1000).toFixed(2)+ " " + qsTr("km")
                     }
                     else
                     {
-                         measurementText.text =distance.toFixed(3)+ " " + qsTr("m")
+                         measurementText.text =distance.toFixed(2)+ " " + qsTr("m")
                     }
                 }
                 measureDistanceLine.visible = true
@@ -393,7 +393,7 @@ FlightMap {
         map:                        _root
         text:                       ""
         font.pointSize:             ScreenTools.mediumFontPointSize
-        z:          QGroundControl.zOrderTrajectoryLines+1
+        z:          QGroundControl.zOrderTopMost
     }
 
     MapPolyline {
@@ -434,25 +434,25 @@ FlightMap {
                         var convertedDistance = QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(distance);
                         if(convertedDistance>=5280)
                         {
-                            measurementToAircraftText.text = (convertedDistance / 5280).toFixed(3)+ " " + qsTr("mi")
+                            measurementToAircraftText.text = (convertedDistance / 5280).toFixed(2)+ " " + qsTr("mi")
                         }
                         else
                         {
-                            measurementToAircraftText.text = convertedDistance.toFixed(3)+ " " + qsTr("ft")
+                            measurementToAircraftText.text = convertedDistance.toFixed(2)+ " " + qsTr("ft")
                         }
                     }
                     else
                     {
                         if(distance>=1000)
                         {
-                            measurementToAircraftText.text = (distance / 1000).toFixed(3)+ " " + qsTr("km")
+                            measurementToAircraftText.text = (distance / 1000).toFixed(2)+ " " + qsTr("km")
                         }
                         else
                         {
-                             measurementToAircraftText.text =distance.toFixed(3)+ " " + qsTr("m")
+                             measurementToAircraftText.text =distance.toFixed(2)+ " " + qsTr("m")
                         }
                     }
-                    measurementToAircraftText.text = measurementToAircraftText.text + " Heading: "+heading.toFixed(3)
+                    measurementToAircraftText.text = measurementToAircraftText.text + " Heading: "+heading.toFixed(0)+"°"
                     measureToAircraftDistanceLine.visible = true
                     measurementToAircraftText.visible = true
                 }
