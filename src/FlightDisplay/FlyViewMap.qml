@@ -1088,7 +1088,7 @@ FlightMap {
         function mouseAction(mouse)
         {
             var screenEndPoint = Qt.point(mouse.x, mouse.y);
-            if (mouse.button === Qt.RightButton)
+            if (mouse.button === Qt.RightButton || mouse.wasHeld)
             {
                 orbitMapCircle.hide()
                // gotoLocationItem.hide()
@@ -1102,7 +1102,10 @@ FlightMap {
                 mainWindow.showDialogDefaultWidth,
                 StandardButton.Close)
             }
-            QGroundControl.annotationManager.setMeasureDistanceEndPoint(mouse.button === Qt.LeftButton, _root.toCoordinate(screenEndPoint, false /* clipToViewPort */))
+            if(!mouse.wasHeld)
+            {
+                QGroundControl.annotationManager.setMeasureDistanceEndPoint(mouse.button === Qt.LeftButton, _root.toCoordinate(screenEndPoint, false /* clipToViewPort */))
+            }
 
         }
         Component {
