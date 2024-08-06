@@ -37,6 +37,7 @@ DECLARE_SETTINGGROUP(Video, "Video")
 
     // Setup enum values for videoSource settings into meta data
     QVariantList videoSourceList;
+#if __ENABLE_OTHER_VIDEO_SOURCE_INPUTS__
 #ifdef QGC_GST_STREAMING
     videoSourceList.append(videoSourceRTSP);
 #ifndef NO_UDP_VIDEO
@@ -44,10 +45,9 @@ DECLARE_SETTINGGROUP(Video, "Video")
     videoSourceList.append(videoSourceUDPH265);
     videoSourceList.append(videoSourceMulticastUDPH265);
 #endif
+
     videoSourceList.append(videoSourceTCP);
     videoSourceList.append(videoSourceMPEGTS);
-    videoSourceList.append(videoSource3DRSolo);
-    videoSourceList.append(videoSourceParrotDiscovery);
     videoSourceList.append(videoSourceYuneecMantisG);
 #endif
 #ifndef QGC_DISABLE_UVC
@@ -62,6 +62,27 @@ DECLARE_SETTINGGROUP(Video, "Video")
     } else {
         videoSourceList.insert(0, videoDisabled);
     }
+#else
+#ifdef QGC_GST_STREAMING
+#ifndef NO_UDP_VIDEO
+    videoSourceList.append(videoSourceUDPH264);
+    videoSourceList.append(videoSourceUDPH265);
+    videoSourceList.append(videoSourceMulticastUDPH265);
+#endif
+    videoSourceList.append(videoSource3DRSolo);
+    videoSourceList.append(videoSourceParrotDiscovery);
+
+#endif
+    if (videoSourceList.count() == 0)
+    {
+        _noVideo = true;
+        videoSourceList.append(videoSourceNoVideo);
+    }
+    else
+    {
+        videoSourceList.insert(0, videoDisabled);
+    }
+#endif
 
     // make translated strings
     QStringList videoSourceCookedList;
@@ -198,6 +219,41 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, multicastGroup)
     return _multicastGroupFact;
 }
 
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, enableRemoteStreaming)
+{
+    if (!_enableRemoteStreamingFact) {
+        _enableRemoteStreamingFact = _createSettingsFact(enableRemoteStreamingName);
+        connect(_enableRemoteStreamingFact, &Fact::valueChanged, this, &VideoSettings::_remoteStreamingChanged);
+    }
+    return _enableRemoteStreamingFact;
+}
+
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, remoteStreamID)
+{
+    if (!_remoteStreamIDFact) {
+        _remoteStreamIDFact = _createSettingsFact(remoteStreamIDName);
+        connect(_remoteStreamIDFact, &Fact::valueChanged, this, &VideoSettings::_remoteStreamingChanged);
+    }
+    return _remoteStreamIDFact;
+}
+
+bool VideoSettings::remoteStreamingConfigured()
+{
+    if(!streamConfigured())
+    {
+        return false;
+    }
+    if(!enableRemoteStreaming()->rawValue().toBool())
+    {
+        return false;
+    }
+    if(remoteStreamID()->rawValue().toString().isEmpty())
+    {
+        return false;
+    }
+    return true;
+}
+
 bool VideoSettings::streamConfigured(void)
 {
 #if !defined(QGC_GST_STREAMING)
@@ -240,3 +296,10 @@ void VideoSettings::_configChanged(QVariant)
 {
     emit streamConfiguredChanged(streamConfigured());
 }
+
+
+void VideoSettings::_remoteStreamingChanged(QVariant)
+{
+    emit remoteStreamingConfiguredChanged(remoteStreamingConfigured());
+}
+

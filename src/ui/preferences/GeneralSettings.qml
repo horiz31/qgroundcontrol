@@ -366,6 +366,22 @@ Rectangle {
                                     fact:       _videoSettings.enableStorageLimit
                                     visible:    _showSaveVideoSettings && fact.visible
                                 }
+                                Item { width: 1; height: 1}
+                                FactCheckBox {
+                                    text:       qsTr("Enable remote streaming")
+                                    fact:       _videoSettings.enableRemoteStreaming
+                                    visible:    (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.enableRemoteStreaming.visible
+                                }
+                                QGCLabel {
+                                    id:         remoteStreamIDLabel
+                                    text:       qsTr("Remote Stream ID")
+                                    visible:    (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamID.visible && _videoSettings.enableRemoteStreaming.rawValue
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings.remoteStreamID
+                                    visible:                remoteStreamIDLabel.visible
+                                }
                             }
                         }
                     }

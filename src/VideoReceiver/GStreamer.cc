@@ -18,6 +18,7 @@
 
 #include "GStreamer.h"
 #include "GstVideoReceiver.h"
+#include <gst/gst.h>
 
 QGC_LOGGING_CATEGORY(GStreamerLog, "GStreamerLog")
 QGC_LOGGING_CATEGORY(GStreamerAPILog, "GStreamerAPILog")
@@ -258,7 +259,7 @@ GStreamer::createVideoSink(QObject* parent, QQuickItem* widget)
     GstElement* sink;
 
     if ((sink = gst_element_factory_make("qgcvideosinkbin", nullptr)) != nullptr) {
-        g_object_set(sink, "widget", widget, NULL);
+        g_object_set(sink, "widget", widget, nullptr);
     } else {
         qCCritical(GStreamerLog) << "gst_element_factory_make('qgcvideosinkbin') failed";
     }

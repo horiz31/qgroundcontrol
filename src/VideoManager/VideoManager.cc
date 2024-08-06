@@ -63,6 +63,9 @@ VideoManager::VideoManager(QGCApplication* app, QGCToolbox* toolbox)
 #endif
 }
 
+#ifndef __ENABLE_THERMAL_VIDEO_RECEIVER__
+#define __ENABLE_THERMAL_VIDEO_RECEIVER__ 0
+#endif
 //-----------------------------------------------------------------------------
 VideoManager::~VideoManager()
 {
@@ -88,22 +91,24 @@ VideoManager::~VideoManager()
 void
 VideoManager::setToolbox(QGCToolbox *toolbox)
 {
-   QGCTool::setToolbox(toolbox);
-   QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
+    QGCTool::setToolbox(toolbox);
+    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
    qmlRegisterUncreatableType<VideoManager> ("QGroundControl.VideoManager", 1, 0, "VideoManager", "Reference only");
    qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
 
-   // TODO: Those connections should be Per Video, not per VideoManager.
-   _videoSettings = toolbox->settingsManager()->videoSettings();
-   QString videoSource = _videoSettings->videoSource()->rawValue().toString();
+    // TODO: Those connections should be Per Video, not per VideoManager.
+    _videoSettings = toolbox->settingsManager()->videoSettings();
+    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
    connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
    connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
    connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
    connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
-   connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
-   MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
-   connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
+   connect(_videoSettings->enableRemoteStreaming(), &Fact::rawValueChanged, this, &VideoManager::_remoteStreamingChanged);
+   connect(_videoSettings->remoteStreamID(), &Fact::rawValueChanged, this, &VideoManager::_remoteStreamingChanged);
+    connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
+    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
 #if defined(QGC_GST_STREAMING)
     GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
@@ -116,7 +121,9 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     qCDebug(VideoManagerLog) << "New Video Source:" << videoSource;
 #if defined(QGC_GST_STREAMING)
     _videoReceiver[0] = toolbox->corePlugin()->createVideoReceiver(this);
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     _videoReceiver[1] = toolbox->corePlugin()->createVideoReceiver(this);
+#endif
 
     connect(_videoReceiver[0], &VideoReceiver::streamingChanged, this, [this](bool active){
         _streaming = active;
@@ -132,6 +139,8 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
                 // NOTE that even if decoder did not start it is still possible to record video
                 _videoReceiver[0]->startDecoding(_videoSink[0]);
             }
+            //Check if we can start up remote streaming
+            _remoteStreamingChanged();
         } else if (status == VideoReceiver::STATUS_INVALID_URL) {
             // Invalid URL - don't restart
         } else if (status == VideoReceiver::STATUS_INVALID_STATE) {
@@ -142,9 +151,10 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     });
 
     connect(_videoReceiver[0], &VideoReceiver::onStopComplete, this, [this](VideoReceiver::STATUS) {
-        _videoStarted[0] = false;
-        _startReceiver(0);
-    });
+                _videoStarted[0] = false;
+                _startReceiver(0);
+                _remoteStreamURL = "";
+            });
 
     connect(_videoReceiver[0], &VideoReceiver::decodingChanged, this, [this](bool active){
         _decoding = active;
@@ -159,6 +169,10 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
         emit recordingChanged();
     });
 
+    connect(_videoReceiver[0], &VideoReceiver::remoteStreamingChanged, this, [this](bool active){
+        _remoteStreaming = active;
+        emit remoteStreamingChanged();
+    });
     connect(_videoReceiver[0], &VideoReceiver::recordingStarted, this, [this](){
         _subtitleWriter.startCapturingTelemetry(_videoFile);
     });
@@ -172,6 +186,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
     //    if (status == VideoReceiver::STATUS_OK) {
     //    }
     //});
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
 
     // FIXME: AV: I believe _thermalVideoReceiver should be handled just like _videoReceiver in terms of event
     // and I expect that it will be changed during multiple video stream activity
@@ -197,8 +212,11 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
         });
     }
 #endif
+#endif
     _updateSettings(0);
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     _updateSettings(1);
+#endif
     if(isGStreamer()) {
         startVideo();
     } else {
@@ -263,9 +281,58 @@ VideoManager::startVideo()
     }
 
     _startReceiver(0);
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     _startReceiver(1);
+#endif
 }
 
+//-----------------------------------------------------------------------------
+void VideoManager::startDecoding()
+{
+    if (qgcApp()->runningUnitTests())
+    {
+        return;
+    }
+    if (!_videoSettings->streamEnabled()->rawValue().toBool() || !_videoSettings->streamConfigured())
+    {
+        qCDebug(VideoManagerLog) << "Stream not enabled/configured";
+        return;
+    }
+    if (_videoReceiver[0] != nullptr && _videoSink[0] != nullptr && _videoStarted[0])
+    {
+        _videoReceiver[0]->startDecoding(_videoSink[0]);
+    }
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
+    if (_videoReceiver[1] != nullptr && _videoSink[1] != nullptr && _videoStarted[1])
+    {
+        _videoReceiver[1]->startDecoding(_videoSink[1]);
+    }
+#endif
+}
+
+//-----------------------------------------------------------------------------
+void VideoManager::stopDecoding()
+{
+    if (qgcApp()->runningUnitTests())
+    {
+        return;
+    }
+    if (!_videoSettings->streamEnabled()->rawValue().toBool() || !_videoSettings->streamConfigured())
+    {
+        qCDebug(VideoManagerLog) << "Stream not enabled/configured";
+        return;
+    }
+    if (_videoReceiver[0] != nullptr)
+    {
+        _videoReceiver[0]->stopDecoding();
+    }
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
+    if (_videoReceiver[1] != nullptr)
+    {
+        _videoReceiver[1]->stopDecoding();
+    }
+#endif
+}
 //-----------------------------------------------------------------------------
 void
 VideoManager::stopVideo()
@@ -274,7 +341,9 @@ VideoManager::stopVideo()
         return;
     }
 
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     _stopReceiver(1);
+#endif
     _stopReceiver(0);
 }
 
@@ -311,16 +380,19 @@ VideoManager::startRecording(const QString& videoFile)
     _videoFile = savePath + "/"
             + (videoFile.isEmpty() ? QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss") : videoFile)
             + ".";
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     QString videoFile2 = _videoFile + "2." + ext;
+#endif
     _videoFile += ext;
 
     if (_videoReceiver[0] && _videoStarted[0]) {
         _videoReceiver[0]->startRecording(_videoFile, fileFormat);
     }
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     if (_videoReceiver[1] && _videoStarted[1]) {
         _videoReceiver[1]->startRecording(videoFile2, fileFormat);
     }
-
+#endif
 #else
     Q_UNUSED(videoFile)
 #endif
@@ -489,6 +561,29 @@ VideoManager::_udpPortChanged()
 {
     _restartVideo(0);
 }
+void
+VideoManager::_remoteStreamingChanged()
+{
+    QString oldRemoteStreamURL=_remoteStreamURL;
+    QString newRemoteStreamURL="";
+    QString newRemoteStreamID=_videoSettings->remoteStreamID()->rawValueString().trimmed();
+    if(_videoSettings->enableRemoteStreaming()->rawValue().toBool() && !newRemoteStreamID.isEmpty())
+    {
+        newRemoteStreamURL = "srt://data.echomav.com:4200?streamid=LiveApp/" + newRemoteStreamID;
+    }
+    if(newRemoteStreamURL!=oldRemoteStreamURL && _videoReceiver[0] != nullptr && _videoStarted[0])
+    {
+        if(newRemoteStreamURL.isEmpty())
+        {
+            _videoReceiver[0]->stopRemoteStreaming();
+        }
+        else
+        {
+            _videoReceiver[0]->startRemoteStreaming(newRemoteStreamURL);
+        }
+    }
+    _remoteStreamURL=newRemoteStreamURL;
+}
 
 //-----------------------------------------------------------------------------
 void
@@ -595,6 +690,7 @@ VideoManager::_initVideo()
 
     widget = root->findChild<QQuickItem*>("thermalVideo");
 
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     if (widget != nullptr && _videoReceiver[1] != nullptr) {
         _videoSink[1] = qgcApp()->toolbox()->corePlugin()->createVideoSink(this, widget);
         if (_videoSink[1] != nullptr) {
@@ -607,6 +703,7 @@ VideoManager::_initVideo()
     } else {
         qCDebug(VideoManagerLog) << "thermal video receiver disabled";
     }
+#endif
 #endif
 }
 
@@ -784,7 +881,9 @@ void
 VideoManager::_restartAllVideos()
 {
     _restartVideo(0);
+#if __ENABLE_THERMAL_VIDEO_RECEIVER__
     _restartVideo(1);
+#endif
 }
 
 //----------------------------------------------------------------------------------------

@@ -107,6 +107,20 @@
     "mobileDefault":   true
 },
 {
+    "name":             "enableRemoteStreaming",
+    "shortDesc": "Enable the remote stream",
+    "longDesc":  "Enable the remote stream",
+    "type":             "bool",
+    "default":     false
+},
+{
+    "name":             "remoteStreamID",
+    "shortDesc": "The remote stream ID",
+    "longDesc":  "The remote stream ID",
+    "type":             "string",
+    "default":     ""
+},
+{
     "name":             "rtspTimeout",
     "shortDesc": "RTSP Video Timeout",
     "longDesc":  "How long to wait before assuming RTSP link is gone.",

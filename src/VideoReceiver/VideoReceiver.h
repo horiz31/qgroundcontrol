@@ -53,6 +53,8 @@ signals:
     void decodingChanged(bool active);
     void recordingChanged(bool active);
     void recordingStarted(void);
+    void remoteStreamingChanged(bool active);
+    void remoteStreamingStarted(void);
     void videoSizeChanged(QSize size);
 
     void onStartComplete(STATUS status);
@@ -61,6 +63,8 @@ signals:
     void onStopDecodingComplete(STATUS status);
     void onStartRecordingComplete(STATUS status);
     void onStopRecordingComplete(STATUS status);
+    void onStartRemoteStreamingComplete(STATUS status);
+    void onStopRemoteStreamingComplete(STATUS status);
     void onTakeScreenshotComplete(STATUS status);
 
 public slots:
@@ -74,5 +78,7 @@ public slots:
     virtual void stopDecoding(void) = 0;
     virtual void startRecording(const QString& videoFile, FILE_FORMAT format) = 0;
     virtual void stopRecording(void) = 0;
+    virtual void startRemoteStreaming(const QString& streamURL) = 0;
+    virtual void stopRemoteStreaming() = 0;
     virtual void takeScreenshot(const QString& imageFile) = 0;
 };

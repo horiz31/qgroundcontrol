@@ -12,6 +12,10 @@
 
 #include "SettingsGroup.h"
 
+#ifndef __ENABLE_OTHER_VIDEO_SOURCE_INPUTS__
+#define __ENABLE_OTHER_VIDEO_SOURCE_INPUTS__ 0
+#endif
+
 class VideoSettings : public SettingsGroup
 {
     Q_OBJECT
@@ -45,6 +49,8 @@ public:
     DEFINE_SETTINGFACT(pilotViewOnFBW)
     DEFINE_SETTINGFACT(nadirViewOnLand)
     DEFINE_SETTINGFACT(osd)
+    DEFINE_SETTINGFACT(enableRemoteStreaming)
+    DEFINE_SETTINGFACT(remoteStreamID)
 
 
     enum VideoDecoderOptions {
@@ -58,6 +64,7 @@ public:
     Q_ENUM(VideoDecoderOptions)
 
     Q_PROPERTY(bool     streamConfigured        READ streamConfigured       NOTIFY streamConfiguredChanged)
+    Q_PROPERTY(bool     remoteStreamingConfigured        READ remoteStreamingConfigured       NOTIFY remoteStreamingConfiguredChanged)
     Q_PROPERTY(QString  rtspVideoSource         READ rtspVideoSource        CONSTANT)
     Q_PROPERTY(QString  udp264VideoSource       READ udp264VideoSource      CONSTANT)
     Q_PROPERTY(QString  udp265VideoSource       READ udp265VideoSource      CONSTANT)
@@ -67,6 +74,7 @@ public:
     Q_PROPERTY(QString  disabledVideoSource     READ disabledVideoSource    CONSTANT)
 
     bool     streamConfigured       ();
+    bool     remoteStreamingConfigured ();
     QString  rtspVideoSource        () { return videoSourceRTSP; }
     QString  udp264VideoSource      () { return videoSourceUDPH264; }
     QString  udp265VideoSource      () { return videoSourceUDPH265; }
@@ -88,10 +96,12 @@ public:
     static const char* videoSourceYuneecMantisG;
 
 signals:
-    void streamConfiguredChanged    (bool configured);
+    void streamConfiguredChanged             (bool configured);
+    void remoteStreamingConfiguredChanged    (bool configured);
 
 private slots:
     void _configChanged             (QVariant value);
+    void _remoteStreamingChanged             (QVariant value);
 
 private:
     void _setDefaults               ();

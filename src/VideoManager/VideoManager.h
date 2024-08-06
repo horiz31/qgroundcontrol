@@ -54,6 +54,7 @@ public:
     Q_PROPERTY(bool             streaming               READ    streaming                                   NOTIFY streamingChanged)
     Q_PROPERTY(bool             decoding                READ    decoding                                    NOTIFY decodingChanged)
     Q_PROPERTY(bool             recording               READ    recording                                   NOTIFY recordingChanged)
+    Q_PROPERTY(bool             remoteStreaming         READ    remoteStreaming                             NOTIFY remoteStreamingChanged)
     Q_PROPERTY(QSize            videoSize               READ    videoSize                                   NOTIFY videoSizeChanged)
 
     virtual bool        hasVideo            ();
@@ -81,6 +82,9 @@ public:
         return _recording;
     }
 
+    bool remoteStreaming(void) {
+        return _remoteStreaming;
+    }
     QSize videoSize(void) {
         const quint32 size = _videoSize;
         return QSize((size >> 16) & 0xFFFF, size & 0xFFFF);
@@ -106,6 +110,8 @@ public:
     Q_INVOKABLE void startVideo     ();
     Q_INVOKABLE void stopVideo      ();
 
+    Q_INVOKABLE void stopDecoding();
+    Q_INVOKABLE void startDecoding();
     Q_INVOKABLE void startRecording (const QString& videoFile = QString());
     Q_INVOKABLE void stopRecording  ();
 
@@ -123,6 +129,7 @@ signals:
     void imageFileChanged           ();
     void streamingChanged           ();
     void decodingChanged            ();
+    void remoteStreamingChanged     ();
     void recordingChanged           ();
     void recordingStarted           ();
     void videoSizeChanged           ();
@@ -130,6 +137,7 @@ signals:
 protected slots:
     void _videoSourceChanged        ();
     void _udpPortChanged            ();
+    void _remoteStreamingChanged    ();
     void _rtspUrlChanged            ();
     void _tcpUrlChanged             ();
     void _lowLatencyModeChanged     ();
@@ -152,6 +160,7 @@ protected:
 
 protected:
     QString                 _videoFile;
+    QString                 _remoteStreamURL;
     QString                 _imageFile;
     SubtitleWriter          _subtitleWriter;
     bool                    _isTaisync              = false;
@@ -168,6 +177,7 @@ protected:
     QAtomicInteger<bool>    _streaming              = false;
     QAtomicInteger<bool>    _decoding               = false;
     QAtomicInteger<bool>    _recording              = false;
+    QAtomicInteger<bool>    _remoteStreaming        = false;
     QAtomicInteger<quint32> _videoSize              = 0;
     VideoSettings*          _videoSettings          = nullptr;
     QString                 _videoSourceID;

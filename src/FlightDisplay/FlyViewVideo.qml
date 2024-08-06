@@ -27,12 +27,12 @@ Item {
         isDark:     true
 
         onWindowAboutToOpen: {
-            QGroundControl.videoManager.stopVideo()
+            QGroundControl.videoManager.stopDecoding()
             videoStartDelay.start()
         }
 
         onWindowAboutToClose: {
-            QGroundControl.videoManager.stopVideo()
+            QGroundControl.videoManager.stopDecoding()
             videoStartDelay.start()
         }
 
@@ -48,7 +48,7 @@ Item {
         interval:     2000;
         running:      false
         repeat:       false
-        onTriggered:  QGroundControl.videoManager.startVideo()
+        onTriggered:  QGroundControl.videoManager.startDecoding()
     }
 
     //-- Video Streaming
