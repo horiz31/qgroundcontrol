@@ -36,26 +36,28 @@ public:
     VideoManager    (QGCApplication* app, QGCToolbox* toolbox);
     virtual ~VideoManager   ();
 
-    Q_PROPERTY(bool             hasVideo                READ    hasVideo                                    NOTIFY hasVideoChanged)
-    Q_PROPERTY(bool             isGStreamer             READ    isGStreamer                                 NOTIFY isGStreamerChanged)
-    Q_PROPERTY(bool             isTaisync               READ    isTaisync       WRITE   setIsTaisync        NOTIFY isTaisyncChanged)
-    Q_PROPERTY(QString          videoSourceID           READ    videoSourceID                               NOTIFY videoSourceIDChanged)
-    Q_PROPERTY(bool             uvcEnabled              READ    uvcEnabled                                  CONSTANT)
-    Q_PROPERTY(bool             fullScreen              READ    fullScreen      WRITE   setfullScreen       NOTIFY fullScreenChanged)
-    Q_PROPERTY(VideoReceiver*   videoReceiver           READ    videoReceiver                               CONSTANT)
-    Q_PROPERTY(VideoReceiver*   thermalVideoReceiver    READ    thermalVideoReceiver                        CONSTANT)
-    Q_PROPERTY(double           aspectRatio             READ    aspectRatio                                 NOTIFY aspectRatioChanged)
-    Q_PROPERTY(double           thermalAspectRatio      READ    thermalAspectRatio                          NOTIFY aspectRatioChanged)
-    Q_PROPERTY(double           hfov                    READ    hfov                                        NOTIFY aspectRatioChanged)
-    Q_PROPERTY(double           thermalHfov             READ    thermalHfov                                 NOTIFY aspectRatioChanged)
-    Q_PROPERTY(bool             autoStreamConfigured    READ    autoStreamConfigured                        NOTIFY autoStreamConfiguredChanged)
-    Q_PROPERTY(bool             hasThermal              READ    hasThermal                                  NOTIFY decodingChanged)
-    Q_PROPERTY(QString          imageFile               READ    imageFile                                   NOTIFY imageFileChanged)
-    Q_PROPERTY(bool             streaming               READ    streaming                                   NOTIFY streamingChanged)
-    Q_PROPERTY(bool             decoding                READ    decoding                                    NOTIFY decodingChanged)
-    Q_PROPERTY(bool             recording               READ    recording                                   NOTIFY recordingChanged)
-    Q_PROPERTY(bool             remoteStreaming         READ    remoteStreaming                             NOTIFY remoteStreamingChanged)
-    Q_PROPERTY(QSize            videoSize               READ    videoSize                                   NOTIFY videoSizeChanged)
+    Q_PROPERTY(bool hasVideo READ hasVideo NOTIFY hasVideoChanged)
+    Q_PROPERTY(bool isGStreamer READ isGStreamer NOTIFY isGStreamerChanged)
+    Q_PROPERTY(bool isTaisync READ isTaisync WRITE setIsTaisync NOTIFY isTaisyncChanged)
+    Q_PROPERTY(QString videoSourceID READ videoSourceID NOTIFY videoSourceIDChanged)
+    Q_PROPERTY(bool uvcEnabled READ uvcEnabled CONSTANT)
+    Q_PROPERTY(bool fullScreen READ fullScreen WRITE setfullScreen NOTIFY fullScreenChanged)
+    Q_PROPERTY(VideoReceiver* videoReceiver READ videoReceiver CONSTANT)
+    Q_PROPERTY(VideoReceiver* thermalVideoReceiver READ thermalVideoReceiver CONSTANT)
+    Q_PROPERTY(double aspectRatio READ aspectRatio NOTIFY aspectRatioChanged)
+    Q_PROPERTY(double thermalAspectRatio READ thermalAspectRatio NOTIFY aspectRatioChanged)
+    Q_PROPERTY(double hfov READ hfov NOTIFY aspectRatioChanged)
+    Q_PROPERTY(double thermalHfov READ thermalHfov NOTIFY aspectRatioChanged)
+    Q_PROPERTY(bool autoStreamConfigured READ autoStreamConfigured NOTIFY autoStreamConfiguredChanged)
+    Q_PROPERTY(bool hasThermal READ hasThermal NOTIFY decodingChanged)
+    Q_PROPERTY(QString imageFile READ imageFile NOTIFY imageFileChanged)
+    Q_PROPERTY(bool streaming READ streaming NOTIFY streamingChanged)
+    Q_PROPERTY(bool decoding READ decoding NOTIFY decodingChanged)
+    Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
+    Q_PROPERTY(bool recordTransitionInProgress READ recordTransitionInProgress NOTIFY
+                   recordTransitionInProgressChanged)
+    Q_PROPERTY(bool remoteStreaming READ remoteStreaming NOTIFY remoteStreamingChanged)
+    Q_PROPERTY(QSize videoSize READ videoSize NOTIFY videoSizeChanged)
 
     virtual bool        hasVideo            ();
     virtual bool        isGStreamer         ();
@@ -82,9 +84,9 @@ public:
         return _recording;
     }
 
-    bool remoteStreaming(void) {
-        return _remoteStreaming;
-    }
+    bool recordTransitionInProgress(void) { return _recordTransitionInProgress; }
+
+    bool remoteStreaming(void) { return _remoteStreaming; }
     QSize videoSize(void) {
         const quint32 size = _videoSize;
         return QSize((size >> 16) & 0xFFFF, size & 0xFFFF);
@@ -112,7 +114,7 @@ public:
 
     Q_INVOKABLE void stopDecoding();
     Q_INVOKABLE void startDecoding();
-    Q_INVOKABLE void startRecording (const QString& videoFile = QString());
+    Q_INVOKABLE void startRecording();
     Q_INVOKABLE void stopRecording  ();
 
     Q_INVOKABLE void grabImage(const QString& imageFile = QString());
@@ -131,6 +133,7 @@ signals:
     void decodingChanged            ();
     void remoteStreamingChanged     ();
     void recordingChanged           ();
+    void recordTransitionInProgressChanged();
     void recordingStarted           ();
     void videoSizeChanged           ();
 
@@ -159,11 +162,9 @@ protected:
     void _stopReceiver              (unsigned id);
 
 protected:
-    QString                 _videoFile;
     QString                 _remoteStreamURL;
     QString                 _imageFile;
-    SubtitleWriter          _subtitleWriter;
-    bool                    _isTaisync              = false;
+    bool _isTaisync = false;
     VideoReceiver*          _videoReceiver[2]       = { nullptr, nullptr };
     void*                   _videoSink[2]           = { nullptr, nullptr };
     QString                 _videoUri[2];
@@ -177,6 +178,7 @@ protected:
     QAtomicInteger<bool>    _streaming              = false;
     QAtomicInteger<bool>    _decoding               = false;
     QAtomicInteger<bool>    _recording              = false;
+    QAtomicInteger<bool> _recordTransitionInProgress = false;
     QAtomicInteger<bool>    _remoteStreaming        = false;
     QAtomicInteger<quint32> _videoSize              = 0;
     VideoSettings*          _videoSettings          = nullptr;

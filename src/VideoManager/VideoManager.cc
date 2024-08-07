@@ -163,9 +163,8 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 
     connect(_videoReceiver[0], &VideoReceiver::recordingChanged, this, [this](bool active){
         _recording = active;
-        if (!active) {
-            _subtitleWriter.stopCapturingTelemetry();
-        }
+        _recordTransitionInProgress = false;
+        emit recordTransitionInProgressChanged();
         emit recordingChanged();
     });
 
@@ -173,10 +172,6 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
         _remoteStreaming = active;
         emit remoteStreamingChanged();
     });
-    connect(_videoReceiver[0], &VideoReceiver::recordingStarted, this, [this](){
-        _subtitleWriter.startCapturingTelemetry(_videoFile);
-    });
-
     connect(_videoReceiver[0], &VideoReceiver::videoSizeChanged, this, [this](QSize size){
         _videoSize = ((quint32)size.width() << 16) | (quint32)size.height();
         emit videoSizeChanged();
@@ -347,8 +342,7 @@ VideoManager::stopVideo()
     _stopReceiver(0);
 }
 
-void
-VideoManager::startRecording(const QString& videoFile)
+void VideoManager::startRecording()
 {
     if (qgcApp()->runningUnitTests()) {
         return;
@@ -365,7 +359,6 @@ VideoManager::startRecording(const QString& videoFile)
         qgcApp()->showAppMessage(tr("Invalid video format defined."));
         return;
     }
-    QString ext = kFileExtension[fileFormat - VideoReceiver::FILE_FORMAT_MIN];
 
     //-- Disk usage maintenance
     _cleanupOldVideos();
@@ -377,24 +370,16 @@ VideoManager::startRecording(const QString& videoFile)
         return;
     }
 
-    _videoFile = savePath + "/"
-            + (videoFile.isEmpty() ? QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss") : videoFile)
-            + ".";
-#if __ENABLE_THERMAL_VIDEO_RECEIVER__
-    QString videoFile2 = _videoFile + "2." + ext;
-#endif
-    _videoFile += ext;
-
     if (_videoReceiver[0] && _videoStarted[0]) {
-        _videoReceiver[0]->startRecording(_videoFile, fileFormat);
+        _recordTransitionInProgress = true;
+        emit recordTransitionInProgressChanged();
+        _videoReceiver[0]->startRecording(savePath, fileFormat);
     }
 #if __ENABLE_THERMAL_VIDEO_RECEIVER__
     if (_videoReceiver[1] && _videoStarted[1]) {
         _videoReceiver[1]->startRecording(videoFile2, fileFormat);
     }
 #endif
-#else
-    Q_UNUSED(videoFile)
 #endif
 }
 
@@ -408,6 +393,8 @@ VideoManager::stopRecording()
 
     for (int i = 0; i < 2; i++) {
         if (_videoReceiver[i]) {
+            _recordTransitionInProgress = true;
+            emit recordTransitionInProgressChanged();
             _videoReceiver[i]->stopRecording();
         }
     }

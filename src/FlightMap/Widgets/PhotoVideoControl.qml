@@ -31,7 +31,8 @@ Rectangle {
     radius:     _margins
     border.width: 2
     border.color: qgcPal.window
-    visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
+    //visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
+    visible:    _activeVehicle// && multiVehiclePanelSelector.showSingleVehiclePanel
     z:      QGroundControl.zOrderTopMost
     MouseArea {
         anchors.fill:   parent
@@ -72,6 +73,7 @@ Rectangle {
     property bool   _videoStreamIsStreaming:                    _videoStreamManager.streaming
     property bool   _simplePhotoCaptureIsIdle:             true
     property bool   _videoStreamRecording:                      _videoStreamManager.recording
+    property bool   _recordButtonBusy:                          _videoStreamManager.recordTransitionInProgress
     property bool   _videoStreamCanShoot:                       _videoStreamIsStreaming
     property bool   _videoStreamIsShootingInCurrentMode:        _videoStreamInPhotoMode ? !_simplePhotoCaptureIsIdle : _isRecording
     property bool   _videoStreamInPhotoMode:                    false
@@ -250,7 +252,8 @@ Rectangle {
         anchors.top:                parent.top
         anchors.horizontalCenter:   parent.horizontalCenter
         spacing:                    ScreenTools.defaultFontPixelHeight / 2
-        visible:                    _nextVisionGimbalAvailable
+        visible:                    _activeVehicle
+        //visible:                  _nextVisionGimbalAvailable
 
         // Photo/Video Mode Selector
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
@@ -336,7 +339,8 @@ Rectangle {
             radius:             width * 0.5
             border.color:       qgcPal.buttonText
             border.width:       4
-            visible:            _nextVisionGimbalAvailable
+            visible:            _activeVehicle
+            //visible:            _nextVisionGimbalAvailable
 
             SequentialAnimation {
                         id: anim
@@ -364,16 +368,18 @@ Rectangle {
                 anchors.centerIn:   parent
                 width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)  //   _isShootingInCurrentMode
                 height:             width
+                //changing the radius here to half the width makes it a circle
                 radius:             _isShootingInCurrentMode ? 0 : width * 0.5  //   _isShootingInCurrentMode
-                color:              _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
+                color:              _canShootInCurrentMode ? _recordButtonBusy ? qgcPal.colorOrange : qgcPal.colorRed : qgcPal.colorGrey
 
             }
 
             MouseArea {
                 anchors.fill:   parent
-                enabled:        _canShootInCurrentMode
+                enabled:        _canShootInCurrentMode && !_recordButtonBusy
                 onClicked:
                 {
+                    //change the color to yellow
                     anim.start()
                     toggleShooting()
                 }
@@ -386,13 +392,15 @@ Rectangle {
         ColumnLayout {
             Layout.alignment:   Qt.AlignHCenter
             spacing:            0
-            visible:            _nextVisionGimbalAvailable
+            visible:            _activeVehicle
+            //visible:            _nextVisionGimbalAvailable
                 GridLayout {
                     id:     nvControlgridLayout
                     columns:            2
                     columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
                     rowSpacing:         ScreenTools.defaultFontPixelHeight
-                    visible:            _nextVisionGimbalAvailable
+                    visible:            _activeVehicle
+                    //visible:            _nextVisionGimbalAvailable
 
                     QGCButton {
                         id:             grrButton

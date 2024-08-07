@@ -76,7 +76,7 @@ public slots:
     virtual void stop(void) = 0;
     virtual void startDecoding(void* sink) = 0;
     virtual void stopDecoding(void) = 0;
-    virtual void startRecording(const QString& videoFile, FILE_FORMAT format) = 0;
+    virtual void startRecording(const QString& videoDirectory, FILE_FORMAT format) = 0;
     virtual void stopRecording(void) = 0;
     virtual void startRemoteStreaming(const QString& streamURL) = 0;
     virtual void stopRemoteStreaming() = 0;

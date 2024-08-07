@@ -1,4 +1,5 @@
 #include "GstVideoReceiver.h"
+#include <QDir>
 #include <QNetworkInterface>
 #include <QUrl>
 #include <gst/gst.h>
@@ -7,8 +8,17 @@ namespace
 {
 constexpr const char *np_kFileMux[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver::FILE_FORMAT_MIN]
     = {"matroskamux", "qtmux", "mp4mux"};
+constexpr const char
+    *np_kFileExtension[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver::FILE_FORMAT_MIN]
+    = {"mkv", "mov", "mp4"};
 
+QString _getCurrentVideoFile(QString const &videoDirectory, VideoReceiver::FILE_FORMAT format)
+{
+    return videoDirectory + QDir::separator()
+           + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss") + "."
+           + np_kFileExtension[format - VideoReceiver::FILE_FORMAT_MIN];
 }
+} // namespace
 QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
 
 #define __BREAK_IF_FAIL(__call__) \
@@ -70,7 +80,6 @@ GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     , m_timeout{0}
     , m_buffer{0}
     , m_lastSourceFrameTime{0}
-    , m_sourcePipelineProbeId{0}
     , m_restartingSource{false}
     , m_decoderActive{false}
     , mp_decodingPipeline{nullptr}
@@ -80,16 +89,19 @@ GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     , m_restartingDecode{false}
     , m_recorderActive{false}
     , mp_recordingPipeline{nullptr}
-    , m_videoFile{}
+    , m_videoDirectory{}
+    , m_currentVideoFile{}
     , m_videoFormat{FILE_FORMAT_MAX}
     , m_lastRecordingFrameTime{0}
-    , m_recordingPipelineProbeId{0}
     , m_restartingRecord{false}
+    , m_subtitleWriter{}
+    , m_recordShutdownWaitCondition{}
+    , m_recordShutdownMut{}
+    , m_recordEOS{false}
     , m_remoteStreamActive{false}
     , mp_remoteStreamPipeline{nullptr}
     , m_remoteStreamURI{}
     , m_lastRemoteStreamFrameTime{0}
-    , m_remoteStreamPipelineProbeId{0}
     , m_restartingRemoteStream{false}
 {
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::GstVideoReceiver";
@@ -172,6 +184,7 @@ void GstVideoReceiver::stop()
         {
             m_recorderActive = false;
             qCDebug(VideoReceiverLog) << "Recording stopped at uri=" << m_uri;
+            m_subtitleWriter.stopCapturingTelemetry();
             emit recordingChanged(m_recorderActive);
         }
         if (m_remoteStreamActive)
@@ -274,48 +287,50 @@ void GstVideoReceiver::stopDecoding()
     }
 }
 
-void GstVideoReceiver::startRecording(QString const &videoFile, FILE_FORMAT const format)
+void GstVideoReceiver::startRecording(QString const &videoDirectory, FILE_FORMAT const format)
 {
     if (mp_slotHandler->needDispatch())
     {
-        auto const cachedVideoFile = videoFile;
-        mp_slotHandler->dispatch([this, cachedVideoFile, format]()
-                                 { startRecording(cachedVideoFile, format); });
+        auto const cachedVideoDirectory = videoDirectory;
+        mp_slotHandler->dispatch([this, cachedVideoDirectory, format]()
+                                 { startRecording(cachedVideoDirectory, format); });
     }
     else
     {
-        qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::startRecording(" << videoFile << ", "
-                                  << format << ") " << m_uri;
+        qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::startRecording(" << videoDirectory
+                                  << ", " << format << ") " << m_uri;
         auto result = STATUS_OK;
-        if (videoFile.trimmed().isEmpty() || format < FILE_FORMAT_MIN || format >= FILE_FORMAT_MAX)
+        if (videoDirectory.trimmed().isEmpty() || format < FILE_FORMAT_MIN
+            || format >= FILE_FORMAT_MAX)
         {
-            qCCritical(VideoReceiverLog) << "Video file is empty or format is invalid! " << m_uri;
+            qCCritical(VideoReceiverLog)
+                << "Video directory is empty or format is invalid! " << m_uri;
             result = STATUS_FAIL;
         }
-        else if (m_recorderActive && !m_videoFile.isEmpty() && m_videoFormat != FILE_FORMAT_MAX
+        else if (m_recorderActive && !m_videoDirectory.isEmpty() && m_videoFormat != FILE_FORMAT_MAX
                  && mp_recordingPipeline)
         {
             qCDebug(VideoReceiverLog)
-                << "Already recording to video file '" << m_videoFile << "'! " << m_uri;
+                << "Already recording to video directory '" << m_videoDirectory << "'! " << m_uri;
             result = STATUS_INVALID_STATE;
         }
         else
         {
-            qCDebug(VideoReceiverLog) << "Starting recording to video file '" << videoFile
+            qCDebug(VideoReceiverLog) << "Starting recording to video directory '" << videoDirectory
                                       << "' in format " << format << "." << m_uri;
             _stopRecordingPipeline();
-            m_videoFile = videoFile.trimmed();
+            m_videoDirectory = videoDirectory.trimmed();
             m_videoFormat = format;
             result = _startRecordingPipeline();
             if (result != STATUS_OK)
             {
-                m_videoFile.clear();
+                m_videoDirectory.clear();
                 m_videoFormat = FILE_FORMAT_MAX;
             }
         }
         emit onStartRecordingComplete(result);
-        qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::startRecording(" << videoFile << ", "
-                                  << format << ") " << m_uri;
+        qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::startRecording(" << videoDirectory
+                                  << ", " << format << ") " << m_uri;
     }
 }
 
@@ -332,12 +347,13 @@ void GstVideoReceiver::stopRecording()
         if (mp_recordingPipeline)
         {
             _stopRecordingPipeline();
-            m_videoFile.clear();
+            m_videoDirectory.clear();
             m_videoFormat = FILE_FORMAT_MAX;
             if (m_recorderActive)
             {
                 m_recorderActive = false;
                 qCDebug(VideoReceiverLog) << "Recording stopped at uri=" << m_uri;
+                m_subtitleWriter.stopCapturingTelemetry();
                 emit recordingChanged(m_recorderActive);
             }
         }
@@ -464,7 +480,6 @@ void GstVideoReceiver::_pipelineWatchdog()
             auto const now = QDateTime::currentSecsSinceEpoch();
             if ((mp_sourcePipeline && m_sourceActive) || m_restartingSource)
             {
-                //auto savedLastFrameTime = m_lastSourceFrameTime;
                 if (m_lastSourceFrameTime == 0)
                 {
                     m_lastSourceFrameTime = now;
@@ -474,27 +489,10 @@ void GstVideoReceiver::_pipelineWatchdog()
                 {
                     qCCritical(VideoReceiverLog) << "Source stream timeout, no frames for "
                                                  << timeSinceLastFrame << "" << m_uri;
-
-#if 1
                     emit timeout();
                     //if source fails, just stop the whole receiver and let video manager restart it
                     stopped = true;
                     stop();
-#else
-                    if (!m_restartingSource)
-                    {
-                        _stopSourcePipeline();
-                    }
-                    if (_startSourcePipeline() == STATUS_OK)
-                    {
-                        m_restartingSource = false;
-                    }
-                    else
-                    {
-                        m_lastSourceFrameTime = savedLastFrameTime;
-                        m_restartingSource = true;
-                    }
-#endif
                 }
             }
             if (!stopped && ((mp_decodingPipeline && m_decoderActive) || m_restartingDecode))
@@ -509,11 +507,6 @@ void GstVideoReceiver::_pipelineWatchdog()
                 {
                     qCCritical(VideoReceiverLog) << "Decoding stream timeout, no frames for "
                                                  << timeSinceLastFrame << "" << m_uri;
-#if 0
-                    emit timeout();
-                    stopped = true;
-                    stop();
-#else
                     //attempt to restart the decoding pipeline without disturbing the other pipelines
                     if (!m_restartingDecode)
                     {
@@ -528,12 +521,10 @@ void GstVideoReceiver::_pipelineWatchdog()
                         m_lastDecodingFrameTime = savedLastFrameTime;
                         m_restartingDecode = true;
                     }
-#endif
                 }
             }
             if (!stopped && ((mp_recordingPipeline && m_recorderActive) || m_restartingRecord))
             {
-                //auto savedLastFrameTime = m_lastRecordingFrameTime;
                 if (m_lastRecordingFrameTime == 0)
                 {
                     m_lastRecordingFrameTime = now;
@@ -543,26 +534,10 @@ void GstVideoReceiver::_pipelineWatchdog()
                 {
                     qCCritical(VideoReceiverLog) << "Recording stream timeout, no frames for "
                                                  << timeSinceLastFrame << "" << m_uri;
-#if 1
                     emit timeout();
                     //if recording fails, just stop the whole receiver and let video manager restart it
                     stopped = true;
                     stop();
-#else
-                    if (!m_restartingRemoteStream)
-                    {
-                        _stopRecordingPipeline();
-                    }
-                    if (_startRecordingPipeline() == STATUS_OK)
-                    {
-                        m_restartingRecord = false;
-                    }
-                    else
-                    {
-                        m_lastRecordingFrameTime = savedLastFrameTime;
-                        m_restartingRecord = true;
-                    }
-#endif
                 }
             }
             if (!stopped
@@ -579,11 +554,6 @@ void GstVideoReceiver::_pipelineWatchdog()
                     qCCritical(VideoReceiverLog)
                         << "Remote Streaming stream timeout, no frames for " << timeSinceLastFrame
                         << "" << m_uri;
-#if 0
-                    emit timeout();
-                    stopped = true;
-                    stop();
-#else
                     //attempt to restart the remote streaming pipeline without disturbing the other pipelines
                     if (!m_restartingRemoteStream)
                     {
@@ -598,7 +568,6 @@ void GstVideoReceiver::_pipelineWatchdog()
                         m_lastRemoteStreamFrameTime = savedLastFrameTime;
                         m_restartingRemoteStream = true;
                     }
-#endif
                 }
             }
         });
@@ -610,92 +579,6 @@ gboolean GstVideoReceiver::_onPipelineBusMessageHelper(GstBus *,
                                                        QString const &pipelineName)
 {
     gboolean result = true;
-#if 0
-    Q_ASSERT(p_msg != nullptr);
-    switch (GST_MESSAGE_TYPE(p_msg))
-    {
-    case GST_MESSAGE_ERROR:
-    {
-        gchar *p_debug = nullptr;
-        GError *p_error = nullptr;
-        gst_message_parse_error(p_msg, &p_error, &p_debug);
-        if (p_debug != nullptr)
-        {
-            g_free(p_debug);
-            p_debug = nullptr;
-        }
-        if (p_error != nullptr)
-        {
-            qCCritical(VideoReceiverLog) << "GStreamer error:" << p_error->message;
-            g_error_free(p_error);
-            p_error = nullptr;
-        }
-#if 1
-        qCDebug(VideoReceiverLog) << "Stopping because of error on " << pipelineName << " pipeline";
-        restartFunc();
-#else
-        mp_slotHandler->dispatch(
-            [restartFunc, pipelineName]()
-            {
-                qCDebug(VideoReceiverLog)
-                    << "Stopping because of error on " << pipelineName << " pipeline";
-                restartFunc();
-            });
-#endif
-        break;
-    }
-    case GST_MESSAGE_EOS:
-    {
-#if 1
-        qCDebug(VideoReceiverLog) << "Received EOS on " << pipelineName << " pipeline";
-        restartFunc();
-#else
-        mp_slotHandler->dispatch(
-            [restartFunc, pipelineName]()
-            {
-                qCDebug(VideoReceiverLog) << "Received EOS on " << pipelineName << " pipeline";
-                restartFunc();
-            });
-#endif
-        break;
-    }
-GST_MESSAGE_ELEMENT:
-    {
-        auto const *const p_struct = gst_message_get_structure(p_msg);
-        if (gst_structure_has_name(p_struct, "GstBinForwarded"))
-        {
-            GstMessage *p_forwardMsg = nullptr;
-            gst_structure_get(p_struct, "message", GST_TYPE_MESSAGE, &p_forwardMsg, nullptr);
-            if (p_forwardMsg != nullptr)
-            {
-                if (GST_MESSAGE_TYPE(p_forwardMsg) == GST_MESSAGE_EOS)
-                {
-#if 1
-                    qCDebug(VideoReceiverLog)
-                        << "Received branch EOS on " << pipelineName << " pipeline";
-                    restartFunc();
-#else
-                    mp_slotHandler->dispatch(
-                        [restartFunc, pipelineName]()
-                        {
-                            qCDebug(VideoReceiverLog)
-                                << "Received branch EOS on " << pipelineName << " pipeline";
-                            restartFunc();
-                        });
-#endif
-                }
-                gst_message_unref(p_forwardMsg);
-                p_forwardMsg = nullptr;
-            }
-        }
-        break;
-    }
-    default:
-    {
-        break;
-    }
-    }
-#endif
     return result;
 }
 
@@ -743,51 +626,28 @@ void GstVideoReceiver::_onNewPad(GstElement *const p_element,
     {
         qCDebug(VideoReceiverLog) << "Element has no name! " << p_self->m_uri;
     }
-    else if (strcmp(p_name, "mp_sourcePipeline->parsebin") == 0)
+    else if (strcmp(p_name, "mp_decodingPipeline->parsebin") == 0)
     {
-        //called from _startSourcePipeline
-        qCDebug(VideoReceiverLog) << "GstVideoReceiver::_onNewPad with mp_sourceParser "
-                                  << p_self->m_uri;
-        if (p_self->mp_sourcePipeline == nullptr)
+        //called from _startDecodingPipeline
+        qCDebug(VideoReceiverLog)
+            << "GstVideoReceiver::_onNewPad with mp_decodingPipeline->parsebin " << p_self->m_uri;
+
+        auto *p_decoder = gst_bin_get_by_name(GST_BIN(p_self->mp_decodingPipeline),
+                                              "mp_decodingPipeline->decodebin3");
+        if (p_decoder == nullptr)
         {
-            qCCritical(VideoReceiverLog) << "p_self->mp_sourcePipeline==nullptr " << p_self->m_uri;
+            qCCritical(VideoReceiverLog) << "p_decoder==nullptr " << p_self->m_uri;
         }
         else
         {
-            auto *p_sourceQueue3 = gst_bin_get_by_name(GST_BIN(p_self->mp_sourcePipeline),
-                                                       "mp_sourcePipeline->mp_sourceQueue3");
-            if (p_sourceQueue3 == nullptr)
+            if (!gst_element_link(p_element, p_decoder))
             {
-                qCCritical(VideoReceiverLog) << "p_sourceQueue3==nullptr " << p_self->m_uri;
+                qCCritical(VideoReceiverLog) << "gst_element_link(mp_decodingPipeline->parsebin, "
+                                                "p_decoder) failed "
+                                             << p_self->m_uri;
             }
-            else
-            {
-                auto *p_srcSink1 = gst_bin_get_by_name(GST_BIN(p_self->mp_sourcePipeline),
-                                                       "mp_sourcePipeline->mp_sourceSink1");
-                if (p_srcSink1 == nullptr)
-                {
-                    qCCritical(VideoReceiverLog) << "p_srcSink1==nullptr " << p_self->m_uri;
-                }
-                else
-                {
-                    if (!gst_element_link(p_element, p_sourceQueue3))
-                    {
-                        qCCritical(VideoReceiverLog) << "gst_element_link(p_self->mp_sourceParser, "
-                                                        "p_self->mp_sourceQueue3) failed "
-                                                     << p_self->m_uri;
-                    }
-                    if (!gst_element_link(p_sourceQueue3, p_srcSink1))
-                    {
-                        qCCritical(VideoReceiverLog) << "gst_element_link(p_self->mp_sourceQueue3, "
-                                                        "p_self->mp_srcSink1) failed "
-                                                     << p_self->m_uri;
-                    }
-                    gst_object_unref(p_srcSink1);
-                    p_srcSink1 = nullptr;
-                }
-                gst_object_unref(p_sourceQueue3);
-                p_sourceQueue3 = nullptr;
-            }
+            gst_object_unref(p_decoder);
+            p_decoder = nullptr;
         }
     }
     else if (strcmp(p_name, "mp_decodingPipeline->decodebin3") == 0)
@@ -800,6 +660,30 @@ void GstVideoReceiver::_onNewPad(GstElement *const p_element,
             qCCritical(VideoReceiverLog)
                 << "gst_element_link(p_self->mp_decoder, p_self->mp_videoSink) failed "
                 << p_self->m_uri;
+        }
+    }
+    else if (strcmp(p_name, "mp_recordingPipeline->parsebin") == 0)
+    {
+        //called from _startRecordingPipeline
+        qCDebug(VideoReceiverLog)
+            << "GstVideoReceiver::_onNewPad with mp_recordingPipeline->parsebin " << p_self->m_uri;
+
+        auto *p_saveBin = gst_bin_get_by_name(GST_BIN(p_self->mp_recordingPipeline),
+                                              "mp_recordingPipeline->savebin");
+        if (p_saveBin == nullptr)
+        {
+            qCCritical(VideoReceiverLog) << "p_saveBin==nullptr " << p_self->m_uri;
+        }
+        else
+        {
+            if (!gst_element_link(p_element, p_saveBin))
+            {
+                qCCritical(VideoReceiverLog) << "gst_element_link(mp_recordingPipeline->parsebin, "
+                                                "p_saveBin) failed "
+                                             << p_self->m_uri;
+            }
+            gst_object_unref(p_saveBin);
+            p_saveBin = nullptr;
         }
     }
     else
@@ -815,45 +699,16 @@ bool GstVideoReceiver::_syncPipelineToSourceAndStart(GstElement *const p_depende
 {
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_syncPipelineToSourceAndStart " << m_uri;
     auto running = false;
-//TODO investigate if there is any benefit to syncing the pipeline clocks
-#if 1
     running = gst_element_set_state(p_dependentPipeline, GST_STATE_PLAYING)
               != GST_STATE_CHANGE_FAILURE;
-#else
-    auto *p_sourceClock = gst_pipeline_get_clock(GST_PIPELINE(mp_sourcePipeline));
-    if (p_sourceClock == nullptr)
-    {
-        qCCritical(VideoReceiverLog) << "Unable to get source pipline clock";
-    }
-    else
-    {
-        gst_pipeline_use_clock(GST_PIPELINE(p_dependentPipeline), p_sourceClock);
-        gst_object_unref(p_sourceClock);
-        p_sourceClock = nullptr;
-        auto const sourceTime = gst_element_get_base_time(mp_sourcePipeline);
-        gst_element_set_base_time(p_dependentPipeline, sourceTime);
-        //start the pipeline
-        running = gst_element_set_state(p_dependentPipeline, GST_STATE_PLAYING)
-                  != GST_STATE_CHANGE_FAILURE;
-    }
-#endif
     qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::_syncPipelineToSourceAndStart " << m_uri;
     return running;
 }
 
 VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
 {
-    // It was necessary to split this into two branches because mpegtsmux on the remote streaming pipeline
-    // is very picky about what it will accept. We can't use the same parser for it as we can for the
-    // recording and decoding pipelines
     //
-    //                                  this branch feeds to mp_decodingPipeline and mp_recordingPipeline
-    //                                  +-->p_sourceQueue1-->mp_sourceParser-->mp_sourceQueue3-->mp_sourceSink1
-    //                                  |
-    // mp_sourceElement(*)-->mp_sourceTee
-    //                                  |
-    //                                  +-->mp_sourceQueue2-->mp_sourceSink2
-    //                                  this branch feeds to mp_remoteStreamPipeline
+    // mp_sourceElement(*)-->mp_sourceQueue-->mp_srcSink
     //
     // (*) - mp_sourceElement may be followed by a tsdemux and/or an rtpjitterbuffer
 
@@ -883,20 +738,10 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
         auto tsdemuxAdded = false;
         GstElement *p_buffer = nullptr;
         auto bufferAdded = false;
-        GstElement *p_sourceTee = nullptr;
-        auto sourceTeeAdded = false;
-        GstElement *p_sourceQueue1 = nullptr;
-        auto sourceQueue1Added = false;
-        GstElement *p_sourceQueue2 = nullptr;
-        auto sourceQueue2Added = false;
-        GstElement *p_parser = nullptr;
-        auto parserAdded = false;
-        GstElement *p_sourceQueue3 = nullptr;
-        auto sourceQueue3Added = false;
-        GstElement *p_sourceSink1 = nullptr;
-        auto sourceSink1Added = false;
-        GstElement *p_sourceSink2 = nullptr;
-        auto sourceSink2Added = false;
+        GstElement *p_sourceQueue = nullptr;
+        auto sourceQueueAdded = false;
+        GstElement *p_sourceSink = nullptr;
+        auto sourceSinkAdded = false;
         auto running = false;
         m_lastSourceFrameTime = 0;
         do
@@ -1004,7 +849,6 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
                 }
                 __BREAK_IF_FAIL(sourceAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_source));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
-                //mp_sourceElement = p_source;
                 //check if we need a demuxer after the source
                 if (isTcpMPEGTS || isUdpMPEGTS)
                 {
@@ -1069,17 +913,40 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
                 }
             }
             {
-                //create the tee element
+                //create the queue element for recording and decoding
                 __BREAK_IF_FAIL(
-                    p_sourceTee = gst_element_factory_make("tee", "mp_sourcePipeline->tee"));
+                    p_sourceQueue = gst_element_factory_make("queue",
+                                                             "mp_sourcePipeline->mp_sourceQueue"));
+                g_object_set(p_sourceQueue,
+                             "max-size-buffers",
+                             200 * 3,
+                             nullptr); // 3 times the default value
+                g_object_set(p_sourceQueue,
+                             "max-size-bytes",
+                             10485760 * 3,
+                             nullptr); // 30MB, 3 times the default value
+                g_object_set(p_sourceQueue,
+                             "max-size-time",
+                             guint64(1000000000) * 3,
+                             nullptr); // 3 seconds, 3 times the default value
+                g_object_set(p_sourceQueue, "silent", true, nullptr);
                 __BREAK_IF_FAIL(
-                    sourceTeeAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceTee));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceTee));
-                //mp_sourceTee = p_sourceTee;
+                    sourceQueueAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceQueue));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceQueue));
+            }
+            {
+                //create the intersink element for the recorder and decoder pipelines
+                __BREAK_IF_FAIL(
+                    p_sourceSink = gst_element_factory_make("intersink",
+                                                            "mp_sourcePipeline->mp_sourceSink"));
+                g_object_set(p_sourceSink, "producer-name", "mp_sourceSink", nullptr);
+                __BREAK_IF_FAIL(
+                    sourceSinkAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceSink));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceSink));
                 //add a probe to the tee to keep track of when it gets a frame
                 GstPad *p_sinkPad = nullptr;
-                __BREAK_IF_FAIL(p_sinkPad = gst_element_get_static_pad(p_sourceTee, "sink"));
-                m_sourcePipelineProbeId = gst_pad_add_probe(
+                __BREAK_IF_FAIL(p_sinkPad = gst_element_get_static_pad(p_sourceSink, "sink"));
+                auto const probeId = gst_pad_add_probe(
                     p_sinkPad,
                     GST_PAD_PROBE_TYPE_BUFFER,
                     [](GstPad *const,
@@ -1104,108 +971,18 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
                     nullptr);
                 gst_object_unref(p_sinkPad);
                 p_sinkPad = nullptr;
+                __BREAK_IF_FAIL(probeId);
             }
             {
-                //create the queue element for recording and decoding
-                __BREAK_IF_FAIL(
-                    p_sourceQueue1
-                    = gst_element_factory_make("queue", "mp_sourcePipeline->mp_sourceQueue1"));
-                g_object_set(p_sourceQueue1,
-                             "max-size-buffers",
-                             200 * 3,
-                             nullptr); // 3 times the default value
-                g_object_set(p_sourceQueue1,
-                             "max-size-bytes",
-                             10485760 * 3,
-                             nullptr); // 30MB, 3 times the default value
-                g_object_set(p_sourceQueue1,
-                             "max-size-time",
-                             guint64(1000000000) * 3,
-                             nullptr); // 3 seconds, 3 times the default value
-                g_object_set(p_sourceQueue1, "silent", true, nullptr);
-                __BREAK_IF_FAIL(
-                    sourceQueue1Added = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceQueue1));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceQueue1));
-            }
-            {
-                //create the queue element for remote streaming
-                __BREAK_IF_FAIL(
-                    p_sourceQueue2
-                    = gst_element_factory_make("queue", "mp_sourcePipeline->mp_sourceQueue2"));
-                g_object_set(p_sourceQueue2, "silent", true, nullptr);
-                __BREAK_IF_FAIL(
-                    sourceQueue2Added = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceQueue2));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceQueue2));
-            }
-            {
-                //create the parser element
-                __BREAK_IF_FAIL(
-                    p_parser = gst_element_factory_make("parsebin", "mp_sourcePipeline->parsebin"));
-                __BREAK_IF_FAIL(parserAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_parser));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_parser));
-            }
-            {
-                //create the queue element for recording and decoding (after the parser)
-                __BREAK_IF_FAIL(
-                    p_sourceQueue3
-                    = gst_element_factory_make("queue", "mp_sourcePipeline->mp_sourceQueue3"));
-                g_object_set(p_sourceQueue3,
-                             "max-size-buffers",
-                             200 * 3,
-                             nullptr); // 3 times the default value
-                g_object_set(p_sourceQueue3,
-                             "max-size-bytes",
-                             10485760 * 3,
-                             nullptr); // 30MB, 3 times the default value
-                g_object_set(p_sourceQueue3,
-                             "max-size-time",
-                             guint64(1000000000) * 3,
-                             nullptr); // 3 seconds, 3 times the default value
-                g_object_set(p_sourceQueue3, "silent", true, nullptr);
-                __BREAK_IF_FAIL(
-                    sourceQueue1Added = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceQueue3));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceQueue3));
-                //mp_sourceQueue3 = p_sourceQueue3;
-            }
-            {
-                //create the intersink element for the recorder and decoder pipelines
-                __BREAK_IF_FAIL(
-                    p_sourceSink1 = gst_element_factory_make("intersink",
-                                                             "mp_sourcePipeline->mp_sourceSink1"));
-                g_object_set(p_sourceSink1, "producer-name", "mp_sourceSink1", nullptr);
-                __BREAK_IF_FAIL(
-                    sourceSink1Added = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceSink1));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceSink1));
-            }
-            {
-                //create the intersink element for remote stream pipeline
-                __BREAK_IF_FAIL(
-                    p_sourceSink2 = gst_element_factory_make("intersink",
-                                                             "mp_sourcePipeline->mp_sourceSink2"));
-                g_object_set(p_sourceSink2, "producer-name", "mp_sourceSink2", nullptr);
-                __BREAK_IF_FAIL(
-                    sourceSink2Added = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceSink2));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceSink2));
-            }
-            {
-                __BREAK_IF_FAIL(gst_element_link(p_source, p_sourceTee));
-                __BREAK_IF_FAIL(gst_element_link(p_sourceTee, p_sourceQueue1));
-                __BREAK_IF_FAIL(gst_element_link(p_sourceQueue1, p_parser));
-                _deferredLinkhelper(p_parser);
-                __BREAK_IF_FAIL(gst_element_link(p_sourceTee, p_sourceQueue2));
-                __BREAK_IF_FAIL(gst_element_link(p_sourceQueue2, p_sourceSink2));
+                __BREAK_IF_FAIL(gst_element_link(p_source, p_sourceQueue));
+                __BREAK_IF_FAIL(gst_element_link(p_sourceQueue, p_sourceSink));
             }
             {
                 p_source = nullptr;
                 p_tsdemux = nullptr;
                 p_buffer = nullptr;
-                p_sourceTee = nullptr;
-                p_sourceQueue1 = nullptr;
-                p_sourceQueue2 = nullptr;
-                p_parser = nullptr;
-                p_sourceQueue3 = nullptr;
-                p_sourceSink1 = nullptr;
-                p_sourceSink2 = nullptr;
+                p_sourceQueue = nullptr;
+                p_sourceSink = nullptr;
             }
             {
                 //create a means of monitoring bus messages on the source pipeline
@@ -1254,40 +1031,15 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
                 gst_object_unref(p_buffer);
                 p_buffer = nullptr;
             }
-            if (!sourceTeeAdded && p_sourceTee)
+            if (!sourceQueueAdded && p_sourceQueue)
             {
-                gst_object_unref(p_sourceTee);
-                p_sourceTee = nullptr;
+                gst_object_unref(p_sourceQueue);
+                p_sourceQueue = nullptr;
             }
-            if (!sourceQueue1Added && p_sourceQueue1)
+            if (!sourceSinkAdded && p_sourceSink)
             {
-                gst_object_unref(p_sourceQueue1);
-                p_sourceQueue1 = nullptr;
-            }
-            if (!sourceQueue2Added && p_sourceQueue2)
-            {
-                gst_object_unref(p_sourceQueue2);
-                p_sourceQueue2 = nullptr;
-            }
-            if (!parserAdded && p_parser)
-            {
-                gst_object_unref(p_parser);
-                p_parser = nullptr;
-            }
-            if (!sourceQueue3Added && p_sourceQueue3)
-            {
-                gst_object_unref(p_sourceQueue3);
-                p_sourceQueue3 = nullptr;
-            }
-            if (!sourceSink1Added && p_sourceSink1)
-            {
-                gst_object_unref(p_sourceSink1);
-                p_sourceSink1 = nullptr;
-            }
-            if (!sourceSink2Added && p_sourceSink2)
-            {
-                gst_object_unref(p_sourceSink2);
-                p_sourceSink2 = nullptr;
+                gst_object_unref(p_sourceSink);
+                p_sourceSink = nullptr;
             }
         }
     }
@@ -1301,24 +1053,6 @@ void GstVideoReceiver::_stopSourcePipeline()
 
     if (mp_sourcePipeline)
     {
-        if (m_sourcePipelineProbeId != 0)
-        {
-            auto *p_sourceTee = gst_bin_get_by_name(GST_BIN(mp_sourcePipeline),
-                                                    "mp_sourcePipeline->tee");
-            if (p_sourceTee != nullptr)
-            {
-                //remove the probe from the sink
-                auto *p_sinkpad = gst_element_get_static_pad(p_sourceTee, "sink");
-                if (p_sinkpad != nullptr)
-                {
-                    gst_pad_remove_probe(p_sinkpad, m_sourcePipelineProbeId);
-                    gst_object_unref(p_sinkpad);
-                    p_sinkpad = nullptr;
-                }
-                gst_object_unref(p_sourceTee);
-                p_sourceTee = nullptr;
-            }
-        }
         gst_element_set_state(mp_sourcePipeline, GST_STATE_NULL);
         auto *p_bus = gst_pipeline_get_bus(GST_PIPELINE(mp_sourcePipeline));
         if (p_bus == nullptr)
@@ -1336,7 +1070,6 @@ void GstVideoReceiver::_stopSourcePipeline()
         mp_sourcePipeline = nullptr;
     }
     m_lastSourceFrameTime = 0;
-    m_sourcePipelineProbeId = 0;
     if (m_sourceActive)
     {
         //inform listeners that the streaming as stopped
@@ -1367,7 +1100,7 @@ gboolean GstVideoReceiver::_onSourcePipelineBusMessage(GstBus *const p_bus,
 
 VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
 {
-    // mp_sourceSink1-->intersrc-->queue-->decodebin3-->mp_videoSink]
+    // mp_sourceSink1-->intersrc-->queue-->parserbin->decodebin3-->mp_videoSink]
 
     //note that mp_videoSink should already be set
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_startDecodingPipeline " << m_uri;
@@ -1389,6 +1122,8 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
         auto sourceAdded = false;
         GstElement *p_queue = nullptr;
         auto queueAdded = false;
+        GstElement *p_parser = nullptr;
+        auto parserAdded = false;
         GstElement *p_decoder = nullptr;
         auto decoderAdded = false;
         bool running = false;
@@ -1405,7 +1140,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                 __BREAK_IF_FAIL(
                     p_source = gst_element_factory_make("intersrc",
                                                         "mp_decodingPipeline->intersrc"));
-                g_object_set(p_source, "producer-name", "mp_sourceSink1", nullptr);
+                g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
                 __BREAK_IF_FAIL(sourceAdded = gst_bin_add(GST_BIN(mp_decodingPipeline), p_source));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
             }
@@ -1417,6 +1152,14 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                 g_object_set(p_queue, "silent", true, nullptr);
                 __BREAK_IF_FAIL(queueAdded = gst_bin_add(GST_BIN(mp_decodingPipeline), p_queue));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_queue));
+            }
+            {
+                //create the parser
+                __BREAK_IF_FAIL(
+                    p_parser = gst_element_factory_make("parsebin",
+                                                        "mp_decodingPipeline->parsebin"));
+                __BREAK_IF_FAIL(parserAdded = gst_bin_add(GST_BIN(mp_decodingPipeline), p_parser));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_parser));
             }
             {
                 //create the decoder
@@ -1455,6 +1198,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                     nullptr);
                 gst_object_unref(p_pad);
                 p_pad = nullptr;
+                __BREAK_IF_FAIL(m_decodingPipelineProbeId);
                 __BREAK_IF_FAIL(gst_bin_add(GST_BIN(mp_decodingPipeline), mp_videoSink));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(mp_videoSink));
             }
@@ -1496,14 +1240,14 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
             }
             {
                 __BREAK_IF_FAIL(gst_element_link(p_source, p_queue));
-                __BREAK_IF_FAIL(gst_element_link(p_queue, p_decoder));
-                //we must wait until the source pad of the decoder is exposed
-                //before we can link it to the sink
+                __BREAK_IF_FAIL(gst_element_link(p_queue, p_parser));
+                _deferredLinkhelper(p_parser);
                 _deferredLinkhelper(p_decoder);
             }
             {
                 p_source = nullptr;
                 p_queue = nullptr;
+                p_parser = nullptr;
                 p_decoder = nullptr;
             }
             {
@@ -1546,6 +1290,11 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
             {
                 gst_object_unref(p_queue);
                 p_queue = nullptr;
+            }
+            if (!parserAdded && p_parser)
+            {
+                gst_object_unref(p_parser);
+                p_parser = nullptr;
             }
             if (!decoderAdded && p_decoder)
             {
@@ -1593,7 +1342,6 @@ void GstVideoReceiver::_stopDecodingPipeline()
             gst_object_unref(p_bus);
             p_bus = nullptr;
         }
-        //TODO find out why this throws an exception when debugging
         gst_object_unref(mp_decodingPipeline);
         mp_decodingPipeline = nullptr;
     }
@@ -1622,7 +1370,7 @@ gboolean GstVideoReceiver::_onDecodingPipelineBusMessage(GstBus *const p_bus,
 
 VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
 {
-    // mp_sourceSink1-->intersrc-->queue-->mux-->filesink]
+    // mp_sourceSink-->intersrc-->queue-->parser-->savebin(mux-->filesink)]
 
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_startRecordingPipeline " << m_uri;
     auto result = STATUS_OK;
@@ -1630,7 +1378,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
     {
         qCDebug(VideoReceiverLog) << "Recording pipeline already started " << m_uri;
     }
-    else if (m_videoFile.trimmed().isEmpty() || m_videoFormat < FILE_FORMAT_MIN
+    else if (m_videoDirectory.trimmed().isEmpty() || m_videoFormat < FILE_FORMAT_MIN
              || m_videoFormat >= FILE_FORMAT_MAX)
     {
         qCCritical(VideoReceiverLog) << "Video file is empty or format is invalid! " << m_uri;
@@ -1642,10 +1390,10 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
         auto sourceAdded = false;
         GstElement *p_queue = nullptr;
         auto queueAdded = false;
-        GstElement *p_mux = nullptr;
-        auto muxAdded = false;
-        GstElement *p_sink = nullptr;
-        auto sinkAdded = false;
+        GstElement *p_parser = nullptr;
+        auto parserAdded = false;
+        GstElement *p_saveBin = nullptr;
+        auto saveBinAdded = false;
         auto running = false;
         m_lastRecordingFrameTime = 0;
         do
@@ -1660,7 +1408,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 __BREAK_IF_FAIL(
                     p_source = gst_element_factory_make("intersrc",
                                                         "mp_recordingPipeline->intersrc"));
-                g_object_set(p_source, "producer-name", "mp_sourceSink1", nullptr);
+                g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
                 __BREAK_IF_FAIL(sourceAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_source));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
             }
@@ -1685,107 +1433,111 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_queue));
             }
             {
-                //create the mux element
+                {
+                    __BREAK_IF_FAIL(
+                        p_parser = gst_element_factory_make("parsebin",
+                                                            "mp_recordingPipeline->parsebin"));
+                }
+                //create the parser
                 __BREAK_IF_FAIL(
-                    p_mux = gst_element_factory_make(np_kFileMux[m_videoFormat - FILE_FORMAT_MIN],
-                                                     "mp_recordingPipeline->mux"));
-                __BREAK_IF_FAIL(muxAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_mux));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_mux));
+                    p_parser = gst_element_factory_make("parsebin",
+                                                        "mp_recordingPipeline->parsebin"));
+                __BREAK_IF_FAIL(parserAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_parser));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_parser));
             }
+
             {
-                //create the sink element
+                __BREAK_IF_FAIL(p_saveBin = _createSaveBin());
                 __BREAK_IF_FAIL(
-                    p_sink = gst_element_factory_make("filesink", "mp_recordingPipeline->filesink"));
-                g_object_set(static_cast<gpointer>(p_sink),
-                             "location",
-                             qPrintable(m_videoFile),
-                             nullptr);
-                __BREAK_IF_FAIL(sinkAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_sink));
-                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sink));
-            }
-            {
-                GstPad *p_keyFrameWatchProbePad = nullptr;
-                __BREAK_IF_FAIL(
-                    p_keyFrameWatchProbePad = gst_element_get_static_pad(p_source, "src"));
-                // Install a probe on the recording branch to drop buffers until we hit our first keyframe
-                // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
-                // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
-                //TODO investigate if this can be worked into the probe below (m_recordingPipelineProbeId)
-                gst_pad_add_probe(
-                    p_keyFrameWatchProbePad,
-                    GST_PAD_PROBE_TYPE_BUFFER,
-                    [](GstPad *const p_pad,
-                       GstPadProbeInfo *const p_info,
-                       gpointer const p_userData) -> GstPadProbeReturn
-                    {
-                        auto result = GST_PAD_PROBE_DROP;
-                        if (p_info == nullptr || p_userData == nullptr)
-                        {
-                            qCCritical(VideoReceiverLog) << "Invalid arguments";
-                        }
-                        else
-                        {
-                            auto *const p_buf = gst_pad_probe_info_get_buffer(p_info);
-                            if (!GST_BUFFER_FLAG_IS_SET(p_buf, GST_BUFFER_FLAG_DELTA_UNIT))
-                            { // wait for a keyframe
-                                // set media file '0' offset to current timeline position - we don't want to touch other elements in the graph, except these which are downstream!
-                                gst_pad_set_offset(p_pad, -static_cast<gint64>(p_buf->pts));
-                                GstVideoReceiver *p_this = static_cast<GstVideoReceiver *>(
-                                    p_userData);
-                                qCDebug(VideoReceiverLog)
-                                    << "Got keyframe, stop dropping buffers " << p_this->m_uri;
-                                emit p_this->recordingStarted();
-                                result = GST_PAD_PROBE_REMOVE;
-                            }
-                        }
-                        return result;
-                    },
-                    this,
-                    nullptr);
-                gst_object_unref(p_keyFrameWatchProbePad);
-                p_keyFrameWatchProbePad = nullptr;
+                    saveBinAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_saveBin));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_saveBin));
             }
             {
                 //add a probe to the sink to keep track of when it gets a frame
                 GstPad *p_sinkPad = nullptr;
-                __BREAK_IF_FAIL(p_sinkPad = gst_element_get_static_pad(p_sink, "sink"));
-                m_recordingPipelineProbeId = gst_pad_add_probe(
-                    p_sinkPad,
-                    GST_PAD_PROBE_TYPE_BUFFER,
-                    [](GstPad *const p_pad,
-                       GstPadProbeInfo *const p_info,
-                       gpointer const p_userData) -> GstPadProbeReturn
-                    {
-                        if (p_info != nullptr && p_userData != nullptr)
+                __BREAK_IF_FAIL(p_sinkPad = gst_element_get_static_pad(p_saveBin, "sink"));
+                {
+                    auto const probeId = gst_pad_add_probe(
+                        p_sinkPad,
+                        GST_PAD_PROBE_TYPE_BUFFER,
+                        [](GstPad *const p_pad,
+                           GstPadProbeInfo *const p_info,
+                           gpointer const p_userData) -> GstPadProbeReturn
                         {
-                            //record the frame time so we know if we've lost the feed (see watchdog)
-                            auto *const p_this = static_cast<GstVideoReceiver *>(p_userData);
-                            p_this->m_lastRecordingFrameTime = QDateTime::currentSecsSinceEpoch();
-                            if (!p_this->m_recorderActive)
+                            if (p_info != nullptr && p_userData != nullptr)
                             {
-                                //notify listeners that the recorder is active
-                                p_this->m_recorderActive = true;
-                                qCDebug(VideoReceiverLog) << "Recording started " << p_this->m_uri;
-                                emit p_this->recordingChanged(p_this->m_recorderActive);
+                                //record the frame time so we know if we've lost the feed (see watchdog)
+                                auto *const p_this = static_cast<GstVideoReceiver *>(p_userData);
+                                p_this->m_lastRecordingFrameTime = QDateTime::currentSecsSinceEpoch();
+                                if (!p_this->m_recorderActive)
+                                {
+                                    //notify listeners that the recorder is active
+                                    p_this->m_recorderActive = true;
+                                    qCDebug(VideoReceiverLog)
+                                        << "Recording started " << p_this->m_uri;
+                                    emit p_this->recordingChanged(p_this->m_recorderActive);
+                                }
                             }
-                        }
-                        return GST_PAD_PROBE_OK;
-                    },
-                    this,
-                    nullptr);
+                            return GST_PAD_PROBE_OK;
+                        },
+                        this,
+                        nullptr);
+
+                    __BREAK_IF_FAIL(probeId);
+                }
+                {
+                    // Install a probe on the recording branch to drop buffers until we hit our first keyframe
+                    // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
+                    // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
+                    //TODO investigate if this can be worked into the probe above
+                    auto const probeId = gst_pad_add_probe(
+                        p_sinkPad,
+                        GST_PAD_PROBE_TYPE_BUFFER,
+                        [](GstPad *const p_pad,
+                           GstPadProbeInfo *const p_info,
+                           gpointer const p_userData) -> GstPadProbeReturn
+                        {
+                            auto result = GST_PAD_PROBE_DROP;
+                            if (p_info == nullptr || p_userData == nullptr)
+                            {
+                                qCCritical(VideoReceiverLog) << "Invalid arguments";
+                            }
+                            else
+                            {
+                                auto *const p_buf = gst_pad_probe_info_get_buffer(p_info);
+                                if (!GST_BUFFER_FLAG_IS_SET(p_buf, GST_BUFFER_FLAG_DELTA_UNIT))
+                                { // wait for a keyframe
+                                    // set media file '0' offset to current timeline position - we don't want to touch other elements in the graph, except these which are downstream!
+                                    gst_pad_set_offset(p_pad, -static_cast<gint64>(p_buf->pts));
+                                    GstVideoReceiver *p_this = static_cast<GstVideoReceiver *>(
+                                        p_userData);
+                                    qCDebug(VideoReceiverLog)
+                                        << "Got keyframe, stop dropping buffers " << p_this->m_uri;
+                                    p_this->m_subtitleWriter.startCapturingTelemetry(
+                                        p_this->m_currentVideoFile);
+                                    emit p_this->recordingStarted();
+                                    result = GST_PAD_PROBE_REMOVE;
+                                }
+                            }
+                            return result;
+                        },
+                        this,
+                        nullptr);
+                    __BREAK_IF_FAIL(probeId);
+                }
                 gst_object_unref(p_sinkPad);
                 p_sinkPad = nullptr;
             }
             {
                 __BREAK_IF_FAIL(gst_element_link(p_source, p_queue));
-                __BREAK_IF_FAIL(gst_element_link(p_queue, p_mux));
-                __BREAK_IF_FAIL(gst_element_link(p_mux, p_sink));
+                __BREAK_IF_FAIL(gst_element_link(p_queue, p_parser));
+                _deferredLinkhelper(p_parser);
             }
             {
                 p_source = nullptr;
                 p_queue = nullptr;
-                p_mux = nullptr;
-                p_sink = nullptr;
+                p_parser = nullptr;
+                p_saveBin = nullptr;
             }
             {
                 //create a means of monitoring bus messages on the source pipeline
@@ -1828,15 +1580,15 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 gst_object_unref(p_queue);
                 p_queue = nullptr;
             }
-            if (!muxAdded && p_mux)
+            if (!parserAdded && p_parser)
             {
-                gst_object_unref(p_mux);
-                p_mux = nullptr;
+                gst_object_unref(p_parser);
+                p_parser = nullptr;
             }
-            if (!sinkAdded && p_sink)
+            if (!saveBinAdded && p_saveBin)
             {
-                gst_object_unref(p_sink);
-                p_sink = nullptr;
+                gst_object_unref(p_saveBin);
+                p_saveBin = nullptr;
             }
         }
     }
@@ -1850,24 +1602,37 @@ void GstVideoReceiver::_stopRecordingPipeline()
 
     if (mp_recordingPipeline)
     {
-        if (m_recordingPipelineProbeId != 0)
+        m_recordEOS = false;
+        GstElement *p_saveBin = gst_bin_get_by_name(GST_BIN(mp_recordingPipeline),
+                                                    "mp_recordingPipeline->savebin");
+        if (p_saveBin != nullptr)
         {
-            auto *p_fileSink = gst_bin_get_by_name(GST_BIN(mp_recordingPipeline),
-                                                   "mp_recordingPipeline->filesink");
-            if (p_fileSink != nullptr)
+            GstPad *p_sinkPad = gst_element_get_static_pad(p_saveBin, "sink");
+            if (p_sinkPad != nullptr)
             {
-                //remove the probe from the sink
-                auto *p_sinkpad = gst_element_get_static_pad(p_fileSink, "sink");
-                if (p_sinkpad != nullptr)
+                GstPad *p_srcPad = gst_pad_get_peer(p_sinkPad);
+                if (p_srcPad != nullptr)
                 {
-                    gst_pad_remove_probe(p_sinkpad, m_sourcePipelineProbeId);
-                    gst_object_unref(p_sinkpad);
-                    p_sinkpad = nullptr;
+                    gst_pad_unlink(p_srcPad, p_sinkPad);
+                    gst_object_unref(p_srcPad);
+                    p_srcPad = nullptr;
                 }
-                gst_object_unref(p_fileSink);
-                p_fileSink = nullptr;
+
+                gst_pad_send_event(p_sinkPad, gst_event_new_eos());
+                m_recordShutdownMut.lock();
+                while (!m_recordEOS)
+                {
+                    m_recordShutdownWaitCondition.wait(&m_recordShutdownMut, 100);
+                }
+                m_recordShutdownMut.unlock();
+                gst_object_unref(p_sinkPad);
+                p_sinkPad = nullptr;
             }
+            gst_object_unref(p_saveBin);
+            p_saveBin = nullptr;
         }
+        m_recordEOS = false;
+
         //stop the pipeline
         gst_element_set_state(mp_recordingPipeline, GST_STATE_NULL);
         auto *p_bus = gst_pipeline_get_bus(GST_PIPELINE(mp_recordingPipeline));
@@ -1886,31 +1651,117 @@ void GstVideoReceiver::_stopRecordingPipeline()
         mp_recordingPipeline = nullptr;
     }
     m_lastRecordingFrameTime = 0;
-    m_recordingPipelineProbeId = 0;
     qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::_stopRecordingPipeline " << m_uri;
 }
-
 gboolean GstVideoReceiver::_onRecordingPipelineBusMessage(GstBus *const p_bus,
                                                           GstMessage *const p_msg,
                                                           gpointer const p_data)
 {
-    Q_ASSERT(p_data != nullptr);
-    auto *const p_this = (GstVideoReceiver *) p_data;
-    auto const result = p_this->_onPipelineBusMessageHelper(
-        p_bus,
-        p_msg,
-        [p_this]()
+    Q_UNUSED(p_bus)
+    Q_ASSERT(p_msg != nullptr && p_data != nullptr);
+    GstVideoReceiver *p_this = (GstVideoReceiver *) p_data;
+    switch (GST_MESSAGE_TYPE(p_msg))
+    {
+    case GST_MESSAGE_EOS:
+        qCDebug(VideoReceiverLog) << "Received Recording EOS";
         {
-            p_this->_stopRecordingPipeline();
-            p_this->_startRecordingPipeline();
-        },
-        "recording");
-    return result;
+            p_this->m_recordEOS = true;
+            p_this->m_recordShutdownWaitCondition.wakeOne();
+        }
+        break;
+    default:
+        break;
+    }
+    return TRUE;
+}
+
+GstElement *GstVideoReceiver::_createSaveBin()
+{
+    qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_createSaveBin " << m_uri;
+    auto result = STATUS_OK;
+    GstElement *p_saveBin = nullptr;
+    GstElement *p_mux = nullptr;
+    auto muxAdded = false;
+    GstElement *p_fileSink = nullptr;
+    auto fileSinkAdded = false;
+    GstPad *p_muxPad = nullptr;
+    GstPad *p_ghostPad = nullptr;
+    auto ghostPadAdded = false;
+    do
+    {
+        __BREAK_IF_FAIL(p_saveBin = gst_bin_new("mp_recordingPipeline->savebin"));
+        {
+            //create the mux element
+            __BREAK_IF_FAIL(
+                p_mux = gst_element_factory_make(np_kFileMux[m_videoFormat - FILE_FORMAT_MIN],
+                                                 "mp_recordingPipeline->mux"));
+            if (m_videoFormat == FILE_FORMAT_MKV)
+            {
+                g_object_set(static_cast<gpointer>(p_mux), "offset-to-zero", true, nullptr);
+            }
+
+            __BREAK_IF_FAIL(muxAdded = gst_bin_add(GST_BIN(p_saveBin), p_mux));
+            __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_mux));
+        }
+        {
+            m_currentVideoFile = _getCurrentVideoFile(m_videoDirectory, m_videoFormat);
+            //create the filesink element
+            __BREAK_IF_FAIL(
+                p_fileSink = gst_element_factory_make("filesink", "mp_recordingPipeline->filesink"));
+            g_object_set(static_cast<gpointer>(p_fileSink),
+                         "location",
+                         qPrintable(m_currentVideoFile),
+                         nullptr);
+            __BREAK_IF_FAIL(fileSinkAdded = gst_bin_add(GST_BIN(p_saveBin), p_fileSink));
+            __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_fileSink));
+        }
+        GstPadTemplate *p_padTemplate = nullptr;
+        __BREAK_IF_FAIL(
+            p_padTemplate = gst_element_class_get_pad_template(GST_ELEMENT_GET_CLASS(p_mux),
+                                                               "video_%u"));
+        __BREAK_IF_FAIL(p_muxPad = gst_element_request_pad(p_mux, p_padTemplate, nullptr, nullptr));
+        __BREAK_IF_FAIL(p_ghostPad = gst_ghost_pad_new("sink", p_muxPad));
+        __BREAK_IF_FAIL(ghostPadAdded = gst_element_add_pad(p_saveBin, p_ghostPad));
+        __BREAK_IF_FAIL(gst_element_link(p_mux, p_fileSink));
+        p_mux = nullptr;
+        p_fileSink = nullptr;
+        p_ghostPad = nullptr;
+    } while (0);
+    if (result != STATUS_OK)
+    {
+        if (p_saveBin)
+        {
+            gst_object_unref(p_saveBin);
+            p_saveBin = nullptr;
+        }
+        if (!ghostPadAdded && p_ghostPad)
+        {
+            gst_object_unref(p_ghostPad);
+            p_ghostPad = nullptr;
+        }
+        if (!muxAdded && p_mux)
+        {
+            gst_object_unref(p_mux);
+            p_mux = nullptr;
+        }
+        if (!fileSinkAdded && p_fileSink)
+        {
+            gst_object_unref(p_fileSink);
+            p_fileSink = nullptr;
+        }
+    }
+    if (p_muxPad)
+    {
+        gst_object_unref(p_muxPad);
+        p_muxPad = nullptr;
+    }
+    qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::_createSaveBin " << m_uri;
+    return p_saveBin;
 }
 
 VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
 {
-    // mp_sourceSink2-->intersrc-->queue-->parser-->mpegtsmux-->srtsink]
+    // mp_sourceSink-->intersrc-->queue-->parser-->mpegtsmux-->srtsink]
 
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_startRemoteStreamPipeline " << m_uri;
     auto result = STATUS_OK;
@@ -1961,7 +1812,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
                     __BREAK_IF_FAIL(
                         p_source = gst_element_factory_make("intersrc",
                                                             "mp_remoteStreamPipeline->intersrc"));
-                    g_object_set(p_source, "producer-name", "mp_sourceSink2", nullptr);
+                    g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
                     __BREAK_IF_FAIL(
                         sourceAdded = gst_bin_add(GST_BIN(mp_remoteStreamPipeline), p_source));
                     __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
@@ -2022,7 +1873,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
                     //add a probe to the sink to keep track of when it gets a frame
                     GstPad *p_sinkPad = nullptr;
                     __BREAK_IF_FAIL(p_sinkPad = gst_element_get_static_pad(p_sink, "sink"));
-                    m_remoteStreamPipelineProbeId = gst_pad_add_probe(
+                    auto const probeId = gst_pad_add_probe(
                         p_sinkPad,
                         GST_PAD_PROBE_TYPE_BUFFER_LIST,
                         [](GstPad *const p_pad,
@@ -2050,6 +1901,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
                         nullptr);
                     gst_object_unref(p_sinkPad);
                     p_sinkPad = nullptr;
+                    __BREAK_IF_FAIL(probeId);
                 }
                 {
                     __BREAK_IF_FAIL(gst_element_link(p_source, p_queue));
@@ -2134,24 +1986,6 @@ void GstVideoReceiver::_stopRemoteStreamPipeline()
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_stopRemoteStreamPipeline " << m_uri;
     if (mp_remoteStreamPipeline)
     {
-        if (m_remoteStreamPipelineProbeId != 0)
-        {
-            auto *p_remoteStreamSink = gst_bin_get_by_name(GST_BIN(mp_remoteStreamPipeline),
-                                                           "mp_remoteStreamPipeline->srtsink");
-            if (p_remoteStreamSink != nullptr)
-            {
-                //remove the probe from the sink
-                auto *p_sinkpad = gst_element_get_static_pad(p_remoteStreamSink, "sink");
-                if (p_sinkpad != nullptr)
-                {
-                    gst_pad_remove_probe(p_sinkpad, m_sourcePipelineProbeId);
-                    gst_object_unref(p_sinkpad);
-                    p_sinkpad = nullptr;
-                }
-                gst_object_unref(p_remoteStreamSink);
-                p_remoteStreamSink = nullptr;
-            }
-        }
         gst_element_set_state(mp_remoteStreamPipeline, GST_STATE_NULL);
         auto *p_bus = gst_pipeline_get_bus(GST_PIPELINE(mp_remoteStreamPipeline));
         if (p_bus == nullptr)
@@ -2169,7 +2003,6 @@ void GstVideoReceiver::_stopRemoteStreamPipeline()
         mp_remoteStreamPipeline = nullptr;
     }
     m_lastRemoteStreamFrameTime = 0;
-    m_remoteStreamPipelineProbeId = 0;
     qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::_stopRemoteStreamPipeline " << m_uri;
 }
 

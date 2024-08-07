@@ -13,7 +13,7 @@
 #include <QTimer>
 #include <QWaitCondition>
 #include "QGCLoggingCategory.h"
-
+#include "SubtitleWriter.h"
 #include "VideoReceiver.h"
 
 class Worker : public QThread
@@ -58,7 +58,7 @@ public slots:
     virtual void stop(void) override;
     virtual void startDecoding(void* p_sink) override;
     virtual void stopDecoding(void) override;
-    virtual void startRecording(QString const& videoFile, FILE_FORMAT format) override;
+    virtual void startRecording(QString const& videoDirectory, FILE_FORMAT format) override;
     virtual void stopRecording(void) override;
     virtual void startRemoteStreaming(QString const& streamURL) override;
     virtual void stopRemoteStreaming(void) override;
@@ -75,7 +75,6 @@ private:
     unsigned m_timeout;
     int m_buffer;
     qint64 m_lastSourceFrameTime;
-    unsigned long m_sourcePipelineProbeId;
     bool m_restartingSource;
 
     //decoding pipeline
@@ -89,18 +88,21 @@ private:
     //recording pipeline
     bool m_recorderActive;
     _GstElement* mp_recordingPipeline;
-    QString m_videoFile;
+    QString m_videoDirectory;
+    QString m_currentVideoFile;
     FILE_FORMAT m_videoFormat;
     qint64 m_lastRecordingFrameTime;
-    unsigned long m_recordingPipelineProbeId;
     bool m_restartingRecord;
+    SubtitleWriter m_subtitleWriter;
+    QWaitCondition m_recordShutdownWaitCondition;
+    QMutex m_recordShutdownMut;
+    QAtomicInteger<bool> m_recordEOS;
 
     //remote streaming pipeline
     bool m_remoteStreamActive;
     _GstElement* mp_remoteStreamPipeline;
     QString m_remoteStreamURI;
     qint64 m_lastRemoteStreamFrameTime;
-    unsigned long m_remoteStreamPipelineProbeId;
     bool m_restartingRemoteStream;
 
     void _pipelineWatchdog();
@@ -123,6 +125,7 @@ private:
     STATUS _startRecordingPipeline();
     void _stopRecordingPipeline();
     static int _onRecordingPipelineBusMessage(_GstBus* p_bus, _GstMessage* p_msg, void* p_data);
+    _GstElement* _createSaveBin();
 
     STATUS _startRemoteStreamPipeline();
     void _stopRemoteStreamPipeline();

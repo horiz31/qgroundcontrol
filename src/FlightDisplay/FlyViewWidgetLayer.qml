@@ -220,7 +220,8 @@ Item {
         anchors.right:          parent.right
         anchors.verticalCenter: undefined
         width:                  _rightPanelWidth
-        visible:                _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
+        visible:                _activeVehicle //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
+        //visible:                _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
 
     }
 
