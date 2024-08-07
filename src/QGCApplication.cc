@@ -16,7 +16,7 @@
  *
  */
 
-#define ECHOMAV_VERSION "v1.2.12"
+#define ECHOMAV_VERSION "v1.2.14"
 
 #include <QFile>
 #include <QRegularExpression>

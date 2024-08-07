@@ -65,7 +65,7 @@ ArduPlaneFirmwarePlugin::ArduPlaneFirmwarePlugin(void)
         APMPlaneMode(APMPlaneMode::QSTABILIZE,      false),
         APMPlaneMode(APMPlaneMode::QHOVER,          true),
         APMPlaneMode(APMPlaneMode::QLOITER,         true),
-        APMPlaneMode(APMPlaneMode::QLAND,           false),
+        APMPlaneMode(APMPlaneMode::QLAND,           true),
         APMPlaneMode(APMPlaneMode::QRTL,            true),
         APMPlaneMode(APMPlaneMode::QAUTOTUNE,       false),
         APMPlaneMode(APMPlaneMode::QACRO,           false),
