@@ -376,7 +376,7 @@ Rectangle {
 
             MouseArea {
                 anchors.fill:   parent
-                enabled:        _canShootInCurrentMode && !_recordButtonBusy
+                enabled:        _canShootInCurrentMode// && !_recordButtonBusy
                 onClicked:
                 {
                     //change the color to yellow

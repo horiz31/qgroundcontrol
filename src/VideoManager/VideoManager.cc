@@ -163,15 +163,28 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 
     connect(_videoReceiver[0], &VideoReceiver::recordingChanged, this, [this](bool active){
         _recording = active;
-        _recordTransitionInProgress = false;
-        emit recordTransitionInProgressChanged();
+        //_recordTransitionInProgress = false;
+        //emit recordTransitionInProgressChanged();
         emit recordingChanged();
     });
 
-    connect(_videoReceiver[0], &VideoReceiver::remoteStreamingChanged, this, [this](bool active){
-        _remoteStreaming = active;
-        emit remoteStreamingChanged();
-    });
+    connect(_videoReceiver[0],
+            &VideoReceiver::recordTransitionInProgressChanged,
+            this,
+            [this](bool active)
+            {
+                _recordTransitionInProgress = active;
+                emit recordTransitionInProgressChanged();
+            });
+
+    connect(_videoReceiver[0],
+            &VideoReceiver::remoteStreamingChanged,
+            this,
+            [this](bool active)
+            {
+                _remoteStreaming = active;
+                emit remoteStreamingChanged();
+            });
     connect(_videoReceiver[0], &VideoReceiver::videoSizeChanged, this, [this](QSize size){
         _videoSize = ((quint32)size.width() << 16) | (quint32)size.height();
         emit videoSizeChanged();
@@ -371,8 +384,6 @@ void VideoManager::startRecording()
     }
 
     if (_videoReceiver[0] && _videoStarted[0]) {
-        _recordTransitionInProgress = true;
-        emit recordTransitionInProgressChanged();
         _videoReceiver[0]->startRecording(savePath, fileFormat);
     }
 #if __ENABLE_THERMAL_VIDEO_RECEIVER__
@@ -393,8 +404,8 @@ VideoManager::stopRecording()
 
     for (int i = 0; i < 2; i++) {
         if (_videoReceiver[i]) {
-            _recordTransitionInProgress = true;
-            emit recordTransitionInProgressChanged();
+            //_recordTransitionInProgress = true;
+            // emit recordTransitionInProgressChanged();
             _videoReceiver[i]->stopRecording();
         }
     }

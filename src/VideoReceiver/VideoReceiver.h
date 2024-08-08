@@ -52,6 +52,7 @@ signals:
     void streamingChanged(bool active);
     void decodingChanged(bool active);
     void recordingChanged(bool active);
+    void recordTransitionInProgressChanged(bool active);
     void recordingStarted(void);
     void remoteStreamingChanged(bool active);
     void remoteStreamingStarted(void);

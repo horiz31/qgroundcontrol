@@ -170,6 +170,7 @@ void GstVideoReceiver::stop()
     {
         qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::stop " << m_uri;
         auto result = STATUS_OK;
+        emit recordTransitionInProgressChanged(true);
         _stopSourcePipeline();
         _stopDecodingPipeline();
         _stopRecordingPipeline();
@@ -193,6 +194,7 @@ void GstVideoReceiver::stop()
             qCDebug(VideoReceiverLog) << "Remote streaming stopped at uri=" << m_uri;
             emit remoteStreamingChanged(m_remoteStreamActive);
         }
+        emit recordTransitionInProgressChanged(false);
         emit onStopComplete(result);
         qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::stop " << m_uri;
     }
@@ -297,6 +299,7 @@ void GstVideoReceiver::startRecording(QString const &videoDirectory, FILE_FORMAT
     }
     else
     {
+        emit recordTransitionInProgressChanged(true);
         qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::startRecording(" << videoDirectory
                                   << ", " << format << ") " << m_uri;
         auto result = STATUS_OK;
@@ -305,6 +308,18 @@ void GstVideoReceiver::startRecording(QString const &videoDirectory, FILE_FORMAT
         {
             qCCritical(VideoReceiverLog)
                 << "Video directory is empty or format is invalid! " << m_uri;
+            result = STATUS_FAIL;
+        }
+        else if (m_restartingRecord)
+        {
+            qCCritical(VideoReceiverLog)
+                << "Cannot start record because a restart is already in progress " << m_uri;
+            result = STATUS_FAIL;
+        }
+        else if (!m_sourceActive || !mp_sourcePipeline)
+        {
+            qCCritical(VideoReceiverLog)
+                << "Cannot start record because there is no video to record " << m_uri;
             result = STATUS_FAIL;
         }
         else if (m_recorderActive && !m_videoDirectory.isEmpty() && m_videoFormat != FILE_FORMAT_MAX
@@ -328,6 +343,10 @@ void GstVideoReceiver::startRecording(QString const &videoDirectory, FILE_FORMAT
                 m_videoFormat = FILE_FORMAT_MAX;
             }
         }
+        if (result != STATUS_OK)
+        {
+            emit recordTransitionInProgressChanged(false);
+        }
         emit onStartRecordingComplete(result);
         qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::startRecording(" << videoDirectory
                                   << ", " << format << ") " << m_uri;
@@ -343,6 +362,8 @@ void GstVideoReceiver::stopRecording()
     else
     {
         qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::stopRecording " << m_uri;
+
+        emit recordTransitionInProgressChanged(true);
         auto result = STATUS_OK;
         if (mp_recordingPipeline)
         {
@@ -357,11 +378,23 @@ void GstVideoReceiver::stopRecording()
                 emit recordingChanged(m_recorderActive);
             }
         }
+        else if (m_restartingRecord)
+        {
+            if (m_recorderActive)
+            {
+                m_recorderActive = false;
+                qCDebug(VideoReceiverLog) << "Recording restart aborted " << m_uri;
+                m_subtitleWriter.stopCapturingTelemetry();
+                emit recordingChanged(m_recorderActive);
+            }
+        }
         else
         {
             qCDebug(VideoReceiverLog) << "Not recording! " << m_uri;
             result = STATUS_INVALID_STATE;
         }
+        m_restartingRecord = false;
+        emit recordTransitionInProgressChanged(false);
         emit onStopRecordingComplete(result);
         qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::stopRecording " << m_uri;
     }
@@ -476,26 +509,41 @@ void GstVideoReceiver::_pipelineWatchdog()
     mp_slotHandler->dispatch(
         [this]()
         {
-            bool stopped = false;
             auto const now = QDateTime::currentSecsSinceEpoch();
             if ((mp_sourcePipeline && m_sourceActive) || m_restartingSource)
             {
+                auto savedLastFrameTime = m_lastSourceFrameTime;
                 if (m_lastSourceFrameTime == 0)
                 {
                     m_lastSourceFrameTime = now;
                 }
                 auto const timeSinceLastFrame = now - m_lastSourceFrameTime;
-                if (timeSinceLastFrame > m_timeout)
+                if (timeSinceLastFrame > m_timeout * 3)
                 {
                     qCCritical(VideoReceiverLog) << "Source stream timeout, no frames for "
                                                  << timeSinceLastFrame << "" << m_uri;
-                    emit timeout();
-                    //if source fails, just stop the whole receiver and let video manager restart it
-                    stopped = true;
-                    stop();
+                    if (mp_recordingPipeline && m_recorderActive && !m_restartingRecord)
+                    {
+                        emit recordTransitionInProgressChanged(true);
+                        _stopRecordingPipeline();
+                        m_restartingRecord = true;
+                    }
+                    if (!m_restartingSource)
+                    {
+                        _stopSourcePipeline();
+                    }
+                    if (_startSourcePipeline() == STATUS_OK)
+                    {
+                        m_restartingSource = false;
+                    }
+                    else
+                    {
+                        m_lastSourceFrameTime = savedLastFrameTime;
+                        m_restartingSource = true;
+                    }
                 }
             }
-            if (!stopped && ((mp_decodingPipeline && m_decoderActive) || m_restartingDecode))
+            if (((mp_decodingPipeline && m_decoderActive) || m_restartingDecode))
             {
                 auto savedLastFrameTime = m_lastDecodingFrameTime;
                 if (m_lastDecodingFrameTime == 0)
@@ -523,8 +571,10 @@ void GstVideoReceiver::_pipelineWatchdog()
                     }
                 }
             }
-            if (!stopped && ((mp_recordingPipeline && m_recorderActive) || m_restartingRecord))
+            if (!m_restartingSource
+                && (((mp_recordingPipeline && m_recorderActive) || m_restartingRecord)))
             {
+                auto savedLastFrameTime = m_lastRecordingFrameTime;
                 if (m_lastRecordingFrameTime == 0)
                 {
                     m_lastRecordingFrameTime = now;
@@ -532,16 +582,43 @@ void GstVideoReceiver::_pipelineWatchdog()
                 auto const timeSinceLastFrame = now - m_lastRecordingFrameTime;
                 if (timeSinceLastFrame > m_timeout * 3)
                 {
-                    qCCritical(VideoReceiverLog) << "Recording stream timeout, no frames for "
-                                                 << timeSinceLastFrame << "" << m_uri;
-                    emit timeout();
-                    //if recording fails, just stop the whole receiver and let video manager restart it
-                    stopped = true;
-                    stop();
+                    if (!m_restartingSource)
+                    {
+                        qCCritical(VideoReceiverLog) << "Recording stream timeout, no frames for "
+                                                     << timeSinceLastFrame << "" << m_uri;
+                    }
+                    //attempt to restart the recording pipeline without disturbing the other pipelines
+                    //In the case of recording, this *should* finish out the old file and restart
+                    //with a new file
+                    if (!m_restartingRecord)
+                    {
+                        emit recordTransitionInProgressChanged(true);
+                        _stopRecordingPipeline();
+                    }
+                    if (m_sourceActive && _startRecordingPipeline() == STATUS_OK)
+                    {
+                        m_restartingRecord = false;
+                    }
+                    else
+                    {
+                        m_lastRecordingFrameTime = savedLastFrameTime;
+                        m_restartingRecord = true;
+                    }
+                }
+                else if (m_restartingRecord && m_sourceActive)
+                {
+                    if (_startRecordingPipeline() == STATUS_OK)
+                    {
+                        m_restartingRecord = false;
+                    }
+                    else
+                    {
+                        m_lastRecordingFrameTime = savedLastFrameTime;
+                        m_restartingRecord = true;
+                    }
                 }
             }
-            if (!stopped
-                && ((mp_remoteStreamPipeline && m_remoteStreamActive) || m_restartingRemoteStream))
+            if (((mp_remoteStreamPipeline && m_remoteStreamActive) || m_restartingRemoteStream))
             {
                 auto savedLastFrameTime = m_lastRemoteStreamFrameTime;
                 if (m_lastRemoteStreamFrameTime == 0)
@@ -1516,6 +1593,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                                     p_this->m_subtitleWriter.startCapturingTelemetry(
                                         p_this->m_currentVideoFile);
                                     emit p_this->recordingStarted();
+                                    emit p_this->recordTransitionInProgressChanged(false);
                                     result = GST_PAD_PROBE_REMOVE;
                                 }
                             }
