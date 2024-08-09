@@ -121,6 +121,13 @@
     "default":     ""
 },
 {
+    "name":             "remoteStreamToken",
+    "shortDesc": "The remote stream Token",
+    "longDesc":  "The remote stream Token. If blank, the stream will be unsecured (and open to spoofing)",
+    "type":             "string",
+    "default":     ""
+},
+{
     "name":             "rtspTimeout",
     "shortDesc": "RTSP Video Timeout",
     "longDesc":  "How long to wait before assuming RTSP link is gone.",

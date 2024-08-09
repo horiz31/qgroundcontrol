@@ -382,6 +382,16 @@ Rectangle {
                                     fact:                   _videoSettings.remoteStreamID
                                     visible:                remoteStreamIDLabel.visible
                                 }
+                                QGCLabel {
+                                    id:         remoteStreamTokenLabel
+                                    text:       qsTr("Remote Stream Token")
+                                    visible:    (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamToken.visible && _videoSettings.enableRemoteStreaming.rawValue
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings.remoteStreamToken
+                                    visible:                remoteStreamTokenLabel.visible
+                                }
                             }
                         }
                     }

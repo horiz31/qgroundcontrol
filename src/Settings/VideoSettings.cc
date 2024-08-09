@@ -237,6 +237,19 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, remoteStreamID)
     return _remoteStreamIDFact;
 }
 
+DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, remoteStreamToken)
+{
+    if (!_remoteStreamTokenFact)
+    {
+        _remoteStreamTokenFact = _createSettingsFact(remoteStreamTokenName);
+        connect(_remoteStreamTokenFact,
+                &Fact::valueChanged,
+                this,
+                &VideoSettings::_remoteStreamingChanged);
+    }
+    return _remoteStreamTokenFact;
+}
+
 bool VideoSettings::remoteStreamingConfigured()
 {
     if(!streamConfigured())

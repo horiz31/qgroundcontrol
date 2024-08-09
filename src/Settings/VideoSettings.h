@@ -51,7 +51,7 @@ public:
     DEFINE_SETTINGFACT(osd)
     DEFINE_SETTINGFACT(enableRemoteStreaming)
     DEFINE_SETTINGFACT(remoteStreamID)
-
+    DEFINE_SETTINGFACT(remoteStreamToken)
 
     enum VideoDecoderOptions {
         ForceVideoDecoderDefault = 0,

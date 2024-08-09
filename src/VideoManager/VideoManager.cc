@@ -50,6 +50,14 @@ static const char* kFileExtension[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver
 };
 #endif
 
+namespace
+{
+constexpr static inline auto const* np_remoteStreamServer = "srt://data.echomav.com:4200";
+constexpr static inline auto const* np_unsecureStreamApp = "LiveApp";
+constexpr static inline auto const* np_secureStreamApp = "SecureApp";
+
+} // namespace
+
 //-----------------------------------------------------------------------------
 VideoManager::VideoManager(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
@@ -106,9 +114,19 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
    connect(_videoSettings->enableRemoteStreaming(), &Fact::rawValueChanged, this, &VideoManager::_remoteStreamingChanged);
    connect(_videoSettings->remoteStreamID(), &Fact::rawValueChanged, this, &VideoManager::_remoteStreamingChanged);
-    connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
-    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
-    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
+   connect(_videoSettings->remoteStreamToken(),
+           &Fact::rawValueChanged,
+           this,
+           &VideoManager::_remoteStreamingChanged);
+   connect(_videoSettings->lowLatencyMode(),
+           &Fact::rawValueChanged,
+           this,
+           &VideoManager::_lowLatencyModeChanged);
+   MultiVehicleManager* pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
+   connect(pVehicleMgr,
+           &MultiVehicleManager::activeVehicleChanged,
+           this,
+           &VideoManager::_setActiveVehicle);
 
 #if defined(QGC_GST_STREAMING)
     GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
@@ -565,9 +583,19 @@ VideoManager::_remoteStreamingChanged()
     QString oldRemoteStreamURL=_remoteStreamURL;
     QString newRemoteStreamURL="";
     QString newRemoteStreamID=_videoSettings->remoteStreamID()->rawValueString().trimmed();
+    QString newRemoteStreamToken = _videoSettings->remoteStreamToken()->rawValueString().trimmed();
     if(_videoSettings->enableRemoteStreaming()->rawValue().toBool() && !newRemoteStreamID.isEmpty())
     {
-        newRemoteStreamURL = "srt://data.echomav.com:4200?streamid=LiveApp/" + newRemoteStreamID;
+        if (newRemoteStreamToken.isEmpty())
+        {
+            newRemoteStreamURL = QString(np_remoteStreamServer)
+                                 + "?streamid=" + np_unsecureStreamApp + "/" + newRemoteStreamID;
+        }
+        else
+        {
+            newRemoteStreamURL = QString(np_remoteStreamServer) + "?streamid=" + np_secureStreamApp
+                                 + "/" + newRemoteStreamID + ",token=" + newRemoteStreamToken;
+        }
     }
     if(newRemoteStreamURL!=oldRemoteStreamURL && _videoReceiver[0] != nullptr && _videoStarted[0])
     {
