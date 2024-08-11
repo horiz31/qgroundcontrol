@@ -202,6 +202,13 @@
     "default":     true
 },
 {
+    "name":             "recordOnFlying",
+    "shortDesc":        "Start recording automatically on takeoff",
+    "longDesc":         "Specify if recording should start automatically upon takeoff",
+    "type":             "bool",
+    "default":     true
+},
+{
     "name":             "osd",
     "shortDesc":        "Enable the On Screen Display",
     "longDesc":         "Specify if the gimbal should show the On Screen Display",

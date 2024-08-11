@@ -38,6 +38,7 @@ Item {
             }
 
         }
+        /*
         PropertyAnimation on opacity {
             easing.type:    Easing.OutQuart
             from:           0.5
@@ -46,7 +47,7 @@ Item {
             running:        true
             alwaysRunToEnd: true
             duration:       2000
-        }
+        }*/
 
         ColumnLayout {
             id:                 checklistLayout

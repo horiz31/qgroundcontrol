@@ -44,6 +44,7 @@ public:
     DEFINE_SETTINGFACT(targetOverlay)
     DEFINE_SETTINGFACT(pilotViewOnFBW)
     DEFINE_SETTINGFACT(nadirViewOnLand)
+    DEFINE_SETTINGFACT(recordOnFlying)
     DEFINE_SETTINGFACT(osd)
 
 
