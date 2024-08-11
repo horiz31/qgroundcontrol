@@ -57,6 +57,8 @@ Rectangle {
     }
     property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
     property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
+    property bool   _isArmed:                                   _activeVehicle ? (_activeVehicle.armed) : false
+    property bool   _isFlying:                                  _activeVehicle ? (_activeVehicle.flying) : false
 
     // The following properties relate to a simple camera
     property var    _flyViewSettings:                           QGroundControl.settingsManager.flyViewSettings
@@ -122,7 +124,38 @@ Rectangle {
     property bool   _nvIRMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 1 : false
     property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
     property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
+    property bool   _autoRecording:                             _videoStreamSettings.recordOnFlying.rawValue
     property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+
+    on_IsFlyingChanged: {
+        if (_isFlying && _isArmed && _autoRecording && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode)
+        {
+            //flying just changed and we are now flying, and autorecording is enabled, so if we aren't recording, get to it
+            if (!_videoStreamManager.recording) {
+                _videoStreamManager.startRecording()
+                _activeVehicle.say("Recording Started");
+                if (_nextVisionGimbalAvailable && !_nvRecording && _remoteRecording) //start remote recording (if enabled)
+                {
+                    joystickManager.cameraManagement.setSysRecOnCommand(0);  //only recording channel 0, could change in future
+                }
+            }
+        }
+    }
+
+    on_IsArmedChanged: {
+        if (!_isArmed && _autoRecording && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode)
+        {
+            //we have landed/disarmed and autorecording is enabled, if recording, stop
+            if (_videoStreamManager.recording) {
+                _videoStreamManager.stopRecording()
+                if (_nextVisionGimbalAvailable && _nvRecording) {
+                   joystickManager.cameraManagement.setSysRecOffCommand(0);
+                    joystickManager.cameraManagement.setSysRecOffCommand(1);
+                }
+
+            }
+        }
+    }
 
     ListModel {
         id: irColorModel
@@ -173,6 +206,7 @@ Rectangle {
                 if (_videoStreamManager.recording) {
                     console.log("stop local recording");
                     _videoStreamManager.stopRecording()
+                    _activeVehicle.say("Recording Stopped");
                     //stop nextvision recording (if it is actually recording)
                     if (_nextVisionGimbalAvailable & _nvRecording) {
                        console.log("nextvision recording stop");
@@ -182,6 +216,7 @@ Rectangle {
                 } else {
                     console.log("start local recording");
                     _videoStreamManager.startRecording()
+                    _activeVehicle.say("Recording Started");
                     if (_nextVisionGimbalAvailable & !_nvRecording & _remoteRecording) //start remote recording (if enabled)
                     {
                         console.log("nextvision recording start");
@@ -255,7 +290,7 @@ Rectangle {
         anchors.horizontalCenter:   parent.horizontalCenter
         spacing:                    ScreenTools.defaultFontPixelHeight / 2
         visible:                    _activeVehicle
-        //visible:                  _nextVisionGimbalAvailable
+
 
         // Photo/Video Mode Selector
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
@@ -373,6 +408,8 @@ Rectangle {
                 //changing the radius here to half the width makes it a circle
                 radius:             _isShootingInCurrentMode ? 0 : width * 0.5  //   _isShootingInCurrentMode
                 color:              _canShootInCurrentMode ? _recordButtonBusy ? qgcPal.colorOrange : qgcPal.colorRed : qgcPal.colorGrey
+                //color:              _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
+
 
             }
 
@@ -834,6 +871,18 @@ Rectangle {
                         onClicked:          _videoStreamSettings.nadirViewOnLand.rawValue = checked ? true : false
                     }
 
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Auto Record on Takeoff")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.recordOnFlying.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.recordOnFlying.rawValue = checked ? true : false
+                    }
 
 
 

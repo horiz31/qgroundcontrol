@@ -65,7 +65,7 @@ FlightMap {
     property bool   _keepVehicleCentered:       pipMode ? true : false
     property bool   _saveZoomLevelSetting:      true
 
-    property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
+    property bool   _nextVisionGimbalAvailable: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
     property var    _videoSettings:             QGroundControl.settingsManager.videoSettings
     property var    _clickedCoordinate
 

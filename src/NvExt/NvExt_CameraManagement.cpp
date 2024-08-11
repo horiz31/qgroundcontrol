@@ -29,7 +29,7 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
     this->activeVehicle = activeVehicle;
     if(activeVehicle)
     {
-        connect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);
+        connect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);        
         connect(activeVehicle->missionManager(),     &MissionManager::currentlyLanding, this, &CameraManagement::_landingChanged);
         float time = QDateTime::currentSecsSinceEpoch();
         /* Sending the system time to the vehicle */
@@ -49,7 +49,7 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
     }
     else
     {
-        disconnect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);
+        disconnect(activeVehicle, &Vehicle::flightModeChanged, this, &CameraManagement::_flightModeChanged);        
     }
 }
 
@@ -72,6 +72,7 @@ void CameraManagement::_flightModeChanged()
         sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetSystemMode,MavExtCmdArg_Nadir,0,0,0,0,0);
 
 }
+
 
 void CameraManagement::_activeCamJoystickChanged(Joystick* activeCamJoystick)
 {
