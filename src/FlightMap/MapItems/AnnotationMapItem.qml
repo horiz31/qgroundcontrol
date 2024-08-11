@@ -105,6 +105,21 @@ MapQuickItem {
                                                    }
                     }
                     QGCMenuItem {
+                        text:           qsTr("Navigate To and Point Camera At")
+                        visible:        _isFlying && !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
+                        onTriggered:
+                        {
+                            mapClickIconItem.hide()
+                            gotoLocationItem.show(coordinate)
+                            guidedPlanMapCircle.setCenter(coordinate)
+                            guidedPlanMapCircle.setRadius(_activeVehicle.guidedModeRadius)
+                            guidedPlanMapCircle.setClockwise(true)
+                            globals.guidedControllerFlyView.confirmAction(globals.guidedControllerFlyView.actionGoto, coordinate, gotoLocationItem, guidedPlanMapCircle)
+                            //nvPTCLocationItem.show(coordinate)
+                            joystickManager.cameraManagement.pointToCoordinate(coordinate.latitude, coordinate.longitude)
+                                      }
+                    }
+                    QGCMenuItem {
                         text:           qsTr("Point Camera At")
                         visible:            !QGroundControl.videoManager.fullScreen && _nextVisionGimbalAvailable
                         //visible: true
@@ -115,17 +130,9 @@ MapQuickItem {
                             if(_activeVehicle)
                                 joystickManager.cameraManagement.pointToCoordinate(coordinate.latitude, coordinate.longitude)
                         }
-                    }
+                    }                  
                     QGCMenuItem {
-                        text:           qsTr("Delete Annotation")
-                        visible:        true
-                        onTriggered:
-                        {
-                            mainWindow.showPopupDialogFromComponent(deleteMarkerDialog)
-                        }
-                    }
-                    QGCMenuItem {
-                        text:           qsTr("Measure Distance")
+                        text:           qsTr("Measure Distance to Clicked Point")
                         visible:        true
                         onTriggered:
                         {
@@ -140,6 +147,14 @@ MapQuickItem {
                         {
                             //store the start point and begin showing distance and heading from the aircraft
                             QGroundControl.annotationManager.setMeasureDistanceStartPoint(uid, true)
+                        }
+                    }
+                    QGCMenuItem {
+                        text:           qsTr("Delete Annotation")
+                        visible:        true
+                        onTriggered:
+                        {
+                            mainWindow.showPopupDialogFromComponent(deleteMarkerDialog)
                         }
                     }
                 }

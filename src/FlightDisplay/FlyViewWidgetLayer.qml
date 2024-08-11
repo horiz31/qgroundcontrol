@@ -54,6 +54,8 @@ Item {
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
     property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 22
     property real   _windPanelWidth:        ScreenTools.defaultFontPixelWidth * 11
+    property var    _videoStreamManager:    QGroundControl.videoManager
+    property bool   _videoStreamIsStreaming:  _videoStreamManager.streaming
     property bool   _isCheckListWindowVisible: false
     property var    _checkListWindow
     property real   _heading: _activeVehicle ? _activeVehicle.heading.rawValue : 0
@@ -220,7 +222,8 @@ Item {
         anchors.right:          parent.right
         anchors.verticalCenter: undefined
         width:                  _rightPanelWidth
-        visible:                _activeVehicle //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
+        visible:                _videoStreamIsStreaming
+        //visible:                _activeVehicle //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
         //visible:                _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
 
     }

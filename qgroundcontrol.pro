@@ -26,7 +26,7 @@ message(Qt version $$[QT_VERSION])
 }
 
 *msvc* { # visual studio spec filter
-      QMAKE_CXXFLAGS += -MP
+      QMAKE_CXXFLAGS += -MP      
 }
 
 include(QGCCommon.pri)
