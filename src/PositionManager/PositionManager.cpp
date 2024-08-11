@@ -101,6 +101,8 @@ void QGCPositionManager::setNmeaSourceDevice(QIODevice* device)
     }
     _nmeaSource = new QNmeaPositionInfoSource(QNmeaPositionInfoSource::RealTimeMode, this);
     _nmeaSource->setDevice(device);
+    _nmeaSource->setUserEquivalentRangeError(5.1);
+
     setPositionSource(QGCPositionManager::NmeaGPS);
 }
 
@@ -123,7 +125,7 @@ void QGCPositionManager::_positionUpdated(const QGeoPositionInfo &update)
         }
     }
     if (newGCSPosition != _gcsPosition) {
-        _gcsPosition = newGCSPosition;
+        _gcsPosition = newGCSPosition;        
         emit gcsPositionChanged(_gcsPosition);
     }
 

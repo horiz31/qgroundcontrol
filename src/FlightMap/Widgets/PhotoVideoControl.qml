@@ -186,6 +186,8 @@ Rectangle {
                     {
                         console.log("nextvision recording start");
                         joystickManager.cameraManagement.setSysRecOnCommand(0);
+                        //record channel 1 as well
+                        //joystickManager.cameraManagement.setSysRecOnCommand(1);
                     }
                 }
             }
