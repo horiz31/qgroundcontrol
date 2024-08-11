@@ -22,12 +22,12 @@ class ElevationProvider : public MapProvider {
 };
 
 // -----------------------------------------------------------
-// Airmap Elevation
+// Copernicus Elevation
 
-class AirmapElevationProvider : public ElevationProvider {
+class CopernicusElevationProvider : public ElevationProvider {
     Q_OBJECT
   public:
-    AirmapElevationProvider(QObject* parent = nullptr)
+    CopernicusElevationProvider(QObject* parent = nullptr)
         : ElevationProvider(QStringLiteral("bin"), AVERAGE_AIRMAP_ELEV_SIZE,
                             QGeoMapType::StreetMap, parent) {}
 
