@@ -1510,11 +1510,6 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_queue));
             }
             {
-                {
-                    __BREAK_IF_FAIL(
-                        p_parser = gst_element_factory_make("parsebin",
-                                                            "mp_recordingPipeline->parsebin"));
-                }
                 //create the parser
                 __BREAK_IF_FAIL(
                     p_parser = gst_element_factory_make("parsebin",
