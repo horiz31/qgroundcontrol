@@ -25,7 +25,7 @@ QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
     if (!(__call__)) \
     { \
         qCCritical(VideoReceiverLog) << #__call__ " failed " << m_uri; \
-        result = STATUS_INVALID_URL; \
+        result = STATUS_FAIL; \
         break; \
     } \
     (void) 0
