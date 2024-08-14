@@ -2,8 +2,8 @@
 #include <QDir>
 #include <QNetworkInterface>
 #include <QUrl>
-#include <gst/gst.h>
 
+#include <gst/gst.h>
 namespace
 {
 constexpr const char *np_kFileMux[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver::FILE_FORMAT_MIN]
@@ -94,7 +94,6 @@ GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     , m_videoFormat{FILE_FORMAT_MAX}
     , m_lastRecordingFrameTime{0}
     , m_restartingRecord{false}
-    , m_subtitleWriter{}
     , m_recordShutdownWaitCondition{}
     , m_recordShutdownMut{}
     , m_recordEOS{false}
@@ -185,7 +184,6 @@ void GstVideoReceiver::stop()
         {
             m_recorderActive = false;
             qCDebug(VideoReceiverLog) << "Recording stopped at uri=" << m_uri;
-            m_subtitleWriter.stopCapturingTelemetry();
             emit recordingChanged(m_recorderActive);
         }
         if (m_remoteStreamActive)
@@ -374,7 +372,6 @@ void GstVideoReceiver::stopRecording()
             {
                 m_recorderActive = false;
                 qCDebug(VideoReceiverLog) << "Recording stopped at uri=" << m_uri;
-                m_subtitleWriter.stopCapturingTelemetry();
                 emit recordingChanged(m_recorderActive);
             }
         }
@@ -384,7 +381,6 @@ void GstVideoReceiver::stopRecording()
             {
                 m_recorderActive = false;
                 qCDebug(VideoReceiverLog) << "Recording restart aborted " << m_uri;
-                m_subtitleWriter.stopCapturingTelemetry();
                 emit recordingChanged(m_recorderActive);
             }
         }
@@ -1585,9 +1581,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                                         p_userData);
                                     qCDebug(VideoReceiverLog)
                                         << "Got keyframe, stop dropping buffers " << p_this->m_uri;
-                                    p_this->m_subtitleWriter.startCapturingTelemetry(
-                                        p_this->m_currentVideoFile);
-                                    emit p_this->recordingStarted();
+                                    emit p_this->recordingStarted(p_this->m_currentVideoFile);
                                     emit p_this->recordTransitionInProgressChanged(false);
                                     result = GST_PAD_PROBE_REMOVE;
                                 }

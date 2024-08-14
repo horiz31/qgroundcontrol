@@ -7,7 +7,6 @@
  *
  ****************************************************************************/
 
-
 /**
  * @file
  *   @brief QGC Video Subtitle Writer
@@ -16,12 +15,13 @@
 
 #pragma once
 
-#include "QGCLoggingCategory.h"
-#include "Fact.h"
-#include <QObject>
-#include <QTimer>
-#include <QDateTime>
-#include <QFile>
+#include <QtCore/QFile>
+#include <QtCore/QLoggingCategory>
+#include <QtCore/QObject>
+#include <QtCore/QTime>
+
+class Fact;
+class QTimer;
 
 Q_DECLARE_LOGGING_CATEGORY(SubtitleWriterLog)
 
@@ -42,10 +42,11 @@ private slots:
     void _captureTelemetry();
 
 private:
-    QTimer _timer;
+    QTimer* _timer = nullptr;
     QList<Fact*> _facts;
     QTime _lastEndTime;
     QFile _file;
 
-    static const int _sampleRate; // Sample rate in Hz for getting telemetry data, most players do weird stuff when > 1Hz
+    static constexpr int _sampleRate
+        = 1; // Sample rate in Hz for getting telemetry data, most players do weird stuff when > 1Hz
 };

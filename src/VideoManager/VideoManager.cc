@@ -61,6 +61,7 @@ constexpr static inline auto const* np_secureStreamApp = "SecureApp";
 //-----------------------------------------------------------------------------
 VideoManager::VideoManager(QGCApplication* app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
+    , _subtitleWriter(new SubtitleWriter(this))
 {
 #if !defined(QGC_GST_STREAMING)
     static bool once = false;
@@ -181,10 +182,23 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 
     connect(_videoReceiver[0], &VideoReceiver::recordingChanged, this, [this](bool active){
         _recording = active;
+        if (!active)
+        {
+            _subtitleWriter->stopCapturingTelemetry();
+        }
         //_recordTransitionInProgress = false;
         //emit recordTransitionInProgressChanged();
         emit recordingChanged();
     });
+
+    (void) connect(_videoReceiver[0],
+                   &VideoReceiver::recordingStarted,
+                   this,
+                   [this](QString videoFile)
+                   {
+                       qCDebug(VideoManagerLog) << "Video 0 recording started";
+                       _subtitleWriter->startCapturingTelemetry(videoFile);
+                   });
 
     connect(_videoReceiver[0],
             &VideoReceiver::recordTransitionInProgressChanged,

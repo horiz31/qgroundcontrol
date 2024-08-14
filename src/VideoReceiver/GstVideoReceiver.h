@@ -13,9 +13,9 @@
 #include <QTimer>
 #include <QWaitCondition>
 #include "QGCLoggingCategory.h"
-#include "SubtitleWriter.h"
 #include "VideoReceiver.h"
 
+class SubtitleWriter;
 class Worker : public QThread
 {
     Q_OBJECT
@@ -93,7 +93,6 @@ private:
     FILE_FORMAT m_videoFormat;
     qint64 m_lastRecordingFrameTime;
     bool m_restartingRecord;
-    SubtitleWriter m_subtitleWriter;
     QWaitCondition m_recordShutdownWaitCondition;
     QMutex m_recordShutdownMut;
     QAtomicInteger<bool> m_recordEOS;

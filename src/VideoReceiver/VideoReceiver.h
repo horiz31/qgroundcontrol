@@ -53,7 +53,7 @@ signals:
     void decodingChanged(bool active);
     void recordingChanged(bool active);
     void recordTransitionInProgressChanged(bool active);
-    void recordingStarted(void);
+    void recordingStarted(QString videoFile);
     void remoteStreamingChanged(bool active);
     void remoteStreamingStarted(void);
     void videoSizeChanged(QSize size);

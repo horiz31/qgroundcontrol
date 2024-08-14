@@ -27,6 +27,7 @@ Q_DECLARE_LOGGING_CATEGORY(VideoManagerLog)
 class VideoSettings;
 class Vehicle;
 class Joystick;
+class SubtitleWriter;
 
 class VideoManager : public QGCTool
 {
@@ -164,6 +165,7 @@ protected:
 protected:
     QString                 _remoteStreamURL;
     QString                 _imageFile;
+    SubtitleWriter* _subtitleWriter = nullptr;
     bool _isTaisync = false;
     VideoReceiver*          _videoReceiver[2]       = { nullptr, nullptr };
     void*                   _videoSink[2]           = { nullptr, nullptr };
