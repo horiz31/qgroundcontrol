@@ -32,10 +32,14 @@ public:
 
     static const char* _settingsGroup;
 
+    // Overrides from FactGroup
+    virtual void handleMessage(Vehicle* vehicle, mavlink_message_t& message) override;
+
 private slots:
-    void _updateAllValues() override;
 
 private:
+    void _handleSystemTime(mavlink_message_t& message);
+
     Fact            _currentTimeFact;
     Fact            _currentDateFact;
 };

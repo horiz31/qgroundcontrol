@@ -26,11 +26,28 @@ VehicleClockFactGroup::VehicleClockFactGroup(QObject* parent)
     _currentDateFact.setRawValue(std::numeric_limits<float>::quiet_NaN());
 }
 
-void VehicleClockFactGroup::_updateAllValues()
+void VehicleClockFactGroup::handleMessage(Vehicle* /* vehicle */, mavlink_message_t& message)
 {
-    _currentTimeFact.setRawValue(QTime::currentTime().toString());
-    _currentDateFact.setRawValue(QDateTime::currentDateTime().toString(QLocale::system().dateFormat(QLocale::ShortFormat)));
-    _setTelemetryAvailable(true);
+    switch (message.msgid)
+    {
+    case MAVLINK_MSG_ID_SYSTEM_TIME:
+        _handleSystemTime(message);
+        break;
+    default:
+        break;
+    }
+}
 
-    FactGroup::_updateAllValues();
+void VehicleClockFactGroup::_handleSystemTime(mavlink_message_t& message)
+{
+    mavlink_system_time_t systemTime;
+    mavlink_msg_system_time_decode(&message, &systemTime);
+    //convert to milliseconds and then to string
+    auto const milliseconds = systemTime.time_unix_usec / 1000;
+    QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(milliseconds);
+    QTime time = dateTime.time();
+    _currentTimeFact.setRawValue(time.toString());
+    _currentDateFact.setRawValue(
+        dateTime.toString(QLocale::system().dateFormat(QLocale::ShortFormat)));
+    _setTelemetryAvailable(true);
 }

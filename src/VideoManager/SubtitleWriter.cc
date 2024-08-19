@@ -29,6 +29,28 @@
 
 QGC_LOGGING_CATEGORY(SubtitleWriterLog, "qgc.videomanager.subtitlewriter")
 
+namespace
+{
+char const* const np_gimbleFactNames[] = {
+    VehicleGimbalFactGroup::_modeFactName,
+    VehicleGimbalFactGroup::_groundCrossingLatFactName,
+    VehicleGimbalFactGroup::_groundCrossingLonFactName,
+    VehicleGimbalFactGroup::_groundCrossingAltFactName,
+    VehicleGimbalFactGroup::_slantRangeFactName,
+    VehicleGimbalFactGroup::_fovFactName,
+    VehicleGimbalFactGroup::_azimuthFactName,
+    //VehicleGimbalFactGroup::_activeSensorFactName,
+    //VehicleGimbalFactGroup::_isRecordingFactName,
+    //VehicleGimbalFactGroup::_isSnapshotFactName,
+    VehicleGimbalFactGroup::_cpuTemperatureFactName,
+    VehicleGimbalFactGroup::_cameraTemperatureFactName,
+    //VehicleGimbalFactGroup::_sdCapacityFactName,
+    //VehicleGimbalFactGroup::_sdAvailableFactName,
+    //VehicleGimbalFactGroup::_nvVersionFactName,
+    //VehicleGimbalFactGroup::_nvTripVersionFactName,
+};
+}
+
 SubtitleWriter::SubtitleWriter(QObject* parent)
     : QObject(parent)
     , _timer(new QTimer(this))
@@ -38,15 +60,8 @@ SubtitleWriter::SubtitleWriter(QObject* parent)
     (void) connect(_timer, &QTimer::timeout, this, &SubtitleWriter::_captureTelemetry);
 }
 
-SubtitleWriter::~SubtitleWriter()
-{
-    // qCDebug(SubtitleWriterLog) << Q_FUNC_INFO << this;
-}
-
 void SubtitleWriter::startCapturingTelemetry(const QString& videoFile)
 {
-    qCDebug(SubtitleWriterLog) << "ENTER SubtitleWriter::startCapturingTelemetry(" << videoFile
-                               << ")";
     // Delete facts of last run
     _facts.clear();
 
@@ -65,7 +80,51 @@ void SubtitleWriter::startCapturingTelemetry(const QString& videoFile)
             _facts += value->fact();
         }
     }
+
     grid->deleteLater();
+
+    if (auto* const p_vehicle = qgcApp()->toolbox()->multiVehicleManager()->activeVehicle();
+        p_vehicle)
+    {
+        if (auto* const p_gimbalFactGroup = p_vehicle->gimbalFactGroup(); p_gimbalFactGroup)
+        {
+            for (auto const* const p_factName : np_gimbleFactNames)
+            {
+                if (auto* const p_fact = p_gimbalFactGroup->getFact(p_factName); p_fact)
+                {
+                    _facts += p_fact;
+                }
+            }
+        }
+        if (auto* const p_gpsFactGroup = p_vehicle->gpsFactGroup(); p_gpsFactGroup)
+        {
+            if (auto* const p_latFact = p_gpsFactGroup->getFact(VehicleGPSFactGroup::_latFactName);
+                p_latFact)
+            {
+                _facts += p_latFact;
+            }
+            if (auto* const p_lonFact = p_gpsFactGroup->getFact(VehicleGPSFactGroup::_lonFactName);
+                p_lonFact)
+            {
+                _facts += p_lonFact;
+            }
+        }
+        if (auto* const p_clockFactGroup = p_vehicle->clockFactGroup(); p_clockFactGroup)
+        {
+            if (auto* const p_dateFact = p_clockFactGroup->getFact(
+                    VehicleClockFactGroup::_currentDateFactName);
+                p_dateFact)
+            {
+                _facts += p_dateFact;
+            }
+            if (auto* const p_timeFact = p_clockFactGroup->getFact(
+                    VehicleClockFactGroup::_currentTimeFactName);
+                p_timeFact)
+            {
+                _facts += p_timeFact;
+            }
+        }
+    }
 
     // One subtitle always starts where the previous ended
     _lastEndTime = QTime(0, 0);
@@ -73,7 +132,6 @@ void SubtitleWriter::startCapturingTelemetry(const QString& videoFile)
     QFileInfo videoFileInfo(videoFile);
     QString subtitleFilePath = QStringLiteral("%1/%2.ass")
                                    .arg(videoFileInfo.path(), videoFileInfo.completeBaseName());
-    qCDebug(SubtitleWriterLog) << "Writing overlay to file:" << subtitleFilePath;
     _file.setFileName(subtitleFilePath);
 
     if (_file.open(QIODevice::ReadWrite))
@@ -105,28 +163,22 @@ void SubtitleWriter::startCapturingTelemetry(const QString& videoFile)
 
         // TODO: Find a good way to input title
         //stream << QStringLiteral("Dialogue: 0,0:00:00.00,999:00:00.00,Default,,0,0,0,,{\\pos(5,35)}%1\n");
-        qCDebug(SubtitleWriterLog) << "Starting timer for subtitlewriter";
         _timer->start(1000 / _sampleRate);
     }
     else
     {
         qCWarning(SubtitleWriterLog) << "Unable to write subtitle data to file";
     }
-    qCDebug(SubtitleWriterLog) << "EXIT SubtitleWriter::startCapturingTelemetry(" << videoFile
-                               << ")";
 }
 
 void SubtitleWriter::stopCapturingTelemetry()
 {
-    qCDebug(SubtitleWriterLog) << "ENTER SubtitleWriter::stopCapturingTelemetry()";
     _timer->stop();
     _file.close();
-    qCDebug(SubtitleWriterLog) << "EXIT SubtitleWriter::stopCapturingTelemetry()";
 }
 
 void SubtitleWriter::_captureTelemetry()
 {
-    //qCDebug(SubtitleWriterLog) << "ENTER SubtitleWriter::_captureTelemetry()";
     static const float nRows = 3; // number of rows used for displaying data
     static const int offsetFactor
         = 700; // Used to simulate a larger resolution and reduce the borders in the layout
@@ -191,13 +243,6 @@ void SubtitleWriter::_captureTelemetry()
                                  .arg(currentColumnValueStrings.join("\\N"));
             stringColumns << values;
         }
-
-        // Write the date to the corner
-        stringColumns << QStringLiteral("Dialogue: 0,%1,%2,Default,,0,0,0,,{\\pos(10,35)}%3\n")
-                             .arg(start.toString("H:mm:ss.zzz").chopped(2))
-                             .arg(end.toString("H:mm:ss.zzz").chopped(2))
-                             .arg(QDateTime::currentDateTime().toString(
-                                 QLocale::system().dateFormat(QLocale::ShortFormat)));
         // Write new data
         QTextStream stream(&_file);
         for (const auto& i : stringColumns)
@@ -209,5 +254,4 @@ void SubtitleWriter::_captureTelemetry()
     {
         qCWarning(SubtitleWriterLog) << "Attempting to capture fact data with no active vehicle!";
     }
-    //qCDebug(SubtitleWriterLog) << "EXIT SubtitleWriter::_captureTelemetry()";
 }
