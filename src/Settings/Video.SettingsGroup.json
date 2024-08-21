@@ -209,6 +209,23 @@
     "default":     true
 },
 {
+    "name":             "autoNuc",
+    "shortDesc":        "Periodically NUC the IR camera",
+    "longDesc":         "Specify if IR cameara should NUC automatically periodically",
+    "type":             "bool",
+    "default":     false
+},
+{
+    "name":             "nucPeriod",
+    "shortDesc": "Time between NUC",
+    "longDesc":  "Time between automatic NUC of IR camera.",
+    "type":             "uint32",
+    "min":              60,
+    "max":              18000,
+    "units":            "s",
+    "default":     600
+},
+{
     "name":             "osd",
     "shortDesc":        "Enable the On Screen Display",
     "longDesc":         "Specify if the gimbal should show the On Screen Display",

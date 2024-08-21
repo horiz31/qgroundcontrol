@@ -233,6 +233,10 @@ public:
     Q_INVOKABLE void setSysIrNUCCommand(void);
     Q_INVOKABLE void setSysRecToggleCommand(int chan);
     Q_INVOKABLE void setSysRecOnCommand(int chan);
+    Q_INVOKABLE void RecordChannel1On(void);
+    Q_INVOKABLE void RecordChannel1Off(void);
+    Q_INVOKABLE void setRecordChan1OnAfterDelay(int delay);
+    Q_INVOKABLE void setRecordChan1OffAfterDelay(int delay);
     Q_INVOKABLE void setSysRecOffCommand(int chan);
     Q_INVOKABLE void setSysSnapshotCommand(int chan);
     Q_INVOKABLE void setSysAutoSnapshotCommand(int interval, int count, bool inf, int chan);

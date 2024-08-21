@@ -123,7 +123,10 @@ Rectangle {
     property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
     property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
     property bool   _autoRecording:                             _videoStreamSettings.recordOnFlying.rawValue
+    property bool   _autoNuc:                                   _videoStreamSettings.autoNuc.rawValue
+    property int    _nucPeriod:                                  _videoStreamSettings.nucPeriod.rawValue * 1000
     property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+
 
     on_IsFlyingChanged: {
         if (_isFlying && _isArmed && _autoRecording && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode)
@@ -134,7 +137,8 @@ Rectangle {
                 _activeVehicle.say("Recording Started");
                 if (_nextVisionGimbalAvailable && !_nvRecording && _remoteRecording) //start remote recording (if enabled)
                 {
-                    joystickManager.cameraManagement.setSysRecOnCommand(0);  //only recording channel 0, could change in future
+                    joystickManager.cameraManagement.setSysRecOnCommand(0);
+                    joystickManager.cameraManagement.setRecordChan1OnAfterDelay(1000);
                 }
             }
         }
@@ -148,7 +152,7 @@ Rectangle {
                 _videoStreamManager.stopRecording()
                 if (_nextVisionGimbalAvailable && _nvRecording) {
                    joystickManager.cameraManagement.setSysRecOffCommand(0);
-                    joystickManager.cameraManagement.setSysRecOffCommand(1);
+                   joystickManager.cameraManagement.setRecordChan1OffAfterDelay(1000);
                 }
 
             }
@@ -196,6 +200,7 @@ Rectangle {
                 if (_nextVisionGimbalAvailable & _nvSnapShotStatus === "Idle") {
                    console.log("nextvision snapshot");
                    joystickManager.cameraManagement.setSysSnapshotCommand(0);
+
                 }
 
             }
@@ -209,6 +214,7 @@ Rectangle {
                     if (_nextVisionGimbalAvailable & _nvRecording) {
                        console.log("nextvision recording stop");
                        joystickManager.cameraManagement.setSysRecOffCommand(0);
+                       joystickManager.cameraManagement.setRecordChan1OffAfterDelay(1000);
                     }
 
                 } else {
@@ -220,12 +226,31 @@ Rectangle {
                         console.log("nextvision recording start");
                         joystickManager.cameraManagement.setSysRecOnCommand(0);
                         //record channel 1 as well
-                        //joystickManager.cameraManagement.setSysRecOnCommand(1);
+                       joystickManager.cameraManagement.setRecordChan1OnAfterDelay(1000);
+                    }
+                    else
+                    {
+                        console.log("nextvision recording start skipped");
                     }
                 }
             }
         }
 
+    }
+
+    Timer {
+        id:             autoNucTimer
+        interval:       _nucPeriod
+        running:        _autoNuc
+        repeat:         true
+        onTriggered:    {
+
+            if (_nextVisionGimbalAvailable && _nvIRMode )
+            {
+                 joystickManager.cameraManagement.setSysIrNUCCommand()
+            }
+
+        }
     }
 
     Timer {
@@ -874,7 +899,27 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.recordOnFlying.rawValue = checked ? true : false
                     }
-
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Auto NUC Periodically")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    QGCSwitch {
+                        id:                 _autoNucSwitch
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        checked:            _videoStreamSettings.autoNuc.rawValue
+                        visible:            _nextVisionGimbalAvailable
+                        onClicked:          _videoStreamSettings.autoNuc.rawValue = checked ? true : false
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("Auto NUC Period")
+                        visible:            _autoNucSwitch.checked
+                    }
+                    FactTextField {
+                        fact:                   _videoStreamSettings.nucPeriod
+                        visible:            _autoNucSwitch.checked
+                    }
 
 
                     QGCLabel {

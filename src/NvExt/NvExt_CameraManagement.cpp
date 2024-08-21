@@ -689,6 +689,7 @@ void CameraManagement::setSysRecOnCommand(int chan)
     /* Set the system sensor */
     //sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Enable,(float)chan,0,0,0,0);
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Enable,(float)chan,0,0,0,0);
+
 }
 
 void CameraManagement::setSysRecOffCommand(int chan)
@@ -790,10 +791,44 @@ void CameraManagement::setSysObjDetOnCommand(void)
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DetectionControl,MavExtCmdArg_DetectorEnDis,1,0,0,0,0);
 }
 
+
 void CameraManagement::setSysObjDetOnCommandAfterDelay(int delay)
 {
     /* Set the system object detector after delay */   
      QTimer::singleShot(delay, this, &CameraManagement::setSysObjDetOnCommand);
+
+}
+
+void CameraManagement::RecordChannel1On(void)
+{
+
+    //turn on recording on channel 1, happens after a delay
+    qDebug() << "turn on ch 1 record after delay";
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Enable,(float)1,0,0,0,0);
+
+}
+
+void CameraManagement::RecordChannel1Off(void)
+{
+    //turn off recording on channel 1, happens after a delay
+    qDebug() << "turn off ch 1 record after delay";
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetRecordState,MavExtCmdArg_Disable,(float)1,0,0,0,0);
+
+
+}
+
+void CameraManagement::setRecordChan1OnAfterDelay(int delay)
+{
+    /* Set the channel 1 to record */
+
+    QTimer::singleShot(delay, this, &CameraManagement::RecordChannel1On);
+
+}
+
+void CameraManagement::setRecordChan1OffAfterDelay(int delay)
+{
+    /* Set the channel 1 to record */
+    QTimer::singleShot(delay, this, &CameraManagement::RecordChannel1Off);
 
 }
 

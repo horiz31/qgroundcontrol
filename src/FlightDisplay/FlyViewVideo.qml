@@ -91,9 +91,13 @@ Item {
         id: flyViewVideoMouseArea
         anchors.fill:       parent
         enabled:            pipState.state === pipState.fullState
+
+        //remove double click because it doesn't work well with track mode
+        /*
         onDoubleClicked: {
+            console.log("double clicked");
             QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
-        }
+        }*/
 
         onWheel: {
             if (wheel.angleDelta.y > 0)
@@ -195,6 +199,39 @@ Item {
         ColorOverlay {
             anchors.fill:       _imageExit
             source:             _imageExit
+            color:              "white"
+        }
+    }
+
+    Rectangle {
+        id:                     _enterFullScreenVideo
+        anchors.right :         parent.right
+        anchors.bottom:         parent.bottom
+        height:                 ScreenTools.isMobile ? ScreenTools.defaultFontPixelHeight*3.0 : ScreenTools.defaultFontPixelHeight*2.0
+        width:                  height * 1.2
+        color:                  Qt.rgba(0,0,0,0)
+        anchors.margins:        ScreenTools.defaultFontPixelWidth * 0.75
+        visible:                !QGroundControl.videoManager.fullScreen
+
+        Image {
+            id:                 _imageEnter
+            width:              parent.width
+            height:             parent.height
+            sourceSize.height:  height
+            source:             "/InstrumentValueIcons/fullscreen-outline.svg"
+            fillMode:           Image.PreserveAspectFit
+            anchors.verticalCenter:     parent.verticalCenter
+            anchors.horizontalCenter:   parent.horizontalCenter
+        }
+        MouseArea {
+            anchors.fill:   parent
+            onClicked:      {
+                QGroundControl.videoManager.fullScreen = true
+            }
+        }
+        ColorOverlay {
+            anchors.fill:       _imageEnter
+            source:             _imageEnter
             color:              "white"
         }
     }
