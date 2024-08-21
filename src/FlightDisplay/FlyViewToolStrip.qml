@@ -19,6 +19,7 @@ ToolStrip {
 
     signal displayPreFlightChecklist
     signal clearFlightPath
+    signal goFullScreen
     signal centerMap
     signal clearMeasure
 
@@ -27,6 +28,7 @@ ToolStrip {
 
         onDisplayPreFlightChecklist: _root.displayPreFlightChecklist()
         onClearFlightPath: _root.clearFlightPath()
+        onGoFullScreen: _root.goFullScreen()
         onCenterMap:    _root.centerMap()
         onClearMeasure: _root.clearMeasure()
     }

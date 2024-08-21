@@ -17,6 +17,7 @@ ToolStripActionList {
 
     signal displayPreFlightChecklist
     signal clearFlightPath
+    signal goFullScreen
     signal centerMap
     signal clearMeasure
 
@@ -32,7 +33,9 @@ ToolStripActionList {
         {
             onTriggered: displayPreFlightChecklist()
         },
-        ClearFlightTrail {  onTriggered:  clearFlightPath()  },
+        ClearFlightTrail {
+            onTriggered:  clearFlightPath()
+        },
         ToolStripAction {
             text:           qsTr("Stop Meas.")
             iconSource:     "/qmlimages/clearmeasure.svg"
@@ -41,6 +44,11 @@ ToolStripActionList {
             onTriggered: clearMeasure()
         },
         CenterMap {  onTriggered:  centerMap()  },
+        FullScreen {
+            //visible if decoding and video is current full screen mode
+            visible:      QGroundControl.videoManager.decoding && videoControl.pipState.state === videoControl.pipState.fullState
+            onTriggered:  goFullScreen()
+        },
         GuidedActionTakeoff { },
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },

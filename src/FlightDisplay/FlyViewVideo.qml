@@ -203,6 +203,7 @@ Item {
         }
     }
 
+    /*
     Rectangle {
         id:                     _enterFullScreenVideo
         anchors.right :         parent.right
@@ -235,6 +236,7 @@ Item {
             color:              "white"
         }
     }
+    */
 
     ProximityRadarVideoView{
         anchors.fill:   parent
