@@ -49,6 +49,8 @@ public:
     DEFINE_SETTINGFACT(pilotViewOnFBW)
     DEFINE_SETTINGFACT(nadirViewOnLand)
     DEFINE_SETTINGFACT(recordOnFlying)
+    DEFINE_SETTINGFACT(autoNuc)
+    DEFINE_SETTINGFACT(nucPeriod)
     DEFINE_SETTINGFACT(osd)
     DEFINE_SETTINGFACT(enableRemoteStreaming)
     DEFINE_SETTINGFACT(remoteStreamID)

@@ -143,6 +143,8 @@ DECLARE_SETTINGSFACT(VideoSettings, targetOverlay)
 DECLARE_SETTINGSFACT(VideoSettings, pilotViewOnFBW)
 DECLARE_SETTINGSFACT(VideoSettings, nadirViewOnLand)
 DECLARE_SETTINGSFACT(VideoSettings, recordOnFlying)
+DECLARE_SETTINGSFACT(VideoSettings, autoNuc)
+DECLARE_SETTINGSFACT(VideoSettings, nucPeriod)
 DECLARE_SETTINGSFACT(VideoSettings, osd)
 
 DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)

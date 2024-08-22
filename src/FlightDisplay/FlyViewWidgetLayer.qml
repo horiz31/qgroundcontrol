@@ -401,6 +401,11 @@ Item {
 
         }
         onClearFlightPath:     _activeVehicle ? _activeVehicle.trajectoryPoints.clear() : 0;
+        onGoFullScreen:
+        {
+                if (!QGroundControl.videoManager.fullScreen)
+                    QGroundControl.videoManager.fullScreen = true
+        }
 
         onCenterMap:           { mapControl.zoomLevel = 16; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
         onClearMeasure: {  _showDistanceToAircraft = false; QGroundControl.annotationManager.setMeasureDistanceStartPoint("", true);}

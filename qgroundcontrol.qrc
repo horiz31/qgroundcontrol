@@ -309,6 +309,7 @@
         <file alias="QGroundControl/FlightMap/AnnotationMapItem.qml">src/FlightMap/MapItems/AnnotationMapItem.qml</file>
         <file alias="QGroundControl/FlightDisplay/RangeFinderDisplay.qml">src/FlightDisplay/RangeFinderDisplay.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightFailsafeCheck.qml">src/FlightDisplay/PreFlightFailsafeCheck.qml</file>
+        <file alias="QGroundControl/FlightDisplay/FullScreen.qml">src/FlightDisplay/FullScreen.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>
