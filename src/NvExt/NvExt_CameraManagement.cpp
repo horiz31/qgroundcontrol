@@ -678,6 +678,33 @@ void CameraManagement::setSysIrNUCCommand(void)
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_DoNUC,0,0,0,0,0,0);
 }
 
+void CameraManagement::setSysIrLevelIncrease(void)
+{
+    /* Increase IR LEVEL */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIRGainLevel,1,0,0,0,0,0);
+}
+void CameraManagement::setSysIrLevelDecrease(void)
+{
+    /* Decrease IR LEVEL */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIRGainLevel,0,0,0,0,0,0);
+}
+
+void CameraManagement::setSysIrGainIncrease(void)
+{
+    /* Increase IR Gain */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIRGainLevel,3,0,0,0,0,0);
+}
+void CameraManagement::setSysIrGainDecrease(void)
+{
+    /* Decrease IR Gain */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIRGainLevel,2,0,0,0,0,0);
+}
+void CameraManagement::setSysIrGainLevelReset(void)
+{
+    /* Reset IR Gain/LEVEL */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetIRGainLevel,4,0,0,0,0,0);
+}
+
 void CameraManagement::setSysRecToggleCommand(int chan)
 {
     /* Set the system sensor */

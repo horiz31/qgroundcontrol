@@ -231,6 +231,11 @@ public:
     Q_INVOKABLE void setSysIrColorPCommand(void);
     Q_INVOKABLE void setSysIrBWPCommand(void);
     Q_INVOKABLE void setSysIrNUCCommand(void);
+    Q_INVOKABLE void setSysIrLevelIncrease(void);
+    Q_INVOKABLE void setSysIrLevelDecrease(void);
+    Q_INVOKABLE void setSysIrGainIncrease(void);
+    Q_INVOKABLE void setSysIrGainDecrease(void);
+    Q_INVOKABLE void setSysIrGainLevelReset(void);
     Q_INVOKABLE void setSysRecToggleCommand(int chan);
     Q_INVOKABLE void setSysRecOnCommand(int chan);
     Q_INVOKABLE void RecordChannel1On(void);

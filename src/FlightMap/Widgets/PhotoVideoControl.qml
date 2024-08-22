@@ -992,7 +992,60 @@ Rectangle {
                             }
                         }
                     }
-
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("IR Level")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "Decrease"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrLevelDecrease()
+                            }
+                        }
+                        QGCButton {
+                            text: "Increase"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrLevelIncrease()
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("IR Gain")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "Decrease"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrGainDecrease()
+                            }
+                        }
+                        QGCButton {
+                            text: "Increase"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrGainIncrease()
+                            }
+                        }
+                    }
+                    QGCLabel {
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        text:               qsTr("IR Gain/Level")
+                        visible:            _nextVisionGimbalAvailable
+                    }
+                    RowLayout{
+                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                        QGCButton {
+                            text: "Reset"
+                            onClicked: {
+                                joystickManager.cameraManagement.setSysIrGainLevelReset()
+                            }
+                        }
+                    }
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
