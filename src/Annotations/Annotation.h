@@ -12,6 +12,7 @@
 #include <QObject>
 #include <QGeoCoordinate>
 #include <QElapsedTimer>
+#include <QColor>
 
 
 class Annotation : public QObject

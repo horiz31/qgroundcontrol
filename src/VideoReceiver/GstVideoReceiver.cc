@@ -2,8 +2,12 @@
 #include <QDir>
 #include <QNetworkInterface>
 #include <QUrl>
-
+#include <QDateTime>
+#include <cstring>
 #include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
+#include <gst/app/app.h>
+
 namespace
 {
 constexpr const char *np_kFileMux[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver::FILE_FORMAT_MIN]
@@ -29,6 +33,53 @@ QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
         break; \
     } \
     (void) 0
+
+//#ifndef NDEBUG
+//#define __DEBUG_PROBE_FRAME_STATIC(__pipeline__, __p_element__, __pad__, __probe_type__, __dot_file_name__)\
+//{\
+//do{\
+//GstPad *__p_probe_pad__ = nullptr;\
+//if(!(__p_probe_pad__ = gst_element_get_static_pad((__p_element__), (__pad__))))\
+//{\
+//     qCCritical(VideoReceiverLog) <<  "gst_element_get_static_pad failed"; \
+//    break;\
+//}\
+//auto const __probe_id__ = gst_pad_add_probe(\
+//    __p_probe_pad__,\
+//    __probe_type__,\
+//    [](GstPad *const,\
+//       GstPadProbeInfo *const,\
+//       gpointer const p_userData) -> GstPadProbeReturn\
+//    {\
+//        qCDebug(VideoReceiverLog) << "Encountered "#__probe_type__" on element "#__pipeline__"-->"#__p_element__" with pad "<<__pad__; \
+//        gst_debug_bin_to_dot_file(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL, __dot_file_name__);\
+//        /*gchar* p_dotData = gst_debug_bin_to_dot_data(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL);\
+//        if(p_dotData!=nullptr){\
+//            std::ofstream ofs((std::string("/storage/emulated/0/EchoMav GCS/")+__dot_file_name__+".dot").c_str());\
+//            ofs.write((char*)p_dotData, strlen((char*)p_dotData));\
+//            ofs.close();\
+//            g_free(p_dotData);\
+//            p_dotData=nullptr;\
+//        }*/\
+//        return GST_PAD_PROBE_REMOVE; \
+//    },\
+//    this,\
+//    nullptr);\
+//gst_object_unref(__p_probe_pad__);\
+//__p_probe_pad__ = nullptr;\
+//if(!(__probe_id__))\
+//{\
+//        qCCritical(VideoReceiverLog) <<  "__probe_id__ failed"; \
+//break;\
+//}\
+//}while(0);\
+//}\
+//(void)0
+//#else
+#define __DEBUG_PROBE_FRAME_STATIC(__pipeline__, __p_element__, __pad__, __probe_type__, __dot_file_name__)\
+(void)0
+//#endif
+
 
 bool Worker::needDispatch()
 {
@@ -69,6 +120,85 @@ void Worker::run()
         t();
     }
 }
+#if !__USE_RIDGERUN_INTERPIPE__
+class GstVideoReceiver::_ConnectionQueue
+{
+public:
+    _ConnectionQueue()
+        : m_readyQueue{}
+        , m_freeQueue{}
+        , m_mut{}
+        , m_cv{}
+    {
+        for(auto i=0;i<500;++i)
+        {
+            m_freeQueue.enqueue(gst_buffer_new_allocate(nullptr,60000000,nullptr));
+        }
+    }
+    _ConnectionQueue(_ConnectionQueue const&) = delete;
+    _ConnectionQueue(_ConnectionQueue&&) = delete;
+    _ConnectionQueue& operator=(_ConnectionQueue const&)=delete;
+    _ConnectionQueue& operator=(_ConnectionQueue&&)=delete;
+    ~_ConnectionQueue()
+    {
+        while(!m_readyQueue.isEmpty())
+        {
+            gst_buffer_unref(m_readyQueue.dequeue());
+        }
+        while(!m_freeQueue.isEmpty())
+        {
+            gst_buffer_unref(m_freeQueue.dequeue());
+        }
+    }
+    GstBuffer* getFreeBuffer()
+    {
+        m_mut.lock();
+        while(m_freeQueue.isEmpty())
+        {
+            m_cv.wait(&m_mut);
+        }
+        auto *const p_buffer=m_freeQueue.dequeue();
+        m_mut.unlock();
+        return p_buffer;
+    }
+    GstBuffer* getReadyBuffer()
+    {
+        m_mut.lock();
+        while(m_readyQueue.isEmpty())
+        {
+            m_cv.wait(&m_mut);
+        }
+        auto *const p_buffer=m_readyQueue.dequeue();
+        m_mut.unlock();
+        return p_buffer;
+    }
+    void pushFreeBuffer(GstBuffer*const p_buffer)
+    {
+        {
+            QMutexLocker queueLock(&m_mut);
+            m_freeQueue.enqueue(p_buffer);
+        }
+        m_cv.wakeOne();
+    }
+    void pushReadyBuffer(GstBuffer*const p_buffer)
+    {
+        {
+            QMutexLocker queueLock(&m_mut);
+            m_readyQueue.enqueue(p_buffer);
+            while(m_readyQueue.size()>499)
+            {
+                m_freeQueue.enqueue(m_readyQueue.dequeue());
+            }
+        }
+        m_cv.wakeOne();
+    }
+private:
+    QQueue<GstBuffer*> m_readyQueue;
+    QQueue<GstBuffer*> m_freeQueue;
+    QMutex m_mut;
+    QWaitCondition m_cv;
+};
+#endif
 
 GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     : VideoReceiver(p_parent)
@@ -87,6 +217,13 @@ GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     , m_lastDecodingFrameTime{0}
     , m_decodingPipelineProbeId{0}
     , m_restartingDecode{false}
+#if !__USE_RIDGERUN_INTERPIPE__
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
+    , mp_decodeConnectionQueue{nullptr}
+#else
+    , mp_decodeConnectionQueue{std::make_unique<_ConnectionQueue>()}
+#endif
+#endif
     , m_recorderActive{false}
     , mp_recordingPipeline{nullptr}
     , m_videoDirectory{}
@@ -97,16 +234,31 @@ GstVideoReceiver::GstVideoReceiver(QObject *const p_parent)
     , m_recordShutdownWaitCondition{}
     , m_recordShutdownMut{}
     , m_recordEOS{false}
+#if !__USE_RIDGERUN_INTERPIPE__
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
+    , mp_recordConnectionQueue{nullptr}
+#else
+    , mp_recordConnectionQueue{std::make_unique<_ConnectionQueue>()}
+#endif
+#endif
     , m_remoteStreamActive{false}
     , mp_remoteStreamPipeline{nullptr}
     , m_remoteStreamURI{}
     , m_lastRemoteStreamFrameTime{0}
     , m_restartingRemoteStream{false}
+#if !__USE_RIDGERUN_INTERPIPE__
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
+    , mp_remoteStreamConnectionQueue{nullptr}
+#else
+    , mp_remoteStreamConnectionQueue{std::make_unique<_ConnectionQueue>()}
+#endif
+#endif
 {
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::GstVideoReceiver";
     mp_slotHandler->start();
     connect(&m_watchdogTimer, &QTimer::timeout, this, &GstVideoReceiver::_pipelineWatchdog);
     m_watchdogTimer.start(1000);
+
     qCDebug(VideoReceiverLog) << "EXIT GstVideoReceiver::GstVideoReceiver";
 }
 
@@ -740,7 +892,25 @@ void GstVideoReceiver::_onNewPad(GstElement *const p_element,
         //called from _startRecordingPipeline
         qCDebug(VideoReceiverLog)
             << "GstVideoReceiver::_onNewPad with mp_recordingPipeline->parsebin " << p_self->m_uri;
-
+#if defined(__android__)
+        auto *p_parserHelper = gst_bin_get_by_name(GST_BIN(p_self->mp_recordingPipeline),
+                                              "mp_recordingPipeline->parserhelper");
+        if (p_parserHelper == nullptr)
+        {
+            qCCritical(VideoReceiverLog) << "p_parserHelper==nullptr " << p_self->m_uri;
+        }
+        else
+        {
+            if (!gst_element_link(p_element, p_parserHelper))
+            {
+                qCCritical(VideoReceiverLog) << "gst_element_link(mp_recordingPipeline->parsebin, "
+                                                "parserhelper) failed "
+                                             << p_self->m_uri;
+            }
+            gst_object_unref(p_parserHelper);
+            p_parserHelper = nullptr;
+        }
+#else
         auto *p_saveBin = gst_bin_get_by_name(GST_BIN(p_self->mp_recordingPipeline),
                                               "mp_recordingPipeline->savebin");
         if (p_saveBin == nullptr)
@@ -758,7 +928,33 @@ void GstVideoReceiver::_onNewPad(GstElement *const p_element,
             gst_object_unref(p_saveBin);
             p_saveBin = nullptr;
         }
+#endif
     }
+#if defined(__android__)
+    else if (strcmp(p_name, "mp_recordingPipeline->parserhelper") == 0)
+    {
+        //called from _startRecordingPipeline
+        qCDebug(VideoReceiverLog)
+            << "GstVideoReceiver::_onNewPad with mp_recordingPipeline->parserhelper " << p_self->m_uri;
+        auto *p_saveBin = gst_bin_get_by_name(GST_BIN(p_self->mp_recordingPipeline),
+                                              "mp_recordingPipeline->savebin");
+        if (p_saveBin == nullptr)
+        {
+            qCCritical(VideoReceiverLog) << "p_saveBin==nullptr " << p_self->m_uri;
+        }
+        else
+        {
+            if (!gst_element_link(p_element, p_saveBin))
+            {
+                qCCritical(VideoReceiverLog) << "gst_element_link(mp_recordingPipeline->parserhelper, "
+                                                "p_saveBin) failed "
+                                             << p_self->m_uri;
+            }
+            gst_object_unref(p_saveBin);
+            p_saveBin = nullptr;
+        }
+    }
+#endif
     else
     {
         qCDebug(VideoReceiverLog) << "Unexpected call! " << p_self->m_uri;
@@ -817,8 +1013,23 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
         auto sourceSinkAdded = false;
         auto running = false;
         m_lastSourceFrameTime = 0;
+        GstCaps *p_caps = nullptr;
         do
         {
+            if (isUdp264)
+            {
+                __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                    "application/x-rtp, media=(string)video, "
+                                    "clock-rate=(int)90000, "
+                                    "encoding-name=(string)H264"));
+            }
+            else if (isUdp265)
+            {
+                __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                    "application/x-rtp, media=(string)video, "
+                                    "clock-rate=(int)90000, "
+                                    "encoding-name=(string)H265"));
+            }
             {
                 __BREAK_IF_FAIL(mp_sourcePipeline = gst_pipeline_new("mp_sourcePipeline"));
                 g_object_set(mp_sourcePipeline, "message-forward", true, nullptr);
@@ -866,28 +1077,11 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
                                      .toUtf8()
                                      .data(),
                                  nullptr);
+                    if (p_caps != nullptr)
                     {
-                        GstCaps *p_caps = nullptr;
-                        if (isUdp264)
-                        {
-                            __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
-                                                "application/x-rtp, media=(string)video, "
-                                                "clock-rate=(int)90000, "
-                                                "encoding-name=(string)H264"));
-                        }
-                        else if (isUdp265)
-                        {
-                            __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
-                                                "application/x-rtp, media=(string)video, "
-                                                "clock-rate=(int)90000, "
-                                                "encoding-name=(string)H265"));
-                        }
-                        if (p_caps != nullptr)
-                        {
-                            g_object_set(static_cast<gpointer>(p_source), "caps", p_caps, nullptr);
-                            gst_caps_unref(p_caps);
-                            p_caps = nullptr;
-                        }
+                        g_object_set(static_cast<gpointer>(p_source), "caps", p_caps, nullptr);
+                        //gst_caps_unref(p_caps);
+                        //p_caps = nullptr;
                     }
                     // Add multicast support caps, looping through all the available interfaces
                     QString interfaceList = "";
@@ -1009,10 +1203,44 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
             }
             {
                 //create the intersink element for the recorder and decoder pipelines
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
                 __BREAK_IF_FAIL(
                     p_sourceSink = gst_element_factory_make("intersink",
                                                             "mp_sourcePipeline->mp_sourceSink"));
                 g_object_set(p_sourceSink, "producer-name", "mp_sourceSink", nullptr);
+#elif __USE_RIDGERUN_INTERPIPE__
+                __BREAK_IF_FAIL(
+                    p_sourceSink = gst_element_factory_make("interpipesink",
+                                                            "mp_sourcePipeline->mp_sourceSink"));
+#else
+                //TODO this is broken
+                __BREAK_IF_FAIL(
+                    p_sourceSink = gst_element_factory_make("appsink",
+                                                            "mp_sourcePipeline->mp_sourceSink"));
+                g_object_set(p_sourceSink, "emit-signals", true, nullptr);
+                GstCaps *p_caps = nullptr;
+                if (isUdp264)
+                {
+                    __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                        "application/x-rtp, media=(string)video, "
+                                        "clock-rate=(int)90000, "
+                                        "encoding-name=(string)H264"));
+                }
+                else if (isUdp265)
+                {
+                    __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                        "application/x-rtp, media=(string)video, "
+                                        "clock-rate=(int)90000, "
+                                        "encoding-name=(string)H265"));
+                }
+                if (p_caps != nullptr)
+                {
+                    g_object_set(p_sourceSink, "caps", p_caps, nullptr);
+                    gst_caps_unref(p_caps);
+                    p_caps = nullptr;
+                }
+                g_signal_connect(p_sourceSink, "new-sample", G_CALLBACK(_newSample), this);
+#endif
                 __BREAK_IF_FAIL(
                     sourceSinkAdded = gst_bin_add(GST_BIN(mp_sourcePipeline), p_sourceSink));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_sourceSink));
@@ -1071,7 +1299,13 @@ VideoReceiver::STATUS GstVideoReceiver::_startSourcePipeline()
             }
             running = gst_element_set_state(mp_sourcePipeline, GST_STATE_PLAYING)
                       != GST_STATE_CHANGE_FAILURE;
+            GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(mp_sourcePipeline),GST_DEBUG_GRAPH_SHOW_ALL, "mp_sourcePipeline");
         } while (0);
+        if (p_caps != nullptr)
+        {
+            gst_caps_unref(p_caps);
+            p_caps = nullptr;
+        }
         if (running && result == STATUS_OK)
         {
             qCDebug(VideoReceiverLog) << "Started source pipeline with uri=" << m_uri;
@@ -1171,6 +1405,51 @@ gboolean GstVideoReceiver::_onSourcePipelineBusMessage(GstBus *const p_bus,
     return result;
 }
 
+#if !__USE_RIDGERUN_INTERPIPE__
+gboolean GstVideoReceiver::_newSample(GstElement*const p_appsink, gpointer const p_data)
+{
+    //TODO this is broken
+    auto *const p_this = (GstVideoReceiver *) p_data;
+    if(p_this->mp_decodingPipeline || p_this->mp_recordingPipeline || p_this->mp_remoteStreamPipeline)
+    {
+        auto *const p_sample = gst_app_sink_pull_sample(GST_APP_SINK(p_appsink));
+        auto *const p_newBuffer=gst_sample_get_buffer(p_sample);
+        GstMapInfo mapInfoNew;
+        gst_buffer_map(p_newBuffer, &mapInfoNew, GST_MAP_READ);
+        if(p_this->mp_decodingPipeline)
+        {
+            auto*const p_freeBuffer=p_this->mp_decodeConnectionQueue->getFreeBuffer();
+            GstMapInfo mapInfoFree;
+            gst_buffer_map(p_freeBuffer, &mapInfoFree, GST_MAP_WRITE);
+            std::memcpy(mapInfoFree.data, mapInfoNew.data, mapInfoNew.size);
+            gst_buffer_unmap(p_freeBuffer, &mapInfoFree);
+            p_this->mp_decodeConnectionQueue->pushReadyBuffer(p_freeBuffer);
+        }
+        if(p_this->mp_recordingPipeline)
+        {
+            auto*const p_freeBuffer=p_this->mp_recordConnectionQueue->getFreeBuffer();
+            GstMapInfo mapInfoFree;
+            gst_buffer_map(p_freeBuffer, &mapInfoFree, GST_MAP_WRITE);
+            std::memcpy(mapInfoFree.data, mapInfoNew.data, mapInfoNew.size);
+            gst_buffer_unmap(p_freeBuffer, &mapInfoFree);
+            p_this->mp_recordConnectionQueue->pushReadyBuffer(p_freeBuffer);
+        }
+        if(p_this->mp_remoteStreamPipeline)
+        {
+            auto*const p_freeBuffer=p_this->mp_remoteStreamConnectionQueue->getFreeBuffer();
+            GstMapInfo mapInfoFree;
+            gst_buffer_map(p_freeBuffer, &mapInfoFree, GST_MAP_WRITE);
+            std::memcpy(mapInfoFree.data, mapInfoNew.data, mapInfoNew.size);
+            gst_buffer_unmap(p_freeBuffer, &mapInfoFree);
+            p_this->mp_remoteStreamConnectionQueue->pushReadyBuffer(p_freeBuffer);
+        }
+        gst_buffer_unmap(p_newBuffer, &mapInfoNew);
+        gst_sample_unref(p_sample);
+    }
+    return GST_FLOW_OK;
+}
+#endif
+
 VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
 {
     // mp_sourceSink1-->intersrc-->queue-->parserbin->decodebin3-->mp_videoSink]
@@ -1207,13 +1486,52 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                 __BREAK_IF_FAIL(mp_decodingPipeline = gst_pipeline_new("mp_decodingPipeline"));
                 g_object_set(mp_decodingPipeline, "message-forward", true, nullptr);
             }
-
             {
                 //create the intersrc element that accepts input from mp_sourceSink1
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
                 __BREAK_IF_FAIL(
                     p_source = gst_element_factory_make("intersrc",
                                                         "mp_decodingPipeline->intersrc"));
                 g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
+#elif __USE_RIDGERUN_INTERPIPE__
+                __BREAK_IF_FAIL(
+                    p_source = gst_element_factory_make("interpipesrc",
+                                                        "mp_decodingPipeline->interpipesrc"));
+                g_object_set(p_source, "listen-to", "mp_sourcePipeline->mp_sourceSink", nullptr);
+                g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+#else
+                //TODO this is broken
+                __BREAK_IF_FAIL(
+                    p_source = gst_element_factory_make("appsrc",
+                                                        "mp_decodingPipeline->appsrc"));
+
+                g_object_set(p_source, "emit-signals", true, nullptr);
+                g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+                if (mp_sourcePipeline)
+                {
+                    auto *p_sourceElement = gst_bin_get_by_name(GST_BIN(mp_sourcePipeline),
+                                                                "mp_sourcePipeline->sourceElement");
+                    if (p_sourceElement != nullptr)
+                    {
+                        auto *p_sourcePad = gst_element_get_static_pad(p_sourceElement, "src");
+                        if (p_sourcePad != nullptr)
+                        {
+                            auto *p_sourcePadCaps = gst_pad_query_caps(p_sourcePad, nullptr);
+                            if (p_sourcePadCaps != nullptr)
+                            {
+                                g_object_set(p_source, "caps", p_sourcePadCaps, nullptr);
+                                gst_caps_unref(p_sourcePadCaps);
+                                p_sourcePadCaps = nullptr;
+                            }
+                            gst_object_unref(p_sourcePad);
+                            p_sourcePad = nullptr;
+                        }
+                        gst_object_unref(p_sourceElement);
+                        p_sourceElement = nullptr;
+                    }
+                }
+                g_signal_connect(p_source, "need-data", G_CALLBACK(_decodeNeedData), this);
+#endif
                 __BREAK_IF_FAIL(sourceAdded = gst_bin_add(GST_BIN(mp_decodingPipeline), p_source));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
             }
@@ -1225,6 +1543,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                 g_object_set(p_queue, "silent", true, nullptr);
                 __BREAK_IF_FAIL(queueAdded = gst_bin_add(GST_BIN(mp_decodingPipeline), p_queue));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_queue));
+
             }
             {
                 //create the parser
@@ -1336,6 +1655,7 @@ VideoReceiver::STATUS GstVideoReceiver::_startDecodingPipeline()
                 p_bus = nullptr;
             }
             running = _syncPipelineToSourceAndStart(mp_decodingPipeline);
+            GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(mp_decodingPipeline),GST_DEBUG_GRAPH_SHOW_ALL, "mp_decodingPipeline");
         } while (0);
         if (running && result == STATUS_OK)
         {
@@ -1441,9 +1761,25 @@ gboolean GstVideoReceiver::_onDecodingPipelineBusMessage(GstBus *const p_bus,
     return result;
 }
 
+#if !__USE_RIDGERUN_INTERPIPE__
+void GstVideoReceiver::_decodeNeedData(GstElement*const p_appsrc, guint const size, gpointer const p_data)
+{
+    //TODO this is broken
+    auto *const p_this = (GstVideoReceiver *) p_data;
+    if(p_this->mp_sourcePipeline)
+    {
+        auto*const p_buffer=p_this->mp_decodeConnectionQueue->getReadyBuffer();
+        GstFlowReturn ret;
+        g_signal_emit_by_name(p_appsrc, "push-buffer", p_buffer, &ret);
+        p_this->mp_decodeConnectionQueue->pushFreeBuffer(p_buffer);
+       // gst_buffer_unref(p_buffer);
+    }
+}
+#endif
+
 VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
 {
-    // mp_sourceSink-->intersrc-->queue-->parser-->savebin(mux-->filesink)]
+    // mp_sourceSink-->intersrc-->queue-->parser-->mux-->filesink]
 
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_startRecordingPipeline " << m_uri;
     auto result = STATUS_OK;
@@ -1465,6 +1801,11 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
         auto queueAdded = false;
         GstElement *p_parser = nullptr;
         auto parserAdded = false;
+#if defined(__android__)
+        //for some reason, android requires this extra part
+        GstElement *p_parserHelper = nullptr;
+        auto parserHelperAdded=false;
+#endif
         GstElement *p_saveBin = nullptr;
         auto saveBinAdded = false;
         auto running = false;
@@ -1478,10 +1819,49 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
 
             {
                 //create the intersrc element that accepts input from mp_sourceSink1
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
                 __BREAK_IF_FAIL(
                     p_source = gst_element_factory_make("intersrc",
                                                         "mp_recordingPipeline->intersrc"));
                 g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
+#elif __USE_RIDGERUN_INTERPIPE__
+                __BREAK_IF_FAIL(
+                    p_source = gst_element_factory_make("interpipesrc",
+                                                        "mp_recordingPipeline->interpipesrc"));
+                g_object_set(p_source, "listen-to", "mp_sourcePipeline->mp_sourceSink", nullptr);
+                g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+#else
+                //TODO this is broken
+                __BREAK_IF_FAIL(
+                    p_source = gst_element_factory_make("appsrc",
+                                                        "mp_recordingPipeline->appsrc"));
+                 g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+                auto const isUdp264 = m_uri.startsWith("udp://", Qt::CaseInsensitive);
+                auto const isUdp265 = m_uri.startsWith("udp265://", Qt::CaseInsensitive);
+                g_object_set(p_source, "emit-signals", true, nullptr);
+                GstCaps *p_caps = nullptr;
+                if (isUdp264)
+                {
+                    __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                        "application/x-rtp, media=(string)video, "
+                                        "clock-rate=(int)90000, "
+                                        "encoding-name=(string)H264"));
+                }
+                else if (isUdp265)
+                {
+                    __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                        "application/x-rtp, media=(string)video, "
+                                        "clock-rate=(int)90000, "
+                                        "encoding-name=(string)H265"));
+                }
+                if (p_caps != nullptr)
+                {
+                    g_object_set(p_source, "caps", p_caps, nullptr);
+                    gst_caps_unref(p_caps);
+                    p_caps = nullptr;
+                }
+                g_signal_connect(p_source, "need-data", G_CALLBACK(_recordNeedData), this);
+#endif
                 __BREAK_IF_FAIL(sourceAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_source));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
             }
@@ -1506,20 +1886,43 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_queue));
             }
             {
-                //create the parser
+                 //create the parser
                 __BREAK_IF_FAIL(
                     p_parser = gst_element_factory_make("parsebin",
                                                         "mp_recordingPipeline->parsebin"));
                 __BREAK_IF_FAIL(parserAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_parser));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_parser));
             }
-
+#if defined(__android__)
+            {
+                auto const isUdp264 = m_uri.startsWith("udp://", Qt::CaseInsensitive);
+                auto const isUdp265 = m_uri.startsWith("udp265://", Qt::CaseInsensitive);
+                if(isUdp265)
+                {
+                    //create the parserHelper filter
+                    __BREAK_IF_FAIL(
+                        p_parserHelper = gst_element_factory_make("h265parse",
+                                                                  "mp_recordingPipeline->parserhelper"));
+                }
+                else if(isUdp264)
+                {
+                    //create the parserHelper filter
+                    __BREAK_IF_FAIL(
+                        p_parserHelper = gst_element_factory_make("h264parse",
+                                                                  "mp_recordingPipeline->parserhelper"));
+                }
+                __BREAK_IF_FAIL(
+                    parserHelperAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_parserHelper));
+                __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_parserHelper));
+            }
+#endif
             {
                 __BREAK_IF_FAIL(p_saveBin = _createSaveBin());
                 __BREAK_IF_FAIL(
                     saveBinAdded = gst_bin_add(GST_BIN(mp_recordingPipeline), p_saveBin));
                 __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_saveBin));
             }
+
             {
                 //add a probe to the sink to keep track of when it gets a frame
                 GstPad *p_sinkPad = nullptr;
@@ -1599,11 +2002,17 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 __BREAK_IF_FAIL(gst_element_link(p_source, p_queue));
                 __BREAK_IF_FAIL(gst_element_link(p_queue, p_parser));
                 _deferredLinkhelper(p_parser);
+#if defined(__android__)
+                _deferredLinkhelper(p_parserHelper);
+#endif
             }
             {
                 p_source = nullptr;
                 p_queue = nullptr;
                 p_parser = nullptr;
+#if defined(__android__)
+                p_parserHelper=nullptr;
+#endif
                 p_saveBin = nullptr;
             }
             {
@@ -1652,6 +2061,13 @@ VideoReceiver::STATUS GstVideoReceiver::_startRecordingPipeline()
                 gst_object_unref(p_parser);
                 p_parser = nullptr;
             }
+#if defined(__android__)
+            if (!parserHelperAdded && p_parserHelper)
+            {
+                gst_object_unref(p_parserHelper);
+                p_parserHelper = nullptr;
+            }
+#endif
             if (!saveBinAdded && p_saveBin)
             {
                 gst_object_unref(p_saveBin);
@@ -1741,7 +2157,6 @@ gboolean GstVideoReceiver::_onRecordingPipelineBusMessage(GstBus *const p_bus,
     }
     return TRUE;
 }
-
 GstElement *GstVideoReceiver::_createSaveBin()
 {
     qCDebug(VideoReceiverLog) << "ENTER GstVideoReceiver::_createSaveBin " << m_uri;
@@ -1766,7 +2181,6 @@ GstElement *GstVideoReceiver::_createSaveBin()
             {
                 g_object_set(static_cast<gpointer>(p_mux), "offset-to-zero", true, nullptr);
             }
-
             __BREAK_IF_FAIL(muxAdded = gst_bin_add(GST_BIN(p_saveBin), p_mux));
             __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_mux));
         }
@@ -1826,6 +2240,20 @@ GstElement *GstVideoReceiver::_createSaveBin()
     return p_saveBin;
 }
 
+#if !__USE_RIDGERUN_INTERPIPE__
+void GstVideoReceiver::_recordNeedData(GstElement*const p_appsrc, guint const size, gpointer const p_data)
+{
+    auto *const p_this = (GstVideoReceiver *) p_data;
+    if(p_this->mp_sourcePipeline)
+    {
+        auto*const p_buffer=p_this->mp_recordConnectionQueue->getReadyBuffer();
+        GstFlowReturn ret;
+        g_signal_emit_by_name(p_appsrc, "push-buffer", p_buffer, &ret);
+        // gst_buffer_unref(p_buffer);
+    }
+}
+#endif
+
 VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
 {
     // mp_sourceSink-->intersrc-->queue-->parser-->mpegtsmux-->srtsink]
@@ -1876,10 +2304,49 @@ VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
                 }
                 {
                     //create the intersrc element that accepts input from mp_sourceSink1
+#if GST_CHECK_PLUGINS_BASE_VERSION(1,24,0)
                     __BREAK_IF_FAIL(
                         p_source = gst_element_factory_make("intersrc",
                                                             "mp_remoteStreamPipeline->intersrc"));
                     g_object_set(p_source, "producer-name", "mp_sourceSink", nullptr);
+#elif __USE_RIDGERUN_INTERPIPE__
+                    __BREAK_IF_FAIL(
+                        p_source = gst_element_factory_make("interpipesrc",
+                                                            "mp_remoteStreamPipeline->interpipesrc"));
+                    g_object_set(p_source, "listen-to", "mp_sourcePipeline->mp_sourceSink", nullptr);
+                    g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+#else
+                    //TODO this is broken
+                    __BREAK_IF_FAIL(
+                        p_source = gst_element_factory_make("appsrc",
+                                                            "mp_remoteStreamPipeline->appsrc"));
+                     g_object_set(p_source, "format", GST_FORMAT_TIME, nullptr);
+                    auto const isUdp264 = m_uri.startsWith("udp://", Qt::CaseInsensitive);
+                    auto const isUdp265 = m_uri.startsWith("udp265://", Qt::CaseInsensitive);
+                    g_object_set(p_source, "emit-signals", true, nullptr);
+                    GstCaps *p_caps = nullptr;
+                    if (isUdp264)
+                    {
+                        __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                            "application/x-rtp, media=(string)video, "
+                                            "clock-rate=(int)90000, "
+                                            "encoding-name=(string)H264"));
+                    }
+                    else if (isUdp265)
+                    {
+                        __BREAK_IF_FAIL(p_caps = gst_caps_from_string(
+                                            "application/x-rtp, media=(string)video, "
+                                            "clock-rate=(int)90000, "
+                                            "encoding-name=(string)H265"));
+                    }
+                    if (p_caps != nullptr)
+                    {
+                        g_object_set(p_source, "caps", p_caps, nullptr);
+                        gst_caps_unref(p_caps);
+                        p_caps = nullptr;
+                    }
+                    g_signal_connect(p_source, "need-data", G_CALLBACK(_remoteStreamNeedData), this);
+#endif
                     __BREAK_IF_FAIL(
                         sourceAdded = gst_bin_add(GST_BIN(mp_remoteStreamPipeline), p_source));
                     __BREAK_IF_FAIL(gst_element_sync_state_with_parent(p_source));
@@ -1997,7 +2464,6 @@ VideoReceiver::STATUS GstVideoReceiver::_startRemoteStreamPipeline()
                     p_bus = nullptr;
                 }
                 running = _syncPipelineToSourceAndStart(mp_remoteStreamPipeline);
-
             } while (0);
             if (running && result == STATUS_OK)
             {
@@ -2074,7 +2540,7 @@ void GstVideoReceiver::_stopRemoteStreamPipeline()
 }
 
 gboolean GstVideoReceiver::_onRemoteStreamPipelineBusMessage(GstBus *const p_bus,
-                                                             GstMessage *const p_msg,
+                                                             GstMessage *const p_msg,                                             
                                                              gpointer const p_data)
 {
     Q_ASSERT(p_data != nullptr);
@@ -2090,3 +2556,17 @@ gboolean GstVideoReceiver::_onRemoteStreamPipelineBusMessage(GstBus *const p_bus
         "remotestream");
     return result;
 }
+#if !__USE_RIDGERUN_INTERPIPE__
+void GstVideoReceiver::_remoteStreamNeedData(GstElement*const p_appsrc, guint const size, gpointer const p_data)
+{
+    //TODO this is broken
+    auto *const p_this = (GstVideoReceiver *) p_data;
+    if(p_this->mp_sourcePipeline)
+    {
+        auto*const p_buffer=p_this->mp_remoteStreamConnectionQueue->getReadyBuffer();
+        GstFlowReturn ret;
+        g_signal_emit_by_name(p_appsrc, "push-buffer", p_buffer, &ret);
+        // gst_buffer_unref(p_buffer);
+    }
+}
+#endif

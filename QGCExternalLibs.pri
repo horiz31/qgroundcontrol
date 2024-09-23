@@ -151,6 +151,80 @@ WindowsBuild {
     $$SOURCE_DIR/libs/protobuf/windows/include/takmessage.pb.cc \
     $$SOURCE_DIR/libs/protobuf/windows/include/takv.pb.cc \
     $$SOURCE_DIR/libs/protobuf/windows/include/track.pb.cc
+} else {
+    INCLUDEPATH += $$SOURCE_DIR/libs/protobuf/include
+    LIBS += -pthread
+
+    SOURCES += \
+    $$SOURCE_DIR/libs/protobuf/include/cotevent.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/contact.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/detail.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/group.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/precisionlocation.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/status.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/takcontrol.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/takmessage.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/takv.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/track.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/cotevent.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/contact.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/detail.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/group.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/precisionlocation.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/status.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/takcontrol.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/takmessage.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/takv.pb.h \
+    $$SOURCE_DIR/libs/protobuf/include/track.pb.h
+    SOURCES += \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/structurally_valid.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/map_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/implicit_weak_message.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/descriptor_database.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/dynamic_message.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/stringpiece.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/wire_format.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/arena.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/descriptor.pb.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/parse_context.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/message_lite.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/pb_message.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/strutil.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/common.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/status.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/int128.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/substitute.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/generated_message_reflection.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_message.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_message_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_helpers.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_enum.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_enum_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_extension.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_map_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_string_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/compiler/cpp/cpp_primitive_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/zero_copy_stream_impl.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/zero_copy_stream.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/coded_stream.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/printer.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/tokenizer.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/strtod.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/descriptor.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/repeated_field.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/text_format.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/unknown_field_set.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/io/zero_copy_stream_impl_lite.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/stubs/stringprintf.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/reflection_ops.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/generated_message_util.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/extension_set.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/extension_set_heavy.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/any_lite.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/any.cc \
+    $$SOURCE_DIR/libs/protobuf/include/google/protobuf/wire_format_lite.cc
 }
 
 #

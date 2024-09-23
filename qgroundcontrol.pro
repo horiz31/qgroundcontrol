@@ -456,8 +456,6 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 }
 
 SOURCES += \
-    src/Annotations/Annotation.cc \
-    src/Annotations/AnnotationManager.cc \
     src/Vehicle/VehicleEscStatusFactGroup.cc \
     src/api/QGCCorePlugin.cc \
     src/api/QGCOptions.cc \

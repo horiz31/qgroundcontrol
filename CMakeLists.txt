@@ -88,9 +88,9 @@ endif()
 find_package(PkgConfig)
 
 set(GST_DEPENDENCIES
-	gstreamer-1.0>=1.14
-	gstreamer-video-1.0>=1.14
-	gstreamer-gl-1.0>=1.14
+        gstreamer-1.0>=1.24
+        gstreamer-video-1.0>=1.24
+        gstreamer-gl-1.0>=1.24
 	)
 
 if (MSVC)
@@ -224,8 +224,13 @@ install(
     DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/128x128/apps/
     RENAME org.mavlink.qgroundcontrol.png
 )
+configure_file(
+    ${CMAKE_SOURCE_DIR}/deploy/com.echomav.qgroundcontrol.metainfo.xml.in
+    ${CMAKE_BINARY_DIR}/metainfo/com.echomav.qgroundcontrol.metainfo.xml
+    @ONLY
+)
 install(
-    FILES ${CMAKE_SOURCE_DIR}/deploy/org.mavlink.qgroundcontrol.metainfo.xml
+    FILES ${CMAKE_BINARY_DIR}/metainfo/com.echomav.qgroundcontrol.metainfo.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo/
 )
 

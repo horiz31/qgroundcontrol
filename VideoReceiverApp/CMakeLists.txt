@@ -81,9 +81,9 @@ endif()
 #
 find_package(PkgConfig)
 pkg_check_modules(GST
-    gstreamer-1.0>=1.14
-    gstreamer-video-1.0>=1.14
-    gstreamer-gl-1.0>=1.14
+    gstreamer-1.0>=1.24
+    gstreamer-video-1.0>=1.24
+    gstreamer-gl-1.0>=1.24
     egl
     )
 

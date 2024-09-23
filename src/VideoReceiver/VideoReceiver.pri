@@ -15,7 +15,7 @@ LinuxBuild {
     QT += x11extras waylandclient
     CONFIG += link_pkgconfig
     packagesExist(gstreamer-1.0) {
-        PKGCONFIG   += gstreamer-1.0  gstreamer-video-1.0 gstreamer-gl-1.0 egl
+        PKGCONFIG   += gstreamer-1.0  gstreamer-video-1.0 gstreamer-gl-1.0 egl gstreamer-app-1.0
         CONFIG      += VideoEnabled
     }
 } else:MacBuild {
@@ -44,7 +44,7 @@ LinuxBuild {
     exists($$GST_ROOT) {
         CONFIG      += VideoEnabled
 
-        LIBS        += -L$$GST_ROOT/lib -lgstreamer-1.0 -lgstgl-1.0 -lgstvideo-1.0 -lgstbase-1.0
+        LIBS        += -L$$GST_ROOT/lib -lgstreamer-1.0 -lgstgl-1.0 -lgstvideo-1.0 -lgstbase-1.0 -lgstapp-1.0
         LIBS        += -lglib-2.0 -lintl -lgobject-2.0
 
         INCLUDEPATH += \
@@ -65,40 +65,46 @@ LinuxBuild {
         QMAKE_POST_LINK += $$escape_expand(\\n) xcopy \"$$GST_ROOT_WIN\\lib\\gstreamer-1.0\\*.dll\" \"$$DESTDIR_WIN\\gstreamer-plugins\\\" /Y $$escape_expand(\\n)
     }
 } else:AndroidBuild {
-    #- gstreamer assumed to be installed in $$PWD/../../gstreamer-1.0-android-universal-1.18.5/***
+    GSTREAMER_VERSION = 1.20.4
+
+    #- gstreamer assumed to be installed in $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/***
     contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
-        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-1.18.5/armv7
+        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/armv7
     } else:contains(ANDROID_TARGET_ARCH, arm64-v8a) {
-        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-1.18.5/arm64
+        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/arm64
     } else:contains(ANDROID_TARGET_ARCH, x86_64) {
-        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-1.18.5/x86_64
+        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/x86_64
     } else {
         message(Unknown ANDROID_TARGET_ARCH $$ANDROID_TARGET_ARCH)
-        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-1.18.5/x86
+        GST_ROOT = $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/x86
     }
     exists($$GST_ROOT) {
         QMAKE_CXXFLAGS  += -pthread
         CONFIG          += VideoEnabled
 
         # We want to link these plugins statically
-        LIBS += -L$$GST_ROOT/lib/gstreamer-1.0 \
-            -lgstvideo-1.0 \
-            -lgstcoreelements \
-            -lgstplayback \
-            -lgstudp \
-            -lgstrtp \
-            -lgstrtsp \
-            -lgstx264 \
-            -lgstlibav \
-            -lgstsdpelem \
-            -lgstvideoparsersbad \
-            -lgstrtpmanager \
-            -lgstisomp4 \
-            -lgstmatroska \
-            -lgstmpegtsdemux \
-            -lgstandroidmedia \
-            -lgstopengl \
-            -lgsttcp
+       LIBS += -L$$GST_ROOT/lib/gstreamer-1.0 \
+           -lgstvideo-1.0 \
+           -lgstcoreelements \
+           -lgstplayback \
+           -lgstudp \
+           -lgstrtp \
+           -lgstrtsp \
+           -lgstx264 \
+           -lgstlibav \
+           -lgstsdpelem \
+           -lgstvideoparsersbad \
+           -lgstrtpmanager \
+           -lgstisomp4 \
+           -lgstmatroska \
+           -lgstmpegtsdemux \
+           -lgstmpegtsmux \
+           -lgstandroidmedia \
+           -lgstopengl \
+           -lgstsrt \
+           -lgsttcp \
+           -lgstapp-1.0
+
 
         # Rest of GStreamer dependencies
         LIBS += -L$$GST_ROOT/lib \
@@ -111,6 +117,7 @@ LinuxBuild {
             -lgstvideo-1.0 -lavformat -lavcodec -lavutil -lx264 -lavfilter -lswresample \
             -lgstriff-1.0 -lgstcontroller-1.0 -lgstapp-1.0 \
             -lgstsdp-1.0 -lbz2 -lgobject-2.0 -lgstmpegts-1.0 \
+            -lsrt -lcrypto \ #used by gstsrt
             -Wl,--export-dynamic -lgmodule-2.0 -pthread -lglib-2.0 -lorc-0.4 -liconv -lffi -lintl \
 
         INCLUDEPATH += \

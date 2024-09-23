@@ -20,7 +20,8 @@ CONFIG -= debug_and_release
 CONFIG += warn_on
 CONFIG += resources_big
 CONFIG += c++17
-    
+DEFINES += DISABLE_AIRMAP # AIRMAP SDK does not exist anymore
+
 linux {
     linux-g++ | linux-g++-64 | linux-g++-32 | linux-clang {
         message("Linux build")
@@ -36,7 +37,10 @@ linux {
             QMAKE_CXXFLAGS_WARN_ON += -Werror \
                 -Wno-deprecated-copy \      # These come from mavlink headers
                 -Wno-unused-parameter \     # gst_plugins-good has these errors
-                -Wno-implicit-fallthrough   # gst_plugins-good has these errors
+                -Wno-implicit-fallthrough \  # gst_plugins-good has these errors
+                -Wno-sign-compare \                 # protobuf has these errors
+                -Wno-deprecated-declarations \ # protobuf has these errors
+                -Wno-redundant-move  # protobuf has these errors
         }
     } else : linux-rasp-pi2-g++ {
         message("Linux R-Pi2 build")
@@ -55,7 +59,9 @@ linux {
             -Wno-unused-parameter \             # gst_plugins-good has these errors
             -Wno-implicit-fallthrough \         # gst_plugins-good has these errors
             -Wno-unused-command-line-argument \ # from somewhere in Qt generated build files
-            -Wno-parentheses-equality           # android gstreamer header files
+            -Wno-parentheses-equality \         # android gstreamer header files
+            -Wno-sign-compare \                 # protobuf has these errors
+            -Wno-unneeded-internal-declaration  # protobuf has these errors
         QMAKE_CFLAGS_WARN_ON += \
             -Wno-unused-command-line-argument   # from somewhere in Qt generated build files
         target.path = $$DESTDIR

@@ -1,7 +1,7 @@
 #pragma once
 // MESSAGE MAVLINK NvExt SD CARD Report
 
-#define MAVLINK_MSG_NVEXT_SD_CARD_REPORT 248
+//#define MAVLINK_MSG_NVEXT_SD_CARD_REPORT 248
 
 MAVPACKED(
 typedef struct __mavlink_nvext_sd_card_report_t {

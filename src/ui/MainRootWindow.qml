@@ -21,8 +21,6 @@ import QGroundControl.FlightDisplay 1.0
 import QGroundControl.FlightMap     1.0
 import QGroundControl.Vehicle       1.0
 
-import QtQuick.VirtualKeyboard 2.4
-
 
 /// @brief Native QML top level window
 /// All properties defined here are visible to all QML pages.

@@ -15,6 +15,10 @@
 #include "QGCLoggingCategory.h"
 #include "VideoReceiver.h"
 
+#ifndef __USE_RIDGERUN_INTERPIPE__
+#define __USE_RIDGERUN_INTERPIPE__ 1
+#endif
+
 class SubtitleWriter;
 class Worker : public QThread
 {
@@ -65,6 +69,11 @@ public slots:
     virtual void takeScreenshot(QString const& imageFile) override;
 
 private:
+
+#if !__USE_RIDGERUN_INTERPIPE__
+    class _ConnectionQueue;
+#endif
+
     QTimer m_watchdogTimer;
     std::unique_ptr<Worker> mp_slotHandler;
     //TODO consider creating wrapper classes to get ride of a lot of boilerplate
@@ -77,6 +86,8 @@ private:
     qint64 m_lastSourceFrameTime;
     bool m_restartingSource;
 
+
+
     //decoding pipeline
     bool m_decoderActive;
     _GstElement* mp_decodingPipeline;
@@ -84,7 +95,9 @@ private:
     qint64 m_lastDecodingFrameTime;
     unsigned long m_decodingPipelineProbeId;
     bool m_restartingDecode;
-
+#if !__USE_RIDGERUN_INTERPIPE__
+    std::unique_ptr<_ConnectionQueue> mp_decodeConnectionQueue;
+#endif
     //recording pipeline
     bool m_recorderActive;
     _GstElement* mp_recordingPipeline;
@@ -96,6 +109,9 @@ private:
     QWaitCondition m_recordShutdownWaitCondition;
     QMutex m_recordShutdownMut;
     QAtomicInteger<bool> m_recordEOS;
+#if !__USE_RIDGERUN_INTERPIPE__
+    std::unique_ptr<_ConnectionQueue> mp_recordConnectionQueue;
+#endif
 
     //remote streaming pipeline
     bool m_remoteStreamActive;
@@ -103,7 +119,9 @@ private:
     QString m_remoteStreamURI;
     qint64 m_lastRemoteStreamFrameTime;
     bool m_restartingRemoteStream;
-
+#if !__USE_RIDGERUN_INTERPIPE__
+    std::unique_ptr<_ConnectionQueue> mp_remoteStreamConnectionQueue;
+#endif
     void _pipelineWatchdog();
     int _onPipelineBusMessageHelper(_GstBus* p_bus,
                                     _GstMessage* p_msg,
@@ -116,19 +134,31 @@ private:
     STATUS _startSourcePipeline();
     void _stopSourcePipeline();
     static int _onSourcePipelineBusMessage(_GstBus* p_bus, _GstMessage* p_msg, void* p_data);
+    #if !__USE_RIDGERUN_INTERPIPE__
+    static int _newSample(_GstElement* p_appsink, void* p_data);
+#endif
 
     STATUS _startDecodingPipeline();
     void _stopDecodingPipeline();
     static int _onDecodingPipelineBusMessage(_GstBus* p_bus, _GstMessage* p_msg, void* p_data);
+    #if !__USE_RIDGERUN_INTERPIPE__
+    static void _decodeNeedData(_GstElement* p_appsrc, unsigned int size, void* p_udata);
+#endif
 
     STATUS _startRecordingPipeline();
     void _stopRecordingPipeline();
     static int _onRecordingPipelineBusMessage(_GstBus* p_bus, _GstMessage* p_msg, void* p_data);
     _GstElement* _createSaveBin();
+    #if !__USE_RIDGERUN_INTERPIPE__
+    static void _recordNeedData(_GstElement* p_appsrc, unsigned int size, void* p_udata);
+#endif
 
     STATUS _startRemoteStreamPipeline();
     void _stopRemoteStreamPipeline();
     static int _onRemoteStreamPipelineBusMessage(_GstBus* p_bus, _GstMessage* p_msg, void* p_data);
+    #if !__USE_RIDGERUN_INTERPIPE__
+    static void _remoteStreamNeedData(_GstElement* p_appsrc, unsigned int size, void* p_udata);
+#endif
 };
 
 void* createVideoSink(void* widget);
