@@ -42,23 +42,23 @@ ColumnLayout {
 
         QGCAttitudeWidget {
             id:                     attitude
-            anchors.leftMargin:     _topBottomMargin
-            anchors.left:           parent.left
+            anchors.rightMargin:    _topBottomMargin
+            anchors.right:          parent.right
             size:                   _innerRadius * 2
             vehicle:                globals.activeVehicle
             anchors.verticalCenter: parent.verticalCenter
         }
-
-
 
         QGCCompassWidget {
             id:                     compass
-            anchors.leftMargin:     _spacing
-            anchors.left:           attitude.right
+            anchors.rightMargin:    _spacing
+            anchors.right:          attitude.left
             size:                   _innerRadius * 2
             vehicle:                globals.activeVehicle
             anchors.verticalCenter: parent.verticalCenter
         }
+
+
     }
 
 

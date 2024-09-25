@@ -272,7 +272,7 @@
     "shortDesc": "Preflight checklist must pass before arming",
     "longDesc":  "If this option is enabled the preflight checklist must pass before arming.",
     "type":             "bool",
-    "default":     true
+    "default":     false
 },
 {
     "name":                 "appFontPointSize",
@@ -291,7 +291,7 @@
     "type":             "uint32",
     "enumStrings":      "Indoor,Outdoor",
     "enumValues":       "1,0",
-    "default":     0
+    "default":     1
 },
 {
     "name":             "showLargeCompass",

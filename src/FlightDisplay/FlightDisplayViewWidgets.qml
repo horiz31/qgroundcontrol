@@ -24,7 +24,7 @@ import QGroundControl.FlightMap     1.0
 
 Loader {
     width:  parent.width
-    source: QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue ?
+    source: ScreenTools.isMobile? "qrc:/qml/src/FlightMap/Widgets/QGCInstrumentWidgetMobile.qml": QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel.rawValue ?
                 "qrc:/qml/QGCInstrumentWidgetAlternate.qml" : "qrc:/qml/QGCInstrumentWidget.qml"
 
     property var missionController

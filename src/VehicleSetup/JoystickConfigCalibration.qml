@@ -20,13 +20,13 @@ import QGroundControl.Controllers   1.0
 import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 
-Item {
+ColumnLayout{
     height:                 calCol.height + ScreenTools.defaultFontPixelHeight * 2
-    width:                  calCol.width  + ScreenTools.defaultFontPixelWidth  * 2
-    Column {
+    width:                  availableWidth
+    ColumnLayout{
         id:                 calCol
+        width:      parent.width
         spacing:            ScreenTools.defaultFontPixelHeight
-        anchors.centerIn:   parent
         Item {
             height:         1
             width:          1

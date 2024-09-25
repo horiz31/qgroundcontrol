@@ -65,6 +65,11 @@ LinkManager::LinkManager(QGCApplication* app, QGCToolbox* toolbox)
     , _mavlinkChannelsUsedBitMask(1)    // We never use channel 0 to avoid sequence numbering problems
     , _autoConnectSettings(nullptr)
     , _mavlinkProtocol(nullptr)
+#ifndef NO_SERIAL_LINK
+#ifdef __android__
+    , _alreadyPrintedSkippingSerialPortList(false)
+#endif
+#endif
     #ifndef __mobile__
     #ifndef NO_SERIAL_LINK
     , _nmeaPort(nullptr)
@@ -534,9 +539,15 @@ void LinkManager::_updateAutoConnectLinks(void)
     // bug after we connect the first serial port we stop probing for additional ports.
     if (!_isSerialPortConnected()) {
         portList = QGCSerialPortInfo::availablePorts();
+        _alreadyPrintedSkippingSerialPortList=false;
     }
     else {
-        qDebug() << "Skipping serial port list";
+        if(!_alreadyPrintedSkippingSerialPortList)
+        {
+            //note: this was really bugging me, so I made it only print once - Thomas Lyons
+            qDebug() << "Skipping serial port list";
+            _alreadyPrintedSkippingSerialPortList=true;
+        }
     }
 #else
     portList = QGCSerialPortInfo::availablePorts();

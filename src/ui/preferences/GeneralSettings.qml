@@ -112,7 +112,7 @@ Rectangle {
                                 text:           qsTr("Enforce Preflight Checklist")
                                 fact:           _enforceChecklist
                                 enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value
-                                visible:        useCheckList.visible && _enforceChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+                                visible:        false//useCheckList.visible && _enforceChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
 
                                 property Fact _enforceChecklist: QGroundControl.settingsManager.appSettings.enforceChecklist
                             }
@@ -120,7 +120,7 @@ Rectangle {
                                 text:           qsTr("Enforce Joystick Required")
                                 fact:           _enforceJoystickRequired
                                 enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value && QGroundControl.settingsManager.appSettings.enforceChecklist.value
-                                visible:        useCheckList.visible && _enforceJoystickRequired.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+                                visible:        false//useCheckList.visible && _enforceJoystickRequired.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
 
                                 property Fact _enforceJoystickRequired: QGroundControl.settingsManager.appSettings.enforceJoystickRequired
                             }
@@ -146,13 +146,13 @@ Rectangle {
 
                                 FactCheckBox {
                                     text:       qsTr("Virtual Joystick")
-                                    visible:    _virtualJoystick.visible
+                                    visible:    false//_virtualJoystick.visible
                                     fact:       _virtualJoystick
                                 }
 
                                 FactCheckBox {
                                     text:       qsTr("Auto-Center Throttle")
-                                    visible:    _virtualJoystickAutoCenterThrottle.visible
+                                    visible:    false//_virtualJoystickAutoCenterThrottle.visible
                                     enabled:    _virtualJoystick.rawValue
                                     fact:       _virtualJoystickAutoCenterThrottle
                                 }
@@ -160,7 +160,7 @@ Rectangle {
 
                             FactCheckBox {
                                 text:       qsTr("Use Vertical Instrument Panel")
-                                visible:    _alternateInstrumentPanel.visible
+                                visible:    !ScreenTools.isMobile && _alternateInstrumentPanel.visible
                                 fact:       _alternateInstrumentPanel
 
                                 property Fact _alternateInstrumentPanel: QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel
@@ -692,13 +692,13 @@ Rectangle {
                                 }
                                 QGCLabel {
                                     text:                           qsTr("UI Scaling")
-                                    visible:                        _appFontPointSize.visible
+                                    visible:                        !ScreenTools.isMobile && _appFontPointSize.visible
                                     Layout.alignment:               Qt.AlignVCenter
                                 }
                                 Item {
                                     width:                          _comboFieldWidth
                                     height:                         baseFontEdit.height * 1.5
-                                    visible:                        _appFontPointSize.visible
+                                    visible:                        !ScreenTools.isMobile && _appFontPointSize.visible
                                     Layout.alignment:               Qt.AlignVCenter
                                     Row {
                                         spacing:                    ScreenTools.defaultFontPixelWidth

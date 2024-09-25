@@ -176,6 +176,9 @@ private:
 
 #ifndef NO_SERIAL_LINK
     QList<SerialLink*>                  _activeLinkCheckList;                   ///< List of links we are waiting for a vehicle to show up on
+#ifdef __android__
+    bool                                _alreadyPrintedSkippingSerialPortList;
+#endif
 #endif
 
     // NMEA GPS device for GCS position

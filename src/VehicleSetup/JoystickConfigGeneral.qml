@@ -20,13 +20,13 @@ import QGroundControl.Controllers   1.0
 import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 
-Item {
-    width:                  mainCol.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+ColumnLayout{
+    width: availableWidth
     height:                 mainCol.height + (ScreenTools.defaultFontPixelHeight * 2)
     readonly property real axisMonitorWidth: ScreenTools.defaultFontPixelWidth * 32
-    Column {
+    ColumnLayout{
         id:                 mainCol
-        anchors.centerIn:   parent
+        width:      parent.width
         spacing:            ScreenTools.defaultFontPixelHeight
         GridLayout {
             columns:            2

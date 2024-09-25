@@ -52,7 +52,7 @@ Item {
     property real   _margins:               ScreenTools.defaultFontPixelWidth / 2
     property real   _toolsMargin:           ScreenTools.defaultFontPixelWidth * 0.75
     property rect   _centerViewport:        Qt.rect(0, 0, width, height)
-    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * 22
+    property real   _rightPanelWidth:       ScreenTools.defaultFontPixelWidth * (ScreenTools.isMobile ? 18 : 22)
     property real   _windPanelWidth:        ScreenTools.defaultFontPixelWidth * 11
     property bool   _isCheckListWindowVisible: false
     property var    _checkListWindow
@@ -152,9 +152,9 @@ Item {
         property real rightInset: visible ? parent.width - x : 0
     }
 
-    //new wind panel
+    //new wind panel (non-mobile only)
     Rectangle {
-        visible:    !QGroundControl.videoManager.fullScreen
+        visible:    !QGroundControl.videoManager.fullScreen && !ScreenTools.isMobile
         id:                 newWind
         radius:             _windPanelWidth
         width:              _windPanelWidth
@@ -172,7 +172,7 @@ Item {
 
 
     Column {
-        visible:    !QGroundControl.videoManager.fullScreen
+        visible:    !QGroundControl.videoManager.fullScreen && !ScreenTools.isMobile
         z:                  QGroundControl.zOrderTopMost
         anchors.left: newWind.left
         anchors.leftMargin: ScreenTools.defaultFontPixelWidth * 2.5
@@ -211,7 +211,20 @@ Item {
     }
 
 
+    Loader {
+        id:                     photoVideoControl
+        anchors.margins:        _toolsMargin
+        anchors.top:            instrumentPanel.bottom
+        anchors.topMargin:      _toolsMargin * 4
+        anchors.right:          parent.right
+        width:                  _rightPanelWidth
+        visible:                _activeVehicle
+        source: ScreenTools.isMobile ?
+                    "qrc:/qml/src/FlightMap/Widgets/PhotoVideoControlMobile.qml" : "qrc:/qml/QGroundControl/FlightMap/PhotoVideoControl.qml"
 
+        property var missionController
+    }
+    /*
     PhotoVideoControl {
         id:                     photoVideoControl
         anchors.margins:        _toolsMargin
@@ -224,6 +237,7 @@ Item {
         //visible:                _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false //QGroundControl.settingsManager.flyViewSettings.showSimpleCameraControl.rawValue //replace with detection of the gimbal camera
 
     }
+    */
 
     /*
 

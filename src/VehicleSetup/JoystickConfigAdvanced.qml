@@ -20,8 +20,8 @@ import QGroundControl.Controllers   1.0
 import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 
-Item {
-    width:                  grid.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+ColumnLayout {
+    width:                  availableWidth
     height:                 grid.height + (ScreenTools.defaultFontPixelHeight * 2)
     //---------------------------------------------------------------------
     GridLayout {
@@ -29,7 +29,7 @@ Item {
         columns:            2
         columnSpacing:      ScreenTools.defaultFontPixelWidth
         rowSpacing:         ScreenTools.defaultFontPixelHeight
-        anchors.centerIn:   parent
+        width:      parent.width
         //-------------------------------------------------------------
         //-------------------------------------------------------------
         QGCRadioButton {

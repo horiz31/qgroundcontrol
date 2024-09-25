@@ -20,20 +20,18 @@ import QGroundControl.Controllers   1.0
 import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 
-Item {
-
+ColumnLayout{
     property Fact _camJoystickDZ: QGroundControl.settingsManager.appSettings.camJoystickDZ
     property Fact _joystickPitchRollEnableOption: QGroundControl.settingsManager.appSettings.camJoystickPitchRollEnableOption
     property Fact _camJoystickGain: QGroundControl.settingsManager.appSettings.camJoystickGain
     property Fact _camJoystickRollInvert: QGroundControl.settingsManager.appSettings.camJoystickRollInvert
     property Fact _camJoystickPitchInvert: QGroundControl.settingsManager.appSettings.camJoystickPitchInvert
 
-    width:                  mainCol.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+    width:                  availableWidth
     height:                 mainCol.height + (ScreenTools.defaultFontPixelHeight * 2)
     readonly property real axisMonitorWidth: ScreenTools.defaultFontPixelWidth * 32
     Column {
         id:                 mainCol
-        anchors.centerIn:   parent
         spacing:            ScreenTools.defaultFontPixelHeight
 
         ListModel {

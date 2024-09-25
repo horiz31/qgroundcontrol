@@ -188,7 +188,7 @@
         <file alias="QGroundControl/Controls/TerrainStatus.qml">src/PlanView/TerrainStatus.qml</file>
         <file alias="QGroundControl/Controls/TakeoffItemMapVisual.qml">src/PlanView/TakeoffItemMapVisual.qml</file>
         <file alias="QGroundControl/Controls/ToolStrip.qml">src/QmlControls/ToolStrip.qml</file>
-       	<file alias="QGroundControl/Controls/ToolStripHoverButton.qml">src/QmlControls/ToolStripHoverButton.qml</file>
+        <file alias="QGroundControl/Controls/ToolStripHoverButton.qml">src/QmlControls/ToolStripHoverButton.qml</file>
         <file alias="QGroundControl/Controls/TransectStyleComplexItemEditor.qml">src/PlanView/TransectStyleComplexItemEditor.qml</file>
         <file alias="QGroundControl/Controls/TransectStyleComplexItemStats.qml">src/PlanView/TransectStyleComplexItemStats.qml</file>
         <file alias="QGroundControl/Controls/TransectStyleComplexItemTabBar.qml">src/PlanView/TransectStyleComplexItemTabBar.qml</file>
@@ -310,6 +310,8 @@
         <file alias="QGroundControl/FlightDisplay/RangeFinderDisplay.qml">src/FlightDisplay/RangeFinderDisplay.qml</file>
         <file alias="QGroundControl/FlightDisplay/PreFlightFailsafeCheck.qml">src/FlightDisplay/PreFlightFailsafeCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/FullScreen.qml">src/FlightDisplay/FullScreen.qml</file>
+        <file>src/FlightMap/Widgets/PhotoVideoControlMobile.qml</file>
+        <file>src/FlightMap/Widgets/QGCInstrumentWidgetMobile.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

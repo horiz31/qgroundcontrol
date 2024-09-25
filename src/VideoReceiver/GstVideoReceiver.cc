@@ -34,48 +34,50 @@ QGC_LOGGING_CATEGORY(VideoReceiverLog, "VideoReceiverLog")
     } \
     (void) 0
 
-//#ifndef NDEBUG
-//#define __DEBUG_PROBE_FRAME_STATIC(__pipeline__, __p_element__, __pad__, __probe_type__, __dot_file_name__)\
-//{\
-//do{\
-//GstPad *__p_probe_pad__ = nullptr;\
-//if(!(__p_probe_pad__ = gst_element_get_static_pad((__p_element__), (__pad__))))\
-//{\
-//     qCCritical(VideoReceiverLog) <<  "gst_element_get_static_pad failed"; \
-//    break;\
-//}\
-//auto const __probe_id__ = gst_pad_add_probe(\
-//    __p_probe_pad__,\
-//    __probe_type__,\
-//    [](GstPad *const,\
-//       GstPadProbeInfo *const,\
-//       gpointer const p_userData) -> GstPadProbeReturn\
-//    {\
-//        qCDebug(VideoReceiverLog) << "Encountered "#__probe_type__" on element "#__pipeline__"-->"#__p_element__" with pad "<<__pad__; \
-//        gst_debug_bin_to_dot_file(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL, __dot_file_name__);\
-//        /*gchar* p_dotData = gst_debug_bin_to_dot_data(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL);\
-//        if(p_dotData!=nullptr){\
-//            std::ofstream ofs((std::string("/storage/emulated/0/EchoMav GCS/")+__dot_file_name__+".dot").c_str());\
-//            ofs.write((char*)p_dotData, strlen((char*)p_dotData));\
-//            ofs.close();\
-//            g_free(p_dotData);\
-//            p_dotData=nullptr;\
-//        }*/\
-//        return GST_PAD_PROBE_REMOVE; \
-//    },\
-//    this,\
-//    nullptr);\
-//gst_object_unref(__p_probe_pad__);\
-//__p_probe_pad__ = nullptr;\
-//if(!(__probe_id__))\
-//{\
-//        qCCritical(VideoReceiverLog) <<  "__probe_id__ failed"; \
-//break;\
-//}\
-//}while(0);\
-//}\
-//(void)0
-//#else
+/*
+#ifndef NDEBUG
+#define __DEBUG_PROBE_FRAME_STATIC(__pipeline__, __p_element__, __pad__, __probe_type__, __dot_file_name__)\
+{\
+do{\
+GstPad *__p_probe_pad__ = nullptr;\
+if(!(__p_probe_pad__ = gst_element_get_static_pad((__p_element__), (__pad__))))\
+{\
+     qCCritical(VideoReceiverLog) <<  "gst_element_get_static_pad failed"; \
+    break;\
+}\
+auto const __probe_id__ = gst_pad_add_probe(\
+    __p_probe_pad__,\
+    __probe_type__,\
+    [](GstPad *const,\
+       GstPadProbeInfo *const,\
+       gpointer const p_userData) -> GstPadProbeReturn\
+    {\
+        qCDebug(VideoReceiverLog) << "Encountered "#__probe_type__" on element "#__pipeline__"-->"#__p_element__" with pad "<<__pad__; \
+        gst_debug_bin_to_dot_file(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL, __dot_file_name__);\
+        gchar* p_dotData = gst_debug_bin_to_dot_data(GST_BIN(((GstVideoReceiver*)p_userData)->__pipeline__), GST_DEBUG_GRAPH_SHOW_ALL);\
+        if(p_dotData!=nullptr){\
+            std::ofstream ofs((std::string("/storage/emulated/0/EchoMav GCS/")+__dot_file_name__+".dot").c_str());\
+            ofs.write((char*)p_dotData, strlen((char*)p_dotData));\
+            ofs.close();\
+            g_free(p_dotData);\
+            p_dotData=nullptr;\
+        }\
+        return GST_PAD_PROBE_REMOVE; \
+    },\
+    this,\
+    nullptr);\
+gst_object_unref(__p_probe_pad__);\
+__p_probe_pad__ = nullptr;\
+if(!(__probe_id__))\
+{\
+        qCCritical(VideoReceiverLog) <<  "__probe_id__ failed"; \
+break;\
+}\
+}while(0);\
+}\
+(void)0
+#else
+*/
 #define __DEBUG_PROBE_FRAME_STATIC(__pipeline__, __p_element__, __pad__, __probe_type__, __dot_file_name__)\
 (void)0
 //#endif
