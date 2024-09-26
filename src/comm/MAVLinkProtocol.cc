@@ -395,8 +395,8 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     float los_upper_right_corner_lat,los_upper_right_corner_lon;
                     float los_lower_right_corner_lat,los_lower_right_corner_lon;
                     float los_lower_left_corner_lat,los_lower_left_corner_lon;
-                    std::vector<uint8_t> buf(_message.len);
-                    memcpy(&buf[0], _MAV_PAYLOAD(&_message), _message.len);
+                    uint8_t buf[46];
+                    memcpy(&buf, _MAV_PAYLOAD(&_message), std::min<size_t>(_message.len,46));
                     memcpy(&los_upper_left_corner_lat, &buf[14],4);
                     memcpy(&los_upper_left_corner_lon, &buf[18],4);
                     memcpy(&los_upper_right_corner_lat, &buf[22],4);
