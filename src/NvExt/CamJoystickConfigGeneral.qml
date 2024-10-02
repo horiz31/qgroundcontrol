@@ -29,8 +29,8 @@ ColumnLayout{
 
     width:                  availableWidth
     height:                 mainCol.height + (ScreenTools.defaultFontPixelHeight * 2)
-    readonly property real axisMonitorWidth: ScreenTools.defaultFontPixelWidth * 32
-    Column {
+    readonly property real axisMonitorWidth: ScreenTools.defaultFontPixelWidth * 20
+    ColumnLayout{
         id:                 mainCol
         spacing:            ScreenTools.defaultFontPixelHeight
 
@@ -210,7 +210,7 @@ ColumnLayout{
                 }
             }
         }
-        Row {
+        RowLayout{
             spacing:                ScreenTools.defaultFontPixelWidth
             //---------------------------------------------------------------------
             //-- Axis Monitors
@@ -220,7 +220,9 @@ ColumnLayout{
                 border.color:       qgcPal.text
                 border.width:       1
                 radius:             ScreenTools.defaultFontPixelWidth * 0.5
-                width:              axisGrid.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+                Layout.minimumWidth: axisGrid.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+                Layout.alignment: Qt.AlignLeft
+                Layout.fillWidth: true
                 height:             axisGrid.height + (ScreenTools.defaultFontPixelHeight * 2)
                 GridLayout {
                     id:                 axisGrid
@@ -230,12 +232,12 @@ ColumnLayout{
                     anchors.centerIn:   parent
                     QGCLabel {
                         text:               qsTr("Roll/Yaw")
-                        Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 12
                     }
                     AxisMonitor {
                         id:                 rollAxis
                         height:             ScreenTools.defaultFontPixelHeight
-                        width:              axisMonitorWidth
+                        Layout.minimumWidth: axisMonitorWidth
+                        Layout.fillWidth: true
                         mapped:             controller.rollAxisMapped
                         reversed:           controller.rollAxisReversed
                     }
@@ -252,13 +254,13 @@ ColumnLayout{
 
                     QGCLabel {
                         id:                 pitchLabel
-                        width:              _attitudeLabelWidth
                         text:               qsTr("Pitch")
                     }
                     AxisMonitor {
                         id:                 pitchAxis
                         height:             ScreenTools.defaultFontPixelHeight
-                        width:              axisMonitorWidth
+                        Layout.minimumWidth: axisMonitorWidth
+                        Layout.fillWidth: true
                         mapped:             controller.pitchAxisMapped
                         reversed:           controller.pitchAxisReversed
                     }
@@ -287,10 +289,11 @@ ColumnLayout{
                 border.color:       qgcPal.text
                 border.width:       1
                 radius:             ScreenTools.defaultFontPixelWidth * 0.5
-                width:              axisRect.width
+                Layout.preferredWidth: axisRect.width;
+                Layout.alignment: Qt.AlignRight
                 height:             axisRect.height
                 Flow {
-                    width:              ScreenTools.defaultFontPixelWidth * 30
+                    width: parent.width
                     spacing:            -1
                     anchors.centerIn:   parent
                     Connections {

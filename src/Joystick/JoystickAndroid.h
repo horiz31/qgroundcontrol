@@ -2,15 +2,10 @@
 #define JOYSTICKANDROID_H
 
 #include "Joystick.h"
-#include "Vehicle.h"
-#include "MultiVehicleManager.h"
-
-#include <jni.h>
-#include <QtCore/private/qjni_p.h>
 #include <QtCore/private/qjnihelpers_p.h>
-#include <QtAndroidExtras/QtAndroidExtras>
-#include <QtAndroidExtras/QAndroidJniObject>
 
+class MultiVehicleManager;
+class JoystickManager;
 
 class JoystickAndroid : public Joystick, public QtAndroidPrivate::GenericMotionEventListener, public QtAndroidPrivate::KeyEventListener
 {
@@ -28,6 +23,7 @@ public:
 private:
     bool handleKeyEvent(jobject event);
     bool handleGenericMotionEvent(jobject event);
+    int  _getAndroidHatAxis(int axisHatCode);
 
     virtual bool _open          ();
     virtual void _close         ();
@@ -45,7 +41,7 @@ private:
     static int * _androidBtnList; //list of all possible android buttons
     static int _androidBtnListCount;
 
-    static int ACTION_DOWN, ACTION_UP;
+    static int ACTION_DOWN, ACTION_UP, AXIS_HAT_X, AXIS_HAT_Y;
     static QMutex m_mutex;
 
     int deviceId;

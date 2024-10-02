@@ -85,6 +85,7 @@ int WindowsCrtReportHook(int reportType, char* message, int* returnValue)
 #if defined(__android__)
 #include <jni.h>
 #include "JoystickAndroid.h"
+#include "qandroidjnienvironment.h"
 #if defined(QGC_ENABLE_PAIRING)
 #include "PairingManager.h"
 #endif

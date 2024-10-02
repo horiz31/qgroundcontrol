@@ -33,7 +33,7 @@ ColumnLayout{
         }
         Row {
             spacing:            ScreenTools.defaultFontPixelWidth * 4
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment : Qt.AlignHCenter
             //-----------------------------------------------------------------
             // Calibration
             Column {
@@ -163,7 +163,7 @@ ColumnLayout{
         Row {
             spacing:            ScreenTools.defaultFontPixelWidth * 2
             visible:            _activeJoystick.requiresCalibration
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment : Qt.AlignHCenter
             QGCButton {
                 id:         skipButton
                 text:       qsTr("Skip")
@@ -195,7 +195,7 @@ ColumnLayout{
             width:          parent.width * 0.8
             wrapMode:       Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
-            anchors.horizontalCenter: parent.horizontalCenter
+            Layout.alignment : Qt.AlignHCenter
         }
     }
 }

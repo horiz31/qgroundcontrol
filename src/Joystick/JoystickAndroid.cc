@@ -1,13 +1,16 @@
 #include "JoystickAndroid.h"
-
-#include "QGCApplication.h"
-
-#include <QQmlEngine>
+#include "JoystickManager.h"
+#include "MultiVehicleManager.h"
+#include "private/qjni_p.h"
+#include "qandroidjnienvironment.h"
+#include <QtAndroidExtras/QAndroidJniObject>
 
 int JoystickAndroid::_androidBtnListCount;
 int *JoystickAndroid::_androidBtnList;
 int JoystickAndroid::ACTION_DOWN;
 int JoystickAndroid::ACTION_UP;
+int JoystickAndroid::AXIS_HAT_X;
+int JoystickAndroid::AXIS_HAT_Y;
 QMutex JoystickAndroid::m_mutex;
 
 static void clear_jni_exception()
@@ -25,7 +28,7 @@ JoystickAndroid::JoystickAndroid(const QString& name, int axisCount, int buttonC
 {
     int i;
     
-    QAndroidJniEnvironment env;
+    QAndroidJniEnvironment env;    
     QAndroidJniObject inputDevice = QAndroidJniObject::callStaticObjectMethod("android/view/InputDevice", "getDevice", "(I)Landroid/view/InputDevice;", id);
 
     //set button mapping (number->code)
@@ -102,7 +105,10 @@ QMap<QString, Joystick*> JoystickAndroid::discover(MultiVehicleManager* _multiVe
         QAndroidJniObject inputDevice = QAndroidJniObject::callStaticObjectMethod("android/view/InputDevice", "getDevice", "(I)Landroid/view/InputDevice;", buff[i]);
         int sources = inputDevice.callMethod<jint>("getSources", "()I");
         if (((sources & SOURCE_GAMEPAD) != SOURCE_GAMEPAD) //check if the input device is interesting to us
-                && ((sources & SOURCE_JOYSTICK) != SOURCE_JOYSTICK)) continue;
+                && ((sources & SOURCE_JOYSTICK) != SOURCE_JOYSTICK))
+        {
+            continue;
+        }
 
         // get id and name
         QString id = inputDevice.callObjectMethod("getDescriptor", "()Ljava/lang/String;").toString();
@@ -199,11 +205,44 @@ bool JoystickAndroid::_getButton(int i) {
 int JoystickAndroid::_getAxis(int i) {
     return axisValue[ i ];
 }
+int  JoystickAndroid::_getAndroidHatAxis(int axisHatCode) {
+    for(int i = 0; i < _axisCount; i++) {
+        if (axisCode[i] == axisHatCode) {
+            return _getAxis(i);
+        }
+    }
+    return 0;
+}
 
 bool JoystickAndroid::_getHat(int hat,int i) {
-    Q_UNUSED(hat);
-    Q_UNUSED(i);
-    return false;
+    // Android supports only one hat button
+    if (hat != 0) {
+        return false;
+    }
+    //TODO on the SROC, up and right are swapped for some reason.
+    //To fix this, I have remapped them here.
+    //I consider this only a temporary fix until we can fix it at a firmware level - Thomas Lyons
+    bool result;
+    switch (i) {
+    case 0:
+        result=_getAndroidHatAxis(AXIS_HAT_X) > 0;
+        //result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
+        break;
+    case 1:
+        result=  _getAndroidHatAxis(AXIS_HAT_Y) > 0;
+        break;
+    case 2:
+        result=  _getAndroidHatAxis(AXIS_HAT_X) < 0;
+        break;
+    case 3:
+        result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
+        //result=  _getAndroidHatAxis(AXIS_HAT_X) > 0;
+        break;
+    default:
+        result=  false;
+    }
+    //qCDebug(JoystickLog)<<"JoystickAndroid::_getHat i="<<i<<" result="<<result;
+    return result;
 }
 
 static JoystickManager *_manager = nullptr;
@@ -216,8 +255,8 @@ bool JoystickAndroid::init(JoystickManager *manager) {
     //instead of the whole logic below we could have just a simple array of hardcoded int values as these 'should' not change
 
     //int JoystickAndroid::_androidBtnListCount;
-    _androidBtnListCount = 31;
-    static int ret[31]; //there are 31 buttons in total accordingy to the API
+    _androidBtnListCount = 41;
+    static int ret[41]; //there are 41 buttons in total accordingy to the API
     int i;
     //int *JoystickAndroid::
     _androidBtnList = ret;
@@ -244,9 +283,21 @@ bool JoystickAndroid::init(JoystickManager *manager) {
     ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_BUTTON_X");
     ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_BUTTON_Y");
     ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_BUTTON_Z");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F1");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F2");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F3");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F4");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F5");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F6");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F7");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F8");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F9");
+    ret[i++] = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "KEYCODE_F10");
 
     ACTION_DOWN = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "ACTION_DOWN");
     ACTION_UP = QAndroidJniObject::getStaticField<jint>("android/view/KeyEvent", "ACTION_UP");
+    AXIS_HAT_X = QAndroidJniObject::getStaticField<jint>("android/view/MotionEvent", "AXIS_HAT_X");
+    AXIS_HAT_Y = QAndroidJniObject::getStaticField<jint>("android/view/MotionEvent", "AXIS_HAT_Y");
 
     return true;
 }

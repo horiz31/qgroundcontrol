@@ -121,7 +121,7 @@ void ATAKMarkerManager::_send(ATAKMarker* atakMarker)
     writer.writeEndElement();
     writer.writeEndDocument();
 
-    //qDebug() << "XML OUT (ATAK Marker Manager) is" << output;
+    //qCDebug(ATAKMarkerManagerLog) << "XML OUT (ATAK Marker Manager) is" << output;
 
     if (_udpLink)
         _udpLink->sendBytes(output.toUtf8());
@@ -181,7 +181,7 @@ void ATAKUDPLink::sendBytes(QByteArray bytes)
 
     if (_udpSendSocket)
     {
-        //qDebug() << "sending CoT UDP data via ATAKMarkerManager";
+        //qCDebug(ATAKMarkerManagerLog) << "sending CoT UDP data via ATAKMarkerManager";
         _udpSendSocket->writeDatagram(bytes, QHostAddress(_hostAddress), _port);
         _udpSendSocket->writeDatagram(bytes, QHostAddress(QHostAddress::LocalHost), 4242);  //also send to 4242 on localhost in case someone is running TAK on the same machine
     }
@@ -191,7 +191,7 @@ void ATAKUDPLink::sendBytes(QByteArray bytes)
 
 void ATAKUDPLink::_hardwareConnect()
 {
-    qDebug() << "Opening connection to receive ATAK data";
+    qCDebug(ATAKMarkerManagerLog) << "Opening connection to receive ATAK data";
 
     _udpSendSocket = new QUdpSocket();  //create a socket to use for sending
     //_udpSendSocket->bind(QHostAddress(QHostAddress::AnyIPv4), 0, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
@@ -201,18 +201,18 @@ void ATAKUDPLink::_hardwareConnect()
     // Bind the receive socket to a specific port, enabling port sharing to allow tak to be running on the same machine
     if (!_socket->bind(QHostAddress::AnyIPv4, _port, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint)) {
     //if (!_socket->bind(QHostAddress::AnyIPv4, _port)) {
-        qDebug() << "Failed to bind UDP socket to port 6969";
+        qCDebug(ATAKMarkerManagerLog) << "Failed to bind UDP socket to port 6969";
         return;
     }
 
     // Join the multicast group
     QHostAddress multicastGroup(_hostAddress);
     if (!_socket->joinMulticastGroup(multicastGroup)) {
-        qDebug() << "Failed to join multicast group" << multicastGroup.toString();
+        qCDebug(ATAKMarkerManagerLog) << "Failed to join multicast group" << multicastGroup.toString();
         return;
     }
 
-    //qDebug() << "Listening for multicast data on" << multicastGroup.toString() << "port 6969";
+    //qCDebug(ATAKMarkerManagerLog) << "Listening for multicast data on" << multicastGroup.toString() << "port 6969";
 
     // Connect the socket's readyRead() signal to a slot to handle incoming data
     connect(_socket, &QUdpSocket::readyRead, this, &ATAKUDPLink::_readBytes);
@@ -223,17 +223,17 @@ void ATAKUDPLink::_hardwareConnect()
 
 void ATAKUDPLink::_readBytes(void)
 {
-    //qDebug() << "got readBytes";
+    //qCDebug(ATAKMarkerManagerLog) << "got readBytes";
     if (_socket) {
 
         while (_socket->hasPendingDatagrams()) {
-            //qDebug() << _socket->pendingDatagramSize() << "number of byte to read";
+            //qCDebug(ATAKMarkerManagerLog) << _socket->pendingDatagramSize() << "number of byte to read";
             QNetworkDatagram dgram = _socket->receiveDatagram();
-            //qDebug() << "Received datagram from" << QString(dgram.data()) << dgram.senderAddress().toString() << dgram.senderPort();
+            //qCDebug(ATAKMarkerManagerLog) << "Received datagram from" << QString(dgram.data()) << dgram.senderAddress().toString() << dgram.senderPort();
 
             if (dgram.data().at(0) == (char)0xbf && dgram.data().at(2) == (char)0xbf)
             {
-                //qDebug() << "TAK Packet detected!";
+                //qCDebug(ATAKMarkerManagerLog) << "TAK Packet detected!";
                 QByteArray headerRemoved = dgram.data();
                 headerRemoved.remove(0, 3);
                 if (dgram.data().at(1) == (char)0x00)
@@ -244,14 +244,14 @@ void ATAKUDPLink::_readBytes(void)
                 else if (dgram.data().at(1) == (char)0x01)
                 {
                     //use Protobuf
-                    //qDebug() << "Received protocol buf datagram:" << dgram.data().toHex() << "From:" << dgram.senderAddress().toString() << dgram.senderPort();
+                    //qCDebug(ATAKMarkerManagerLog) << "Received protocol buf datagram:" << dgram.data().toHex() << "From:" << dgram.senderAddress().toString() << dgram.senderPort();
                     _parseDataProtoBuf(headerRemoved);
                 }
 
             }
             else
             {
-                //qDebug() << "Received datagram without header from" << QString(dgram.data()) << dgram.senderAddress().toString() << dgram.senderPort();
+                //qCDebug(ATAKMarkerManagerLog) << "Received datagram without header from" << QString(dgram.data()) << dgram.senderAddress().toString() << dgram.senderPort();
                 //try to parse xml
                 //_parseDataXml(dgram.data());
             }
@@ -303,7 +303,7 @@ void ATAKUDPLink::_parseDataXml(const QByteArray& data)
         }
 
         if (xml.hasError()) {
-            qDebug() << "XML Error 1 in ATAKMarkerManager:" << xml.errorString();
+            qCDebug(ATAKMarkerManagerLog) << "XML Error 1 in ATAKMarkerManager:" << xml.errorString();
         }
         else
         {            
@@ -314,7 +314,7 @@ void ATAKUDPLink::_parseDataXml(const QByteArray& data)
     }
     catch (...)
     {
-        qDebug() << "XML Error 2 in ATAKMarkerManager:" << xml.errorString();
+        qCDebug(ATAKMarkerManagerLog) << "XML Error 2 in ATAKMarkerManager:" << xml.errorString();
     }
 }
 
@@ -329,7 +329,7 @@ void ATAKUDPLink::_parseDataProtoBuf(const QByteArray& data)
         // Access the parsed data
         if (takMessage.cotevent().detail().has_contact())
         {
-            qDebug() << "Callsign (contact):" << takMessage.cotevent().detail().contact().callsign().c_str();
+            qCDebug(ATAKMarkerManagerLog) << "Callsign (contact):" << takMessage.cotevent().detail().contact().callsign().c_str();
             atakMarkerInfo.callsign = takMessage.cotevent().detail().contact().callsign().c_str();
         }
         else
@@ -337,13 +337,13 @@ void ATAKUDPLink::_parseDataProtoBuf(const QByteArray& data)
             QXmlStreamReader reader(takMessage.cotevent().detail().xmldetail().c_str());
             while(!reader.atEnd() && !reader.hasError()) {
                 if(reader.readNext() == QXmlStreamReader::StartElement && reader.name() == "contact") {
-                    qDebug() << "Callsign (xml):" << reader.attributes().value("callsign");
+                    qCDebug(ATAKMarkerManagerLog) << "Callsign (xml):" << reader.attributes().value("callsign");
                     atakMarkerInfo.callsign = reader.attributes().value("callsign").toString();
                 }
             }
          }
 
-        qDebug() << "UID:" << takMessage.cotevent().uid().c_str();
+        qCDebug(ATAKMarkerManagerLog) << "UID:" << takMessage.cotevent().uid().c_str();
         atakMarkerInfo.uid = takMessage.cotevent().uid().c_str();
         QGeoCoordinate location(takMessage.cotevent().lat(), takMessage.cotevent().lon());
         atakMarkerInfo.location = location;
@@ -355,6 +355,6 @@ void ATAKUDPLink::_parseDataProtoBuf(const QByteArray& data)
         emit atakMarkerUpdate(atakMarkerInfo);
 
     } else {
-        qDebug() << "Failed to parse CoT message";
+        qCDebug(ATAKMarkerManagerLog) << "Failed to parse CoT message";
     }
 }

@@ -692,13 +692,13 @@ Rectangle {
                                 }
                                 QGCLabel {
                                     text:                           qsTr("UI Scaling")
-                                    visible:                        !ScreenTools.isMobile && _appFontPointSize.visible
+                                    visible:                        _appFontPointSize.visible
                                     Layout.alignment:               Qt.AlignVCenter
                                 }
                                 Item {
                                     width:                          _comboFieldWidth
                                     height:                         baseFontEdit.height * 1.5
-                                    visible:                        !ScreenTools.isMobile && _appFontPointSize.visible
+                                    visible:                        _appFontPointSize.visible
                                     Layout.alignment:               Qt.AlignVCenter
                                     Row {
                                         spacing:                    ScreenTools.defaultFontPixelWidth

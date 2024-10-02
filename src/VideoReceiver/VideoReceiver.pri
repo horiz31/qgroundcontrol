@@ -66,6 +66,7 @@ LinuxBuild {
     }
 } else:AndroidBuild {
     GSTREAMER_VERSION = 1.20.4
+    #DEFINES += __DEBUGGING_LATENCY__
 
     #- gstreamer assumed to be installed in $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/***
     contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
@@ -105,6 +106,11 @@ LinuxBuild {
            -lgsttcp \
            -lgstapp-1.0
 
+contains (DEFINES, __DEBUGGING_LATENCY__){
+           LIBS += -lgstcoretracers \ #needed for latency testing. TODO: remove when no longer needed
+        }
+
+
 
         # Rest of GStreamer dependencies
         LIBS += -L$$GST_ROOT/lib \
@@ -119,6 +125,10 @@ LinuxBuild {
             -lgstsdp-1.0 -lbz2 -lgobject-2.0 -lgstmpegts-1.0 \
             -lsrt -lcrypto \ #used by gstsrt
             -Wl,--export-dynamic -lgmodule-2.0 -pthread -lglib-2.0 -lorc-0.4 -liconv -lffi -lintl \
+
+contains (DEFINES, __DEBUGGING_LATENCY__){
+           LIBS += -ldl \ #needed for latency testing. TODO: remove when no longer needed
+        }
 
         INCLUDEPATH += \
             $$GST_ROOT/include/gstreamer-1.0 \

@@ -93,6 +93,9 @@ G_BEGIN_DECLS
     GST_PLUGIN_STATIC_DECLARE(tcp);
 #if defined(__android__)
     GST_PLUGIN_STATIC_DECLARE(androidmedia);
+#if defined(__DEBUGGING_LATENCY__)
+    GST_PLUGIN_STATIC_DECLARE(coretracers);
+#endif
 #elif defined(__ios__)
     GST_PLUGIN_STATIC_DECLARE(applemedia);
 #endif
@@ -184,6 +187,13 @@ GStreamer::initialize(int argc, char* argv[], int debuglevel)
     QString currentDir = QCoreApplication::applicationDirPath();
     qgcputenv("GST_PLUGIN_PATH", currentDir, "/gstreamer-plugins");
 #endif
+#if defined(__android__)  && defined(__DEBUGGING_LATENCY__)
+        //qputenv("GST_DEBUG", "7");
+        qputenv("GST_DEBUG", "GST_TRACER:7");
+        //qputenv("GST_TRACERS", "latency");
+        qputenv("GST_TRACERS", "latency(flags=element+pipeline+reported)");
+        qputenv("GST_DEBUG_FILE", "/storage/emulated/0/EchoMAV GCS/latency.txt");
+#endif
     //-- If gstreamer debugging is not configured via environment then use internal QT logging
     if (qEnvironmentVariableIsEmpty("GST_DEBUG")) {
         gst_debug_set_default_threshold(static_cast<GstDebugLevel>(debuglevel));
@@ -223,6 +233,9 @@ GStreamer::initialize(int argc, char* argv[], int debuglevel)
     GST_PLUGIN_STATIC_REGISTER(tcp);
 #if defined(__android__)
     GST_PLUGIN_STATIC_REGISTER(androidmedia);
+#if defined(__DEBUGGING_LATENCY__)
+    GST_PLUGIN_STATIC_REGISTER(coretracers);
+#endif
 #elif defined(__ios__)
     GST_PLUGIN_STATIC_REGISTER(applemedia);
 #endif

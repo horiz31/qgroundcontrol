@@ -12,6 +12,7 @@
 #include "QGCToolbox.h"
 #include "QmlObjectListModel.h"
 #include "ATAKMarker.h"
+#include "QGCLoggingCategory.h"
 
 #include <QThread>
 #include <QTcpSocket>
