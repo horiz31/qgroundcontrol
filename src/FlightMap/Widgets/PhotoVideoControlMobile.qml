@@ -75,7 +75,8 @@ Rectangle {
     property bool   _videoStreamIsStreaming:                    _videoStreamManager.streaming
     property bool   _simplePhotoCaptureIsIdle:             true
     property bool   _videoStreamRecording:                      _videoStreamManager.recording
-    property bool   _recordButtonBusy:                          _videoStreamManager.recordTransitionInProgress
+    //property bool   _recordButtonBusy:                          _videoStreamManager.recordTransitionInProgress
+    property bool   _recordButtonBusy:                          false
     property bool   _videoStreamCanShoot:                       _videoStreamIsStreaming
     property bool   _videoStreamIsShootingInCurrentMode:        _videoStreamInPhotoMode ? !_simplePhotoCaptureIsIdle : _isRecording
     property bool   _videoStreamInPhotoMode:                    false

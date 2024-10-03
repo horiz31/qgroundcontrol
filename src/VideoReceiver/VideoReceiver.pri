@@ -65,8 +65,9 @@ LinuxBuild {
         QMAKE_POST_LINK += $$escape_expand(\\n) xcopy \"$$GST_ROOT_WIN\\lib\\gstreamer-1.0\\*.dll\" \"$$DESTDIR_WIN\\gstreamer-plugins\\\" /Y $$escape_expand(\\n)
     }
 } else:AndroidBuild {
-    GSTREAMER_VERSION = 1.20.4
-    #DEFINES += __DEBUGGING_LATENCY__
+    GSTREAMER_VERSION = 1.18.6
+    //GSTREAMER_VERSION = 1.20.4
+    //DEFINES += __DEBUGGING_LATENCY__
 
     #- gstreamer assumed to be installed in $$PWD/../../gstreamer-1.0-android-universal-$$GSTREAMER_VERSION/***
     contains(ANDROID_TARGET_ARCH, armeabi-v7a) {

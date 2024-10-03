@@ -11,6 +11,7 @@ import QtQuick                  2.3
 import QtMultimedia             5.5
 
 import QGroundControl           1.0
+import QGroundControl.ScreenTools           1.0
 
 Rectangle {
     id:                 _root
@@ -32,7 +33,7 @@ Rectangle {
 
     Camera {
         id:             camera
-        deviceId:       QGroundControl.videoManager.videoSourceID
+        deviceId:       ScreenTools.isMobile?QGroundControl.videoManager.uvcVideoSourceID:QGroundControl.videoManager.videoSourceID
         captureMode:    Camera.CaptureViewfinder
         onDeviceIdChanged: {
             adjustAspectRatio()

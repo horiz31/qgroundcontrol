@@ -190,6 +190,7 @@ GStreamer::initialize(int argc, char* argv[], int debuglevel)
 #if defined(__android__)  && defined(__DEBUGGING_LATENCY__)
         //qputenv("GST_DEBUG", "7");
         qputenv("GST_DEBUG", "GST_TRACER:7");
+        qputenv("GST_DEBUG_DUMP_DOT_DIR", "/storage/emulated/0/EchoMAV GCS/");
         //qputenv("GST_TRACERS", "latency");
         qputenv("GST_TRACERS", "latency(flags=element+pipeline+reported)");
         qputenv("GST_DEBUG_FILE", "/storage/emulated/0/EchoMAV GCS/latency.txt");

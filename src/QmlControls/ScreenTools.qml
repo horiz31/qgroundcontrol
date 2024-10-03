@@ -181,7 +181,7 @@ Item {
                     platformFontPointSize = 11;
                 // Other Android
                 } else {
-                    platformFontPointSize = 14;
+                    platformFontPointSize = 13;
                 }
             } else {
                 platformFontPointSize = _defaultFont.font.pointSize;
