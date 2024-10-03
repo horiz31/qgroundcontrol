@@ -370,27 +370,27 @@ Rectangle {
                                 FactCheckBox {
                                     text:       qsTr("Enable remote streaming")
                                     fact:       _videoSettings.enableRemoteStreaming
-                                    visible:    !ScreenTools.IsMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.enableRemoteStreaming.visible
+                                    visible:    !ScreenTools.isMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.enableRemoteStreaming.visible
                                 }
                                 QGCLabel {
                                     id:         remoteStreamIDLabel
                                     text:       qsTr("Remote Stream ID")
-                                    visible:    !ScreenTools.IsMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamID.visible && _videoSettings.enableRemoteStreaming.rawValue
+                                    visible:    !ScreenTools.isMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamID.visible && _videoSettings.enableRemoteStreaming.rawValue
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
                                     fact:                   _videoSettings.remoteStreamID
-                                    visible:                !ScreenTools.IsMobile && remoteStreamIDLabel.visible
+                                    visible:                !ScreenTools.isMobile && remoteStreamIDLabel.visible
                                 }
                                 QGCLabel {
                                     id:         remoteStreamTokenLabel
                                     text:       qsTr("Remote Stream Token")
-                                    visible:    !ScreenTools.IsMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamToken.visible && _videoSettings.enableRemoteStreaming.rawValue
+                                    visible:    !ScreenTools.isMobile && (_isUDP264 || _isUDP265|| _isMulticastUDP265) && _videoSettings.remoteStreamToken.visible && _videoSettings.enableRemoteStreaming.rawValue
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
                                     fact:                   _videoSettings.remoteStreamToken
-                                    visible:                !ScreenTools.IsMobile && remoteStreamTokenLabel.visible
+                                    visible:                !ScreenTools.isMobile && remoteStreamTokenLabel.visible
                                 }
                             }
                         }
