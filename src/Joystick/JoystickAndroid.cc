@@ -219,14 +219,11 @@ bool JoystickAndroid::_getHat(int hat,int i) {
     if (hat != 0) {
         return false;
     }
-    //TODO on the SROC, up and right are swapped for some reason.
-    //To fix this, I have remapped them here.
-    //I consider this only a temporary fix until we can fix it at a firmware level - Thomas Lyons
     bool result;
     switch (i) {
     case 0:
-        result=_getAndroidHatAxis(AXIS_HAT_X) > 0;
-        //result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
+        //result=_getAndroidHatAxis(AXIS_HAT_X) > 0;
+        result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
         break;
     case 1:
         result=  _getAndroidHatAxis(AXIS_HAT_Y) > 0;
@@ -235,8 +232,8 @@ bool JoystickAndroid::_getHat(int hat,int i) {
         result=  _getAndroidHatAxis(AXIS_HAT_X) < 0;
         break;
     case 3:
-        result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
-        //result=  _getAndroidHatAxis(AXIS_HAT_X) > 0;
+        //result= _getAndroidHatAxis(AXIS_HAT_Y) < 0;
+        result=  _getAndroidHatAxis(AXIS_HAT_X) > 0;
         break;
     default:
         result=  false;
