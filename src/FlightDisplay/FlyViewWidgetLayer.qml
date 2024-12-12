@@ -472,7 +472,7 @@ Item {
             width:      ScreenTools.defaultFontPixelWidth  * 100
             maximumWidth: width
             minimumWidth: width
-            height:     ScreenTools.defaultFontPixelHeight * 40
+            height:     ScreenTools.defaultFontPixelHeight * 30// the SROC can't fit this if it's set to 40
             visible:    true
             color:      QGroundControl.globalPalette.window
             flags:      Qt.Dialog
