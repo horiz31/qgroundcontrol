@@ -200,14 +200,30 @@ ColumnLayout{
                         reversed:           controller.throttleAxisReversed
                     }
 
+                    QGCLabel {
+                        id: zoomLabel
+                        visible: controller.hasTopRightZoom
+                        width: _attitudeLabelWidth
+                        text: qsTr("Zoom")
+                    }
+                    AxisMonitor {
+                        id: zoomAxis
+                        visible: controller.hasTopRightZoom
+                        height: ScreenTools.defaultFontPixelHeight
+                        width: axisMonitorWidth
+                        mapped: controller.zoomAxisMapped
+                        reversed: controller.zoomAxisReversed
+                    }
+
                     Connections {
                         target:             _activeJoystick
-                        onAxisValues: {
-                            rollAxis.axisValue      = roll  * 32768.0
-                            pitchAxis.axisValue     = pitch * 32768.0
-                            yawAxis.axisValue       = yaw   * 32768.0
-                            throttleAxis.axisValue  = _activeJoystick.negativeThrust ? throttle * -32768.0 : (-2 * throttle + 1) * 32768.0
-                        }
+                        onAxisValues: (roll, pitch, yaw, throttle, zoom) => {
+                                          rollAxis.axisValue = roll * 32768.0
+                                          pitchAxis.axisValue = pitch * 32768.0
+                                          yawAxis.axisValue = yaw * 32768.0
+                                          throttleAxis.axisValue = _activeJoystick.negativeThrust ? throttle * -32768.0 : (-2 * throttle + 1) * 32768.0
+                                          zoomAxis.axisValue = zoom * 32768.0
+                                      }
                     }
                 }
             }

@@ -76,6 +76,7 @@ const char* Joystick::_rgFunctionSettingsKey[Joystick::maxFunction] = {
     "PitchAxis",
     "YawAxis",
     "ThrottleAxis",
+    "ZoomAxis",
     "GimbalPitchAxis",
     "GimbalYawAxis"
 };
@@ -224,9 +225,9 @@ void Joystick::_setDefaultCalibration(void) {
     _rgFunctionAxis[pitchFunction]      = 3;
     _rgFunctionAxis[yawFunction]        = 0;
     _rgFunctionAxis[throttleFunction]   = 1;
-
-    _rgFunctionAxis[gimbalPitchFunction]= 4;
-    _rgFunctionAxis[gimbalYawFunction]  = 5;
+    _rgFunctionAxis[zoomFunction]       = 4;
+    _rgFunctionAxis[gimbalPitchFunction]= 5;
+    _rgFunctionAxis[gimbalYawFunction]  = 6;
 
     _exponential        = 0;
     _accumulator        = false;
@@ -478,11 +479,11 @@ void Joystick::_saveSettings()
 
 // Relative mappings of axis functions between different TX modes
 int Joystick::_mapFunctionMode(int mode, int function) {
-    static const int mapping[][6] = {
-        { yawFunction, pitchFunction, rollFunction, throttleFunction, gimbalPitchFunction, gimbalYawFunction },
-        { yawFunction, throttleFunction, rollFunction, pitchFunction, gimbalPitchFunction, gimbalYawFunction },
-        { rollFunction, pitchFunction, yawFunction, throttleFunction, gimbalPitchFunction, gimbalYawFunction },
-        { rollFunction, throttleFunction, yawFunction, pitchFunction, gimbalPitchFunction, gimbalYawFunction }};
+    static const int mapping[][7] = {
+                                     { yawFunction, pitchFunction, rollFunction, throttleFunction, zoomFunction, gimbalPitchFunction, gimbalYawFunction },
+                                     { yawFunction, throttleFunction, rollFunction, pitchFunction, zoomFunction, gimbalPitchFunction, gimbalYawFunction },
+                                     { rollFunction, pitchFunction, yawFunction, throttleFunction, zoomFunction, gimbalPitchFunction, gimbalYawFunction },
+                                     { rollFunction, throttleFunction, yawFunction, pitchFunction, zoomFunction, gimbalPitchFunction, gimbalYawFunction }};
     return mapping[mode-1][function];
 }
 
@@ -954,15 +955,22 @@ void Joystick::_handleAxis()
                     axis = _rgFunctionAxis[throttleFunction];
             float   throttle = _adjustRange(_rgAxisValues[axis],_rgCalibration[axis], _throttleMode==ThrottleModeDownZero?false:_deadband);
 
+            float zoom = 0.0f;
+
+            if(_axisCount > 4) {
+                axis = _rgFunctionAxis[zoomFunction];
+                zoom = _adjustRange(_rgAxisValues[axis], _rgCalibration[axis],_deadband);
+            }
+
             float   gimbalPitch = 0.0f;
             float   gimbalYaw   = 0.0f;
 
-            if(_axisCount > 4) {
+            if(_axisCount > 5) {
                 axis = _rgFunctionAxis[gimbalPitchFunction];
                 gimbalPitch = _adjustRange(_rgAxisValues[axis], _rgCalibration[axis],_deadband);
             }
 
-            if(_axisCount > 5) {
+            if(_axisCount > 6) {
                 axis = _rgFunctionAxis[gimbalYawFunction];
                 gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis],_deadband);
             }
@@ -1006,7 +1014,7 @@ void Joystick::_handleAxis()
             } else {
                 throttle = (throttle + 1.0f) / 2.0f;
             }
-            qCDebug(JoystickValuesLog) << "name:roll:pitch:yaw:throttle:gimbalPitch:gimbalYaw" << name() << roll << -pitch << yaw << throttle << gimbalPitch << gimbalYaw;
+            qCDebug(JoystickValuesLog) << "name:roll:pitch:yaw:throttle:zoom:gimbalPitch:gimbalYaw" << name() << roll << -pitch << yaw << throttle << zoom << gimbalPitch << gimbalYaw;
             // NOTE: The buttonPressedBits going to MANUAL_CONTROL are currently used by ArduSub (and it only handles 16 bits)
             // Set up button bitmap
             quint64 buttonPressedBits = 0;  // Buttons pressed for manualControl signal
@@ -1017,7 +1025,42 @@ void Joystick::_handleAxis()
                     buttonPressedBits |= buttonBit;
                 }
             }
-            emit axisValues(roll, pitch, yaw, throttle);
+            emit axisValues(roll, pitch, yaw, throttle, zoom);
+            auto const prevZoom = _previousZoom;
+            _previousZoom = zoom;
+            if(zoom >= 0.5)
+            {
+                if(prevZoom<0.5)
+                {
+                    if(prevZoom<=-0.5)
+                    {
+                        _executeButtonAction(_buttonActionContinuousZoomOut, false);
+                    }
+                    _executeButtonAction(_buttonActionContinuousZoomIn,true);
+                }
+            }
+            else if(zoom <= -0.5)
+            {
+                if(prevZoom>-0.5)
+                {
+                    if(prevZoom>=0.5)
+                    {
+                        _executeButtonAction(_buttonActionContinuousZoomIn, false);
+                    }
+                    _executeButtonAction(_buttonActionContinuousZoomOut,true);
+                }
+            }
+            else
+            {
+                if(prevZoom >= 0.5)
+                {
+                    _executeButtonAction(_buttonActionContinuousZoomIn, false);
+                }
+                else if(prevZoom <=-0.5)
+                {
+                    _executeButtonAction(_buttonActionContinuousZoomOut, false);
+                }
+            }
 
             uint16_t shortButtons = static_cast<uint16_t>(buttonPressedBits & 0xFFFF);
 
@@ -1498,8 +1541,17 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         }
     } else if(action == _buttonActionContinuousZoomIn || action == _buttonActionContinuousZoomOut) {
         if (buttonDown) {
+            if(_buttonActionContinuousZoomIn)
+            {
+                qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomInCommand();
+            }
+            else
+            {
+                 qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomOutCommand();
+            }
             emit startContinuousZoom(action == _buttonActionContinuousZoomIn ? 1 : -1);
         } else {
+            qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
             emit stopContinuousZoom();
         }
     } else if(action == _buttonActionStepZoomIn || action == _buttonActionStepZoomOut) {

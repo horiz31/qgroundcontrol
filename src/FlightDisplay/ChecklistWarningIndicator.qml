@@ -28,6 +28,7 @@ Item {
 
         property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
 
+        /*
         QGCMouseArea {
             fillItem:   checklistPanel
             onClicked: {
@@ -38,6 +39,7 @@ Item {
             }
 
         }
+        */
         /*
         PropertyAnimation on opacity {
             easing.type:    Easing.OutQuart

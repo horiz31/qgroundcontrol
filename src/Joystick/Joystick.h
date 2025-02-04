@@ -76,6 +76,7 @@ public:
         pitchFunction,
         yawFunction,
         throttleFunction,
+        zoomFunction,
         gimbalPitchFunction,
         gimbalYawFunction,
         maxFunction
@@ -240,7 +241,7 @@ signals:
     void accumulatorChanged         (bool accumulator);
     void enabledChanged             (bool enabled);
     void circleCorrectionChanged    (bool circleCorrection);
-    void axisValues                 (float roll, float pitch, float yaw, float throttle);
+    void axisValues                 (float roll, float pitch, float yaw, float throttle, float zoom);
 
     void axisFrequencyHzChanged     ();
     void minThrottleFBWChanged      ();
@@ -350,6 +351,8 @@ protected:
     float   _buttonFrequencyHz      = _defaultButtonFrequencyHz;
     float   _minThrottleFBW         = 25.0f;
     Vehicle* _activeVehicle         = nullptr;
+
+    float _previousZoom             = 0;
 
     bool    _pollingStartedForCalibration = false;
 
