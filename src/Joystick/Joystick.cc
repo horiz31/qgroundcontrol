@@ -1034,9 +1034,10 @@ void Joystick::_handleAxis()
                 {
                     if(prevZoom<=-0.5)
                     {
-                        _executeButtonAction(_buttonActionContinuousZoomOut, false);
+                        qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
                     }
-                    _executeButtonAction(_buttonActionContinuousZoomIn,true);
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomInCommand();
+
                 }
             }
             else if(zoom <= -0.5)
@@ -1045,20 +1046,20 @@ void Joystick::_handleAxis()
                 {
                     if(prevZoom>=0.5)
                     {
-                        _executeButtonAction(_buttonActionContinuousZoomIn, false);
+                        qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
                     }
-                    _executeButtonAction(_buttonActionContinuousZoomOut,true);
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomOutCommand();
                 }
             }
             else
             {
                 if(prevZoom >= 0.5)
                 {
-                    _executeButtonAction(_buttonActionContinuousZoomIn, false);
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
                 }
                 else if(prevZoom <=-0.5)
                 {
-                    _executeButtonAction(_buttonActionContinuousZoomOut, false);
+                    qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
                 }
             }
 
@@ -1541,17 +1542,10 @@ void Joystick::_executeButtonAction(const QString& action, bool buttonDown)
         }
     } else if(action == _buttonActionContinuousZoomIn || action == _buttonActionContinuousZoomOut) {
         if (buttonDown) {
-            if(_buttonActionContinuousZoomIn)
-            {
-                qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomInCommand();
-            }
-            else
-            {
-                 qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomOutCommand();
-            }
+
             emit startContinuousZoom(action == _buttonActionContinuousZoomIn ? 1 : -1);
         } else {
-            qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
+            //qgcApp()->toolbox()->joystickManager()->cameraManagement()->setSysZoomStopCommand();
             emit stopContinuousZoom();
         }
     } else if(action == _buttonActionStepZoomIn || action == _buttonActionStepZoomOut) {

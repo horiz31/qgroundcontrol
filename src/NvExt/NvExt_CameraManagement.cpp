@@ -616,6 +616,7 @@ void CameraManagement::setSysZoomOutCommand()
 {
     /* Sending retract release command */
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetZoom,2,0,0,0,0,0);
+
 }
 
 void CameraManagement::setSysSensorToggleCommand()
