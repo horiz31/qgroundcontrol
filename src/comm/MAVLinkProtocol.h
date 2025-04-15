@@ -150,6 +150,8 @@ signals:
     void nvIsRecordingChanged(int isRecording);
      /** emitting every time the nextvision cpu temp changes */
     void nvCpuTempChanged(int cpuTemp);
+    /** emitting every time the nextvision cpu temp changes */
+    void nvPitchChanged(float nvPitch);
      /** emitting every time the nextvision camera temp status changes */
     void nvCamTempChanged(int camTemp);
      /** emitting every time the nextvision ground crossing lat changes */

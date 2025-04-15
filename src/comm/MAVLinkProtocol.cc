@@ -480,6 +480,9 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     //get cpu temp
                     emit nvCpuTempChanged(system_report.cpu_temp);
 
+                    //get pitch
+                    emit nvPitchChanged(system_report.pitch);
+
                     //get camera temp
                     emit nvCamTempChanged(system_report.cam_temp);
                 }

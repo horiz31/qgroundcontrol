@@ -221,6 +221,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::snapShotStatusChanged,        this, &Vehicle::_updateSnapShotStatus);
     connect(_mavlink, &MAVLinkProtocol::illuminatorStatusChanged,     this, &Vehicle::_updateisIlluminatorActive);
     connect(_mavlink, &MAVLinkProtocol::nvCpuTempChanged,             this, &Vehicle::_updateNvCpuTemperatureChange);
+    connect(_mavlink, &MAVLinkProtocol::nvPitchChanged,               this, &Vehicle::_updateNvPitchedChange);
     connect(_mavlink, &MAVLinkProtocol::nvCamTempChanged,             this, &Vehicle::_updateNvCameraTemperatureChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdAvailableCapacityChanged, this, &Vehicle::_updateNvSdAvailableChange);
@@ -824,6 +825,12 @@ void Vehicle::_updateNvCpuTemperatureChange(float value)
 {
      if (value != _gimbalFactGroup.cpuTemperature()->rawValue())
         _gimbalFactGroup.cpuTemperature()->setRawValue(value);
+}
+
+void Vehicle::_updateNvPitchedChange(float value)
+{
+    if (value != _gimbalFactGroup.pitch()->rawValue())
+        _gimbalFactGroup.pitch()->setRawValue(value);
 }
 void Vehicle::_updateNvCameraTemperatureChange(float value)
 {

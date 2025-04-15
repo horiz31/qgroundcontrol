@@ -1083,6 +1083,7 @@ private slots:
     void _updateNvActiveSensorChange        (int value);
     void _updateNvIsRecordingChange         (int value);
     void _updateNvCpuTemperatureChange      (float value);
+    void _updateNvPitchedChange             (float value);
     void _updateNvCameraTemperatureChange   (float value);
     void _updateNvSdCapacityChange          (float value);
     void _updateNvSdAvailableChange         (float value);
