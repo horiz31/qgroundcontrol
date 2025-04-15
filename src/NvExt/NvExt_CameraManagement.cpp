@@ -46,6 +46,13 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
         connect(&_startUpTimer, &QTimer::timeout, this, &CameraManagement::setSDCardReportFrequencyCommand);
         _startUpTimer.start();
 
+
+        //hook up a timer to send laser safety messages while the laser is on
+        _illuminatorSafetyTimer.setSingleShot(false);
+        _illuminatorSafetyTimer.setInterval(90);
+        connect(&_illuminatorSafetyTimer, &QTimer::timeout, this, &CameraManagement::setSysIlluminatorSafetyCommand);
+        _illuminatorSafetyTimer.stop();
+
     }
     else
     {
@@ -581,6 +588,40 @@ void CameraManagement::setPilotPhaseTwo()
     //zoom out  
     setSysZoomOutCommand();
 }
+
+void CameraManagement::setSysIlluminatorOnCommand()
+{
+
+    //start illuminator safety timer
+    _illuminatorSafetyTimer.start();
+
+    /* Sending the turn on laser command */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,1,0,0,0,0,0);
+
+    //enable tracker offset
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,1,1,0,0,0);
+
+
+}
+
+void CameraManagement::setSysIlluminatorOffCommand()
+{
+    //stop illuminator safety timer
+    _illuminatorSafetyTimer.stop();
+
+    /* Sending the laser off command */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,0,0,0,0,0,0);
+
+    //disable  tracker offset
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,0,1,0,0,0);
+}
+
+void CameraManagement::setSysIlluminatorSafetyCommand()
+{
+    /* Sending the safety command, this must be sent at at least 10hz to keep laser on */
+    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,4,0,1,0,0,0);
+}
+
 
 void CameraManagement::setSysModeStowCommand()
 {

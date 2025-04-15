@@ -272,10 +272,15 @@ public:
     Q_INVOKABLE void setSysSBSModeCommand(int mode);
     Q_INVOKABLE void setSysVMDOnCommand(void);
     Q_INVOKABLE void setSysVMDOffCommand(void);
-    Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);   
+    Q_INVOKABLE void setSysModeUnstabilizedPositionCommand(int pitch, int roll);
+    Q_INVOKABLE void setSysIlluminatorOnCommand(void);
+    Q_INVOKABLE void setSysIlluminatorOffCommand(void);
+
+    void setSysIlluminatorSafetyCommand();
     void setPilotPhaseTwo();
     void setSysSaveParams();
     void setSysReboot();
+
 
 protected:
     MultiVehicleManager*    _multiVehicleManager;
@@ -295,6 +300,7 @@ private:
     QTimer  _startUpTimer;
     QTimer  _delayTimer;
     QTimer  _delayTimer2;
+    QTimer  _illuminatorSafetyTimer;
 
 private Q_SLOTS:
     void setSDCardReportFrequencyCommand();
