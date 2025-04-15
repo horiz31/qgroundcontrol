@@ -470,7 +470,8 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
                     //get the current fov
                     emit nvFovChanged(system_report.fov);
 
-
+                    //get laser status
+                    emit illuminatorStatusChanged(system_report.laser_status);
 
                     //get is recording
                     uint8_t recording_status = system_report.recording_status & 0x0f;  //first nibble is channel 0, which is all we care about for now

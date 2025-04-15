@@ -29,6 +29,7 @@ const char* VehicleGimbalFactGroup::_sdCapacityFactName =                "sdCapa
 const char* VehicleGimbalFactGroup::_sdAvailableFactName =               "sdAvailable";
 const char* VehicleGimbalFactGroup::_nvVersionFactName =                 "nvVersion";
 const char* VehicleGimbalFactGroup::_nvTripVersionFactName =             "nvTripVersion";
+const char* VehicleGimbalFactGroup::_isIlluminatorActiveFactName =       "isIlluminatorActive";
 
 
 
@@ -51,7 +52,8 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     , _sdCapacityFact            (0, _sdCapacityFactName,           FactMetaData::valueTypeDouble)
     , _sdAvailableFact           (0, _sdAvailableFactName,          FactMetaData::valueTypeDouble)
     , _nvVersionFact             (0, _nvVersionFactName,            FactMetaData::valueTypeDouble)
-    , _nvTripVersionFact             (0, _nvTripVersionFactName,    FactMetaData::valueTypeString)
+    , _nvTripVersionFact         (0, _nvTripVersionFactName,        FactMetaData::valueTypeString)
+    , _isIlluminatorActiveFact   (0, _isIlluminatorActiveFactName,  FactMetaData::valueTypeUint8)
 
 {
     _addFact(&_modeFact,                _modeFactName);
@@ -70,6 +72,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _addFact(&_sdAvailableFact,         _sdAvailableFactName);
     _addFact(&_nvVersionFact,           _nvVersionFactName);
     _addFact(&_nvTripVersionFact,       _nvTripVersionFactName);
+    _addFact(&_isIlluminatorActiveFact, _isIlluminatorActiveFactName);
 
 
     // Start out as not available "--.--"
@@ -89,6 +92,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _sdAvailableFact.setRawValue        (qQNaN());
     _nvVersionFact.setRawValue          (qQNaN());
     _nvTripVersionFact.setRawValue      ("");
+    _isIlluminatorActiveFact.setRawValue    (0);
 
 }
 

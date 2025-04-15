@@ -34,6 +34,7 @@ public:
     Q_PROPERTY(Fact* sdAvailable		    READ sdAvailable         CONSTANT)
     Q_PROPERTY(Fact* nvVersion 		        READ nvVersion           CONSTANT)
     Q_PROPERTY(Fact* nvTripVersion 		    READ nvTripVersion           CONSTANT)
+    Q_PROPERTY(Fact* isIlluminatorActive    READ isIlluminatorActive           CONSTANT)
 
 
     Fact* mode                  () { return &_modeFact; }
@@ -52,6 +53,7 @@ public:
     Fact* sdAvailable           () { return &_sdAvailableFact; }
     Fact* nvVersion             () { return &_nvVersionFact; }
     Fact* nvTripVersion         () { return &_nvTripVersionFact; }
+    Fact* isIlluminatorActive   () { return &_isIlluminatorActiveFact; }
 
 
     static const char* _modeFactName;
@@ -70,6 +72,7 @@ public:
     static const char* _sdAvailableFactName;
     static const char* _nvVersionFactName;
     static const char* _nvTripVersionFactName;
+    static const char* _isIlluminatorActiveFactName;
 
 
 
@@ -91,6 +94,7 @@ private:
     Fact        _sdAvailableFact;
     Fact        _nvVersionFact;
     Fact        _nvTripVersionFact;
+    Fact        _isIlluminatorActiveFact;
 
 
 };

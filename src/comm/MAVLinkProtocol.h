@@ -138,6 +138,8 @@ signals:
     void nvPresentStatusChanged(float version);
     /** emitting every time the snapshot status changes */
     void snapShotStatusChanged(int status);
+    /** emitting every time the illuminator status changes */
+    void illuminatorStatusChanged(int status);
     /** emitting every time the nextvision mode changes */
     void nvModeChanged(QString mode);
     /** emitting every time the nextvision sensor changes */

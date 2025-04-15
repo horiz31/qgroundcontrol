@@ -219,6 +219,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvSensorChanged,              this, &Vehicle::_updateNvActiveSensorChange);
     connect(_mavlink, &MAVLinkProtocol::nvIsRecordingChanged,         this, &Vehicle::_updateNvIsRecordingChange);
     connect(_mavlink, &MAVLinkProtocol::snapShotStatusChanged,        this, &Vehicle::_updateSnapShotStatus);
+    connect(_mavlink, &MAVLinkProtocol::illuminatorStatusChanged,     this, &Vehicle::_updateisIlluminatorActive);
     connect(_mavlink, &MAVLinkProtocol::nvCpuTempChanged,             this, &Vehicle::_updateNvCpuTemperatureChange);
     connect(_mavlink, &MAVLinkProtocol::nvCamTempChanged,             this, &Vehicle::_updateNvCameraTemperatureChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
@@ -747,6 +748,13 @@ void Vehicle::_updateSnapShotStatus(int status)
     _snapShotStatus = status;
     _gimbalFactGroup.isSnapshot()->setRawValue(status);
     emit snapShotStatusChanged(_snapShotStatus);
+}
+
+void Vehicle::_updateisIlluminatorActive(int status)
+{
+    _isIlluminatorActive = status;
+    _gimbalFactGroup.isIlluminatorActive()->setRawValue(status);
+    emit isIlluminatorActiveChanged(_isIlluminatorActive);
 }
 
 void Vehicle::_updateNvModeChange(QString mode)

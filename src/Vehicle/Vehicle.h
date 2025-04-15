@@ -1019,6 +1019,7 @@ signals:
     void loadProgressChanged            (float value);
     void losCoordsChanged               ();
     void snapShotStatusChanged          (int snapShotStatus);
+    void isIlluminatorActiveChanged     (int illuminatorStatus);
     void nvModeChanged                  (QString nvMode);
     void supportsGuidedRadiusChanged    (bool value);
     void brdSerialNumberChanged         ();
@@ -1071,6 +1072,7 @@ private slots:
     //NextVision slots
     void _updateLineOfSight                 (QList<QGeoCoordinate> coordsList);
     void _updateSnapShotStatus              (int status);
+    void _updateisIlluminatorActive               (int status);
     void _updateNvModeChange                (QString mode);
     void _updateNvGroundCrossingLatChange   (float value);
     void _updateNvGroundCrossingLonChange   (float value);
@@ -1377,6 +1379,7 @@ private:
     // Orbit status values
     bool            _orbitActive = false;
     int             _snapShotStatus = 0;
+    int             _isIlluminatorActive = 0;
     QString         _nvMode;
     bool            _nvQuickPanel;
     QGCMapCircle    _orbitMapCircle;
