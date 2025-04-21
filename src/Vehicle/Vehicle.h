@@ -205,7 +205,17 @@ public:
     Q_PROPERTY(QString              latestError                 READ latestError                                                    NOTIFY latestErrorChanged)
     Q_PROPERTY(bool                 joystickEnabled             READ joystickEnabled            WRITE setJoystickEnabled            NOTIFY joystickEnabledChanged)
     Q_PROPERTY(bool                 joystickCamEnabled          READ joystickCamEnabled         WRITE setJoystickCamEnabled         NOTIFY joystickCamEnabledChanged)   /* NextVision */
-    Q_PROPERTY(int                  flowImageIndex              READ flowImageIndex                                                 NOTIFY flowImageIndexChanged)
+    Q_PROPERTY(bool illuminatorControlEnabled READ illuminatorControlEnabled WRITE
+                   setIlluminatorControlEnabled NOTIFY illuminatorControlEnabledChanged)
+    Q_PROPERTY(bool illuminatorRequiresArmed READ illuminatorRequiresArmed WRITE
+                   setIlluminatorRequiresArmed NOTIFY illuminatorRequiresArmedChanged)
+    Q_PROPERTY(bool illuminatorRequiresFlying READ illuminatorRequiresFlying WRITE
+                   setIlluminatorRequiresFlying NOTIFY illuminatorRequiresFlyingChanged)
+    Q_PROPERTY(float minIlluminatorAltitude READ minIlluminatorAltitude WRITE
+                   setMinIlluminatorAltitude NOTIFY minIlluminatorAltitudeChanged)
+    Q_PROPERTY(float minIlluminatorPitch READ minIlluminatorPitch WRITE setMinIlluminatorPitch
+                   NOTIFY minIlluminatorPitchChanged)
+    Q_PROPERTY(int flowImageIndex READ flowImageIndex NOTIFY flowImageIndexChanged)
     Q_PROPERTY(int                  rcRSSI                      READ rcRSSI                                                         NOTIFY rcRSSIChanged)
     Q_PROPERTY(bool                 px4Firmware                 READ px4Firmware                                                    NOTIFY firmwareTypeChanged)
     Q_PROPERTY(bool                 apmFirmware                 READ apmFirmware                                                    NOTIFY firmwareTypeChanged)
@@ -527,6 +537,17 @@ public:
 
     bool joystickEnabled            () const;
     void setJoystickEnabled         (bool enabled);
+
+    bool illuminatorControlEnabled() const;
+    void setIlluminatorControlEnabled(bool enabled);
+    bool illuminatorRequiresArmed() const;
+    void setIlluminatorRequiresArmed(bool requiresArmed);
+    bool illuminatorRequiresFlying() const;
+    void setIlluminatorRequiresFlying(bool requiresFlying);
+    float minIlluminatorAltitude() const;
+    void setMinIlluminatorAltitude(float minAltitude);
+    float minIlluminatorPitch() const;
+    void setMinIlluminatorPitch(float minPitch);
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
@@ -953,6 +974,11 @@ signals:
     void coordinateChanged              (QGeoCoordinate coordinate);
     void joystickEnabledChanged         (bool enabled);
     void joystickCamEnabledChanged      (bool enabled);                 /* NextVision */
+    void illuminatorControlEnabledChanged(bool enabled);
+    void illuminatorRequiresArmedChanged(bool requiresArmed);
+    void illuminatorRequiresFlyingChanged(bool requiresFlying);
+    void minIlluminatorAltitudeChanged(float minAltitude);
+    void minIlluminatorPitchChanged(float minPitch);
     void mavlinkMessageReceived         (const mavlink_message_t& message);
     void homePositionChanged            (const QGeoCoordinate& homePosition);
     void armedPositionChanged();
@@ -1224,6 +1250,13 @@ private:
 
     bool            _joystickEnabled = false;
     bool            _joystickCamEnabled = false;        /* NextVision */
+
+    float _minIlluminatorAltitude = 116;
+    float _minIlluminatorPitch = 10;
+    bool _illuminatorControlEnabled = false;
+    bool _illuminatorRequiresArmed = true;
+    bool _illuminatorRequiresFlying = true;
+
     QVariantList        _losCoords;
 
     UAS* _uas = nullptr;
@@ -1597,6 +1630,11 @@ private:
     static const char* _settingsGroup;
     static const char* _joystickEnabledSettingsKey;
     static const char* _joystickCamEnabledSettingsKey;      /* NextVision */
+    static const char* _minIlluminatorAltitudeSettingsKey;  /* NextVision */
+    static const char* _minIlluminatorPitchSettingsKey;     /* NextVision */
+    static const char* _illuminatorControlEnabledSettingsKey; /* NextVision */
+    static const char* _illuminatorRequiresArmedSettingsKey;  /* NextVision */
+    static const char* _illuminatorRequiresFlyingSettingsKey; /* NextVision */
 };
 
 Q_DECLARE_METATYPE(Vehicle::MavCmdResultFailureCode_t)

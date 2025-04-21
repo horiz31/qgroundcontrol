@@ -11,7 +11,9 @@
 import QtQuick              2.3
 import QtQuick.Controls     1.2
 import QtGraphicalEffects   1.0
+import QtQuick.Layouts      1.2
 
+import QGroundControl 1.0
 import QGroundControl.FactSystem    1.0
 import QGroundControl.FactControls  1.0
 import QGroundControl.Palette       1.0
@@ -41,6 +43,12 @@ SetupPage {
             //property Fact _failsafeThrValue:    controller.getParameterFact(-1, "THR_FS_VALUE")
             property Fact _failsafeGCSEnable:   controller.getParameterFact(-1, "FS_GCS_ENABL")
             property Fact _failsafeLongAction:   controller.getParameterFact(-1, "FS_LONG_TIMEOUT")
+
+            property bool _illuminatorControlEnabled: controller.vehicle.illuminatorControlEnabled
+            property bool _illuminatorRequiresArmed:  controller.vehicle.illuminatorRequiresArmed
+            property bool _illuminatorRequiresFlying: controller.vehicle.illuminatorRequiresFlying
+            property real _minIlluminatorAltitude: controller.vehicle.minIlluminatorAltitude
+            property real _minIlluminatorPitch: controller.vehicle.minIlluminatorPitch
 
             //property Fact _rtlAltFact: controller.getParameterFact(-1, "ALT_HOLD_RTL")
 
@@ -146,6 +154,110 @@ SetupPage {
                     }
                 } // Rectangle - Failsafe trigger settings
             } // Column - Failsafe trigger settings
+
+            Column{
+
+                 spacing: _margins / 2
+                 QGCLabel {
+                     text:       qsTr("Illuminator Safety")
+                     font.family: ScreenTools.demiboldFontFamily
+                 }
+
+                 Column {
+                     spacing: _margins / 2
+
+                    QGCCheckBox {
+                         id:                 illuminatorControlEnabledCheckbox
+                         //anchors.margins:    _margins
+                         //anchors.left:       parent.left
+                         //anchors.top:        parent.top
+                         text:               qsTr("Illuminator control enabled")
+                         checked:            _illuminatorControlEnabled
+                         onClicked:{
+                             controller.vehicle.illuminatorControlEnabled=checked
+                         }
+                    }
+                    QGCCheckBox {
+                         id:                 illuminatorRequiresArmedCheckbox
+                         //anchors.margins:    _margins
+                         //anchors.left:       parent.left
+                         //anchors.top:        parent.top
+                         enabled:             illuminatorControlEnabledCheckbox.checked
+                         text:               qsTr("Illuminator requires vehicle armed")
+                         checked:            _illuminatorRequiresArmed
+                         onClicked:{
+                             controller.vehicle.illuminatorRequiresArmed=checked
+                         }
+                    }
+                    QGCCheckBox {
+                         id:                 illuminatorRequiresFlyingCheckbox
+                         //anchors.margins:    _margins
+                         //anchors.left:       parent.left
+                         //anchors.top:        parent.top
+                         enabled:             illuminatorControlEnabledCheckbox.checked
+                         text:               qsTr("Illuminator requires vehicle flying")
+                         checked:            _illuminatorRequiresFlying
+                         onClicked:{
+                             controller.vehicle.illuminatorRequiresFlying=checked
+                         }
+                    }
+
+                    GridLayout{
+                         columns:        2
+                         QGCLabel{
+                             text:           qsTr("Minimum Altitude")
+                             font.family:    ScreenTools.demiboldFontFamily
+                         }
+
+                        QGCTextField {
+                            id: illuminatorMinAltitudeTextField
+                            //anchors.leftMargin: _margins
+                            //anchors.left:       parent.left
+                            //anchors.top:        illuminatorControlEnabledCheckbox.bottom
+                            validator: DoubleValidator {bottom: -10000; top: 10000}
+                            showUnits: true
+                            enabled: illuminatorControlEnabledCheckbox.checked
+                            unitsLabel: QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString
+                            //numericValuesOnly: true
+                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            text: QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
+                                      _minIlluminatorAltitude).toFixed(0)
+                            signal updated
+                            onEditingFinished: {
+                                controller.vehicle.minIlluminatorAltitude = QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(
+                                            text)
+                                illuminatorMinAltitudeTextField.updated()
+                            }
+                        }
+
+                        QGCLabel{
+                            text:           qsTr("Minimum Gimbal Pitch")
+                            font.family:    ScreenTools.demiboldFontFamily
+                        }
+
+                        QGCTextField {
+                            id: illuminatorMinPitchTextField
+                            //anchors.leftMargin: _margins
+                            //anchors.left:       parent.left
+                            //anchors.top:        illuminatorMinAltitudeTextField.bottom
+                            validator: DoubleValidator {bottom: -90; top: 90}
+                            showUnits: true
+                            enabled: illuminatorControlEnabledCheckbox.checked
+                            unitsLabel: "°"
+                            inputMethodHints: Qt.ImhFormattedNumbersOnly
+                            //numericValuesOnly: true
+                            text: _minIlluminatorPitch
+                            signal updated
+                            onEditingFinished: {
+                               controller.vehicle.minIlluminatorPitch = text
+                               illuminatorMinPitchTextField.updated()
+                            }
+                        }
+                    }
+
+
+                 }
+            }
 
             Column {
                 spacing: _margins / 2

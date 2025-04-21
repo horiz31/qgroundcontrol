@@ -601,7 +601,8 @@ void CameraManagement::setSysIlluminatorOnCommand()
     //enable tracker offset
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,1,1,0,0,0);
 
-
+    qCritical() << "ILLUMINATOR ON COMMAND SENT!!!";
+    qgcApp()->toolbox()->audioOutput()->say("Warning. Illuminator engaged");
 }
 
 void CameraManagement::setSysIlluminatorOffCommand()
@@ -614,6 +615,9 @@ void CameraManagement::setSysIlluminatorOffCommand()
 
     //disable  tracker offset
     sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,0,1,0,0,0);
+
+    qCritical() << "Illuminator off command sent";
+    qgcApp()->toolbox()->audioOutput()->say("Illuminator disengaged");
 }
 
 void CameraManagement::setSysIlluminatorSafetyCommand()
