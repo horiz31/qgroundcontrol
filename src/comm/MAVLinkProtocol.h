@@ -138,6 +138,8 @@ signals:
     void nvPresentStatusChanged(float version);
     /** emitting every time the snapshot status changes */
     void snapShotStatusChanged(int status);
+    /** emitting every time the illuminator status changes */
+    void illuminatorStatusChanged(int status);
     /** emitting every time the nextvision mode changes */
     void nvModeChanged(QString mode);
     /** emitting every time the nextvision sensor changes */
@@ -148,6 +150,8 @@ signals:
     void nvIsRecordingChanged(int isRecording);
      /** emitting every time the nextvision cpu temp changes */
     void nvCpuTempChanged(int cpuTemp);
+    /** emitting every time the nextvision cpu temp changes */
+    void nvPitchChanged(float nvPitch);
      /** emitting every time the nextvision camera temp status changes */
     void nvCamTempChanged(int camTemp);
      /** emitting every time the nextvision ground crossing lat changes */

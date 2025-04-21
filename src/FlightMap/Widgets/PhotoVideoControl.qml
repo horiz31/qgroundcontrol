@@ -128,6 +128,12 @@ Rectangle {
     property bool   _autoNuc:                                   _videoStreamSettings.autoNuc.rawValue
     property int    _nucPeriod:                                  _videoStreamSettings.nucPeriod.rawValue * 1000
     property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+    property bool   _illuminatorControlVisible:                 !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && (_activeVehicle ? _activeVehicle.illuminatorControlEnabled : false) //TODO attached a safety setting to this
+    property bool   _illuminatorAltitudeOk:                     _activeVehicle ? (_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude) : false
+    property bool   _illuminatorPitchOk:                        _activeVehicle ? (_activeVehicle.nvGimbal.pitch.value >= _activeVehicle.minIlluminatorPitch) : false
+    property bool   _illuminatorRequiresArmed:                  _activeVehicle ? _activeVehicle.illuminatorRequiresArmed : true;
+    property bool   _illuminatorRequiresFlying:                 _activeVehicle ? _activeVehicle.illuminatorRequiresFlying : true;
+    property bool   _illuminatorControlEnabled:                 _illuminatorControlVisible && _illuminatorAltitudeOk && _illuminatorPitchOk && (_isArmed || !_illuminatorRequiresArmed) && (_isFlying || !_illuminatorRequiresFlying)
 
 
     on_IsFlyingChanged: {
@@ -465,7 +471,7 @@ Rectangle {
                     rowSpacing:         ScreenTools.defaultFontPixelHeight
                     visible:            _activeVehicle
                     //visible:            _nextVisionGimbalAvailable
-
+                    Layout.alignment:   Qt.AlignHCenter
                     QGCButton {
                         id:             grrButton
                         backRadius:     4
@@ -624,11 +630,11 @@ Rectangle {
                             visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
             }
             GridLayout {
-                columns:            2
-                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
+                columns:            _illuminatorControlVisible ? 3 : 2
+                columnSpacing:      ScreenTools.defaultFontPixelWidth * (_illuminatorControlVisible ? 1 : 3)
                 rowSpacing:         ScreenTools.defaultFontPixelHeight
                 Layout.alignment:   Qt.AlignHCenter
-                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
+                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
 
                 QGCButton {
                     id:             irButton
@@ -703,13 +709,6 @@ Rectangle {
                         joystickManager.cameraManagement.setSysResetCommand()
                     }
                 }
-            }
-            GridLayout {
-                columns:            2
-                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
-                rowSpacing:         ScreenTools.defaultFontPixelHeight
-                Layout.alignment:   Qt.AlignHCenter
-                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
 
                 QGCButton {
                     id:             dayButton
@@ -721,6 +720,7 @@ Rectangle {
                     leftPadding:    7
                     rightPadding:   7
                     hoverEnabled:   false
+                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
                     SequentialAnimation {
                                 id: animDayButton
                                 // Expand the button
@@ -756,6 +756,7 @@ Rectangle {
                     leftPadding:    7
                     rightPadding:   7
                     hoverEnabled:   false
+                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
                     SequentialAnimation {
                                 id: animNucButton
                                 // Expand the button
@@ -781,7 +782,111 @@ Rectangle {
                         joystickManager.cameraManagement.setSysIrNUCCommand()
                     }
                 }
+
+                QGCButton {
+                    id: illuminatorButton
+                    backRadius:     4
+                    showBorder:     true
+                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                    text:           qsTr("ILL")
+                    leftPadding:    7
+                    rightPadding:   7
+                    hoverEnabled:   false
+                    visible:        _illuminatorControlVisible
+
+                    warning: _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value
+
+                    //background.color:          _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertBackground : qgcPal.button
+                    //text.color:     _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertText : qgcPal.buttonText
+                    //border.color:   _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertBorder : qgcPal.buttonText
+                    enabled:        _illuminatorControlVisible && _illuminatorControlEnabled
+                    SequentialAnimation {
+                                id: animIllButton
+                                // Expand the button
+                                PropertyAnimation {
+                                    target: illuminatorButton
+                                    property: "scale"
+                                    to: 1.2
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+
+                                // Shrink back to normal
+                                PropertyAnimation {
+                                    target: illuminatorButton
+                                    property: "scale"
+                                    to: 1.0
+                                    duration: 200
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                    onClicked: {
+                        animIllButton.start()
+                        if(_nextVisionGimbalAvailable && _activeVehicle.nvGimbal.isIlluminatorActive.value)
+                        {
+                            joystickManager.cameraManagement.setSysIlluminatorOffCommand()
+                        }
+                        else
+                        {
+                            joystickManager.cameraManagement.setSysIlluminatorOnCommand()
+                        }
+                    }
+                    onEnabledChanged: {
+                        //always start with it being off
+                        if(_nextVisionGimbalAvailable && _activeVehicle.nvGimbal.isIlluminatorActive.value)
+                        {
+                            joystickManager.cameraManagement.setSysIlluminatorOffCommand()
+                        }
+                    }
+                }
             }
+            /*
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "relativeAltitude = " + (_activeVehicle?_activeVehicle.altitudeRelative.value:"n/a")
+            }
+
+
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_illuminatorAltitudeOk = " + _illuminatorAltitudeOk
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_illuminatorPitchOk = " + _illuminatorPitchOk
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_illuminatorRequiresArmed = " + _illuminatorRequiresArmed
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_illuminatorRequiresFlying = " + _illuminatorRequiresFlying
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_isFlying = " + _isFlying
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_isArmed = " + _isArmed
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                Layout.alignment:   Qt.AlignHCenter
+                text:               "_illuminatorControlVisible = " + _illuminatorControlVisible
+            }
+            */
+
+
             QGCLabel {
                             Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
                             Layout.alignment:   Qt.AlignHCenter
@@ -908,6 +1013,7 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.recordOnFlying.rawValue = checked ? true : false
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Auto NUC Periodically")

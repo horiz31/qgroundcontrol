@@ -64,26 +64,35 @@ QStringList SysStatusSensorInfo::sensorNames (void) const
     // List ordering is unhealthy, healthy, disabled
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (sensorInfo.enabled && !sensorInfo.healthy) {
-            rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (sensorInfo.enabled && !sensorInfo.healthy)
+            {
+                rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+            }
         }
     }
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (sensorInfo.enabled && sensorInfo.healthy) {
-            rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (sensorInfo.enabled && sensorInfo.healthy)
+            {
+                rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+            }
         }
     }
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (!sensorInfo.enabled) {
-            rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (!sensorInfo.enabled)
+            {
+                rgNames.append(QGCMAVLink::mavSysStatusSensorToString(sensorBitMask));
+            }
         }
     }
 
@@ -97,26 +106,35 @@ QStringList SysStatusSensorInfo::sensorStatus(void) const
     // List ordering is unhealthy, healthy, disabled
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (sensorInfo.enabled && !sensorInfo.healthy) {
-            rgStatus.append(tr("Error"));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (sensorInfo.enabled && !sensorInfo.healthy)
+            {
+                rgStatus.append(tr("Error"));
+            }
         }
     }
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (sensorInfo.enabled && sensorInfo.healthy) {
-            rgStatus.append(tr("Normal"));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (sensorInfo.enabled && sensorInfo.healthy)
+            {
+                rgStatus.append(tr("Normal"));
+            }
         }
     }
     for (int i=0; i<_sensorInfoMap.keys().count(); i++) {
         const MAV_SYS_STATUS_SENSOR sensorBitMask   = _sensorInfoMap.keys()[i];
-        const SensorInfo_t&         sensorInfo      = _sensorInfoMap[sensorBitMask];
-
-        if (!sensorInfo.enabled) {
-            rgStatus.append(tr("Disabled"));
+        if (sensorBitMask != MAV_SYS_STATUS_SENSOR_RC_RECEIVER)
+        {
+            const SensorInfo_t& sensorInfo = _sensorInfoMap[sensorBitMask];
+            if (!sensorInfo.enabled)
+            {
+                rgStatus.append(tr("Disabled"));
+            }
         }
     }
 

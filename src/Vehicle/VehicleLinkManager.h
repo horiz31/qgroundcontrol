@@ -92,5 +92,5 @@ private:
     bool                    _autoDisconnect             = false;    ///< true: Automatically disconnect vehicle when last connection goes away or lost heartbeat
 
     static const int _commLostCheckTimeoutMSecs     = 1000;  // Check for comm lost once a second
-    static const int _heartbeatMaxElpasedMSecs      = 3500;  // No heartbeat for longer than this indicates comm loss
+    static const int _heartbeatMaxElpasedMSecs      = 4500;  // No heartbeat for longer than this indicates comm loss
 };

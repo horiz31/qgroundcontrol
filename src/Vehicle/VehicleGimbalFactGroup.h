@@ -24,6 +24,7 @@ public:
     Q_PROPERTY(Fact* groundCrossingAlt      READ groundCrossingAlt   CONSTANT)
     Q_PROPERTY(Fact* slantRange             READ slantRange          CONSTANT)
     Q_PROPERTY(Fact* fov                    READ fov                 CONSTANT)
+    Q_PROPERTY(Fact* pitch                  READ pitch               CONSTANT)
     Q_PROPERTY(Fact* azimuth                READ azimuth             CONSTANT)
     Q_PROPERTY(Fact* activeSensor           READ activeSensor        CONSTANT)
     Q_PROPERTY(Fact* isRecording            READ isRecording         CONSTANT)
@@ -34,6 +35,7 @@ public:
     Q_PROPERTY(Fact* sdAvailable		    READ sdAvailable         CONSTANT)
     Q_PROPERTY(Fact* nvVersion 		        READ nvVersion           CONSTANT)
     Q_PROPERTY(Fact* nvTripVersion 		    READ nvTripVersion           CONSTANT)
+    Q_PROPERTY(Fact* isIlluminatorActive    READ isIlluminatorActive           CONSTANT)
 
 
     Fact* mode                  () { return &_modeFact; }
@@ -42,7 +44,7 @@ public:
     Fact* groundCrossingAlt     () { return &_groundCrossingAltFact; }
     Fact* slantRange            () { return &_slantRangeFact; }
     Fact* fov                   () { return &_fovFact; }
-     Fact* azimuth              () { return &_azimuthFact; }
+    Fact* azimuth               () { return &_azimuthFact; }
     Fact* activeSensor          () { return &_activeSensorFact; }
     Fact* isRecording           () { return &_isRecordingFact; }
     Fact* isSnapshot            () { return &_isSnapshotFact; }
@@ -52,6 +54,8 @@ public:
     Fact* sdAvailable           () { return &_sdAvailableFact; }
     Fact* nvVersion             () { return &_nvVersionFact; }
     Fact* nvTripVersion         () { return &_nvTripVersionFact; }
+    Fact* isIlluminatorActive   () { return &_isIlluminatorActiveFact; }
+    Fact* pitch                 () { return &_pitchFact; }
 
 
     static const char* _modeFactName;
@@ -60,6 +64,7 @@ public:
     static const char* _groundCrossingAltFactName;
     static const char* _slantRangeFactName;
     static const char* _fovFactName;
+    static const char* _pitchFactName;
     static const char* _azimuthFactName;
     static const char* _activeSensorFactName;
     static const char* _isRecordingFactName;
@@ -70,6 +75,7 @@ public:
     static const char* _sdAvailableFactName;
     static const char* _nvVersionFactName;
     static const char* _nvTripVersionFactName;
+    static const char* _isIlluminatorActiveFactName;
 
 
 
@@ -81,6 +87,7 @@ private:
     Fact        _groundCrossingAltFact;
     Fact        _slantRangeFact;
     Fact        _fovFact;
+    Fact        _pitchFact;
     Fact        _azimuthFact;
     Fact        _activeSensorFact;
     Fact        _isRecordingFact;
@@ -91,6 +98,7 @@ private:
     Fact        _sdAvailableFact;
     Fact        _nvVersionFact;
     Fact        _nvTripVersionFact;
+    Fact        _isIlluminatorActiveFact;
 
 
 };

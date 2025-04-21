@@ -71,6 +71,12 @@ const QString guided_mode_not_supported_by_vehicle = QObject::tr("Guided mode no
 const char* Vehicle::_settingsGroup =               "Vehicle%1";        // %1 replaced with mavlink system id
 const char* Vehicle::_joystickEnabledSettingsKey =  "JoystickEnabled";
 const char* Vehicle::_joystickCamEnabledSettingsKey =  "JoystickCamEnabled";        /* NextVision */
+const char* Vehicle::_illuminatorControlEnabledSettingsKey =  "IlluminatorControlEnabled";        /* NextVision */
+const char* Vehicle::_minIlluminatorAltitudeSettingsKey =  "MinIlluminatorAltitude";        /* NextVision */
+const char* Vehicle::_minIlluminatorPitchSettingsKey =  "MinIlluminatorPitch";        /* NextVision */
+const char* Vehicle::_illuminatorRequiresArmedSettingsKey =  "IlluminatorRequiresArmed";        /* NextVision */
+const char* Vehicle::_illuminatorRequiresFlyingSettingsKey =  "IlluminatorRequiresFlying";        /* NextVision */
+
 
 const char* Vehicle::_rollFactName =                "roll";
 const char* Vehicle::_pitchFactName =               "pitch";
@@ -219,7 +225,9 @@ Vehicle::Vehicle(LinkInterface*             link,
     connect(_mavlink, &MAVLinkProtocol::nvSensorChanged,              this, &Vehicle::_updateNvActiveSensorChange);
     connect(_mavlink, &MAVLinkProtocol::nvIsRecordingChanged,         this, &Vehicle::_updateNvIsRecordingChange);
     connect(_mavlink, &MAVLinkProtocol::snapShotStatusChanged,        this, &Vehicle::_updateSnapShotStatus);
+    connect(_mavlink, &MAVLinkProtocol::illuminatorStatusChanged,     this, &Vehicle::_updateisIlluminatorActive);
     connect(_mavlink, &MAVLinkProtocol::nvCpuTempChanged,             this, &Vehicle::_updateNvCpuTemperatureChange);
+    connect(_mavlink, &MAVLinkProtocol::nvPitchChanged,               this, &Vehicle::_updateNvPitchedChange);
     connect(_mavlink, &MAVLinkProtocol::nvCamTempChanged,             this, &Vehicle::_updateNvCameraTemperatureChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdTotalCapacityChanged,     this, &Vehicle::_updateNvSdCapacityChange);
     connect(_mavlink, &MAVLinkProtocol::nvSdAvailableCapacityChanged, this, &Vehicle::_updateNvSdAvailableChange);
@@ -749,6 +757,13 @@ void Vehicle::_updateSnapShotStatus(int status)
     emit snapShotStatusChanged(_snapShotStatus);
 }
 
+void Vehicle::_updateisIlluminatorActive(int status)
+{
+    _isIlluminatorActive = status;
+    _gimbalFactGroup.isIlluminatorActive()->setRawValue(status);
+    emit isIlluminatorActiveChanged(_isIlluminatorActive);
+}
+
 void Vehicle::_updateNvModeChange(QString mode)
 {
     //qDebug() << "setting gimbal mode fact to"<< mode;
@@ -816,6 +831,12 @@ void Vehicle::_updateNvCpuTemperatureChange(float value)
 {
      if (value != _gimbalFactGroup.cpuTemperature()->rawValue())
         _gimbalFactGroup.cpuTemperature()->setRawValue(value);
+}
+
+void Vehicle::_updateNvPitchedChange(float value)
+{
+    if (value != _gimbalFactGroup.pitch()->rawValue())
+        _gimbalFactGroup.pitch()->setRawValue(value);
 }
 void Vehicle::_updateNvCameraTemperatureChange(float value)
 {
@@ -2326,6 +2347,12 @@ void Vehicle::_loadSettings()
         setJoystickEnabled(settings.value(_joystickEnabledSettingsKey, false).toBool());
         setJoystickCamEnabled(settings.value(_joystickCamEnabledSettingsKey, false).toBool());      /* NextVision */
     }
+
+    setIlluminatorControlEnabled(settings.value(_illuminatorControlEnabledSettingsKey, false).toBool());
+    setIlluminatorRequiresArmed(settings.value(_illuminatorRequiresArmedSettingsKey, true).toBool());
+    setIlluminatorRequiresFlying(settings.value(_illuminatorRequiresFlyingSettingsKey, true).toBool());
+    setMinIlluminatorAltitude(settings.value(_minIlluminatorAltitudeSettingsKey, 116).toFloat());
+    setMinIlluminatorPitch(settings.value(_minIlluminatorPitchSettingsKey, 10).toFloat());
 }
 
 void Vehicle::_saveSettings()
@@ -2351,6 +2378,67 @@ void Vehicle::setJoystickEnabled(bool enabled)
     _startJoystick(_joystickEnabled);
     _saveSettings();
     emit joystickEnabledChanged(_joystickEnabled);
+}
+
+float Vehicle::minIlluminatorAltitude() const
+{
+    return _minIlluminatorAltitude;
+}
+
+float Vehicle::minIlluminatorPitch() const
+{
+    return _minIlluminatorPitch;
+}
+
+bool Vehicle::illuminatorControlEnabled() const
+{
+    return _illuminatorControlEnabled;
+}
+
+bool Vehicle::illuminatorRequiresArmed() const
+{
+    return _illuminatorRequiresArmed;
+}
+
+bool Vehicle::illuminatorRequiresFlying() const
+{
+    return _illuminatorRequiresFlying;
+}
+
+void Vehicle::setIlluminatorControlEnabled(bool enabled)
+{
+    _illuminatorControlEnabled = enabled;
+    _saveSettings();
+    emit illuminatorControlEnabledChanged(_illuminatorControlEnabled);
+}
+
+void Vehicle::setMinIlluminatorAltitude(float minAltitude)
+{
+    _minIlluminatorAltitude = minAltitude;
+    _saveSettings();
+    emit minIlluminatorAltitudeChanged(_minIlluminatorAltitude);
+}
+
+void Vehicle::setIlluminatorRequiresArmed(bool requiresArmed)
+{
+    _illuminatorRequiresArmed = requiresArmed;
+    _saveSettings();
+    emit illuminatorRequiresArmedChanged(requiresArmed);
+}
+
+void Vehicle::setIlluminatorRequiresFlying(bool requiresFlying)
+{
+    _illuminatorRequiresFlying = requiresFlying;
+    _saveSettings();
+    emit illuminatorRequiresFlyingChanged(requiresFlying);
+}
+
+
+void Vehicle::setMinIlluminatorPitch(float minPitch)
+{
+    _minIlluminatorPitch = minPitch;
+    _saveSettings();
+    emit minIlluminatorPitchChanged(_minIlluminatorPitch);
 }
 
 void Vehicle::_startJoystick(bool start)
@@ -2381,6 +2469,12 @@ void Vehicle::_saveCamSettings(void)
     if (_toolbox->joystickManager()->joysticks().count()) {
         settings.setValue(_joystickCamEnabledSettingsKey, _joystickCamEnabled);
     }
+
+    settings.setValue(_illuminatorControlEnabledSettingsKey, _illuminatorControlEnabled);
+    settings.setValue(_minIlluminatorAltitudeSettingsKey, _minIlluminatorAltitude);
+    settings.setValue(_minIlluminatorPitchSettingsKey, _minIlluminatorPitch);
+    settings.setValue(_illuminatorRequiresArmedSettingsKey, _illuminatorRequiresArmed);
+    settings.setValue(_illuminatorRequiresFlyingSettingsKey, _illuminatorRequiresFlying);
 }
 
 void Vehicle::setJoystickCamEnabled(bool enabled)

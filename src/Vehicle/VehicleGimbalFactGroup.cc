@@ -19,6 +19,7 @@ const char* VehicleGimbalFactGroup::_groundCrossingLonFactName =         "ground
 const char* VehicleGimbalFactGroup::_groundCrossingAltFactName =         "groundCrossingAlt";
 const char* VehicleGimbalFactGroup::_slantRangeFactName =                "slantRange";
 const char* VehicleGimbalFactGroup::_fovFactName =                       "fov";
+const char* VehicleGimbalFactGroup::_pitchFactName =                     "pitch";
 const char* VehicleGimbalFactGroup::_azimuthFactName =                   "azimuth";
 const char* VehicleGimbalFactGroup::_activeSensorFactName =              "activeSensor";
 const char* VehicleGimbalFactGroup::_isRecordingFactName =               "isRecording";
@@ -29,6 +30,7 @@ const char* VehicleGimbalFactGroup::_sdCapacityFactName =                "sdCapa
 const char* VehicleGimbalFactGroup::_sdAvailableFactName =               "sdAvailable";
 const char* VehicleGimbalFactGroup::_nvVersionFactName =                 "nvVersion";
 const char* VehicleGimbalFactGroup::_nvTripVersionFactName =             "nvTripVersion";
+const char* VehicleGimbalFactGroup::_isIlluminatorActiveFactName =       "isIlluminatorActive";
 
 
 
@@ -42,6 +44,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     , _groundCrossingAltFact     (0, _groundCrossingAltFactName,    FactMetaData::valueTypeDouble)
     , _slantRangeFact            (0, _slantRangeFactName,           FactMetaData::valueTypeDouble)
     , _fovFact                   (0, _fovFactName,                  FactMetaData::valueTypeDouble)
+    , _pitchFact                 (0, _pitchFactName,                  FactMetaData::valueTypeDouble)
     , _azimuthFact               (0, _azimuthFactName,              FactMetaData::valueTypeDouble)
     , _activeSensorFact          (0, _activeSensorFactName,         FactMetaData::valueTypeUint8)
     , _isRecordingFact           (0, _isRecordingFactName,          FactMetaData::valueTypeUint8)
@@ -51,7 +54,8 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     , _sdCapacityFact            (0, _sdCapacityFactName,           FactMetaData::valueTypeDouble)
     , _sdAvailableFact           (0, _sdAvailableFactName,          FactMetaData::valueTypeDouble)
     , _nvVersionFact             (0, _nvVersionFactName,            FactMetaData::valueTypeDouble)
-    , _nvTripVersionFact             (0, _nvTripVersionFactName,    FactMetaData::valueTypeString)
+    , _nvTripVersionFact         (0, _nvTripVersionFactName,        FactMetaData::valueTypeString)
+    , _isIlluminatorActiveFact   (0, _isIlluminatorActiveFactName,  FactMetaData::valueTypeUint8)
 
 {
     _addFact(&_modeFact,                _modeFactName);
@@ -60,6 +64,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _addFact(&_groundCrossingAltFact,   _groundCrossingAltFactName);
     _addFact(&_slantRangeFact,          _slantRangeFactName);
     _addFact(&_fovFact,                 _fovFactName);
+    _addFact(&_pitchFact,                 _pitchFactName);
     _addFact(&_azimuthFact,                 _azimuthFactName);
     _addFact(&_activeSensorFact,        _activeSensorFactName);
     _addFact(&_isRecordingFact,         _isRecordingFactName);
@@ -70,6 +75,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _addFact(&_sdAvailableFact,         _sdAvailableFactName);
     _addFact(&_nvVersionFact,           _nvVersionFactName);
     _addFact(&_nvTripVersionFact,       _nvTripVersionFactName);
+    _addFact(&_isIlluminatorActiveFact, _isIlluminatorActiveFactName);
 
 
     // Start out as not available "--.--"
@@ -79,6 +85,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _groundCrossingAltFact.setRawValue  (qQNaN());
     _slantRangeFact.setRawValue         (qQNaN());
     _fovFact.setRawValue                (qQNaN());
+    _pitchFact.setRawValue              (qQNaN());
     _azimuthFact.setRawValue            (qQNaN());
     _activeSensorFact.setRawValue       (qQNaN());
     _isRecordingFact.setRawValue        (qQNaN());
@@ -89,6 +96,7 @@ VehicleGimbalFactGroup::VehicleGimbalFactGroup(QObject* parent)
     _sdAvailableFact.setRawValue        (qQNaN());
     _nvVersionFact.setRawValue          (qQNaN());
     _nvTripVersionFact.setRawValue      ("");
+    _isIlluminatorActiveFact.setRawValue    (0);
 
 }
 

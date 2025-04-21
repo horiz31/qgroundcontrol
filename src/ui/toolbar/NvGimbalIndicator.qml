@@ -72,6 +72,10 @@ Item {
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : _activeVehicle.nvGimbal.slantRange.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Field of View:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.fov.value) ? "--°" : _activeVehicle.nvGimbal.fov.value.toFixed(0) + "°") : "--°" }
+                    QGCLabel { text: qsTr("Pitch:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.pitch.value) ? "--°" : _activeVehicle.nvGimbal.pitch.value.toFixed(0) + "°") : "--°" }
+                    QGCLabel { text: qsTr("Azimuth:") }
+                    QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.azimuth.value) ? "--°" : _activeVehicle.nvGimbal.azimuth.value.toFixed(0) + "°") : "--°" }
                     QGCLabel { text: qsTr("Active Sensor:") }
                     QGCLabel { text: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.activeSensor.value) ? "" : getActiveSensor()) : ""
                         function getActiveSensor() {
