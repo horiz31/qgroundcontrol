@@ -1,12 +1,12 @@
 #include "NvExt_CameraManagement.h"
+#include <QTimer>
 #include "../Joystick/JoystickManager.h"
 #include "../Terrain/TerrainQuery.h"
-#include "QGCApplication.h"
-#include "TerrainQuery.h"
-#include "SettingsManager.h"
 #include "MissionController.h"
-#include <QTimer>
-
+#include "QGCApplication.h"
+#include "SettingsManager.h"
+#include "TerrainQuery.h"
+#include "VehicleGimbalFactGroup.h"
 
 Q_GLOBAL_STATIC(TerrainTileManager, _terrainTileManager)
 
@@ -589,20 +589,37 @@ void CameraManagement::setPilotPhaseTwo()
     setSysZoomOutCommand();
 }
 
+bool CameraManagement::_illuminatorSafetyCheck() const
+{
+    return activeVehicle && (activeVehicle->armed() || !activeVehicle->illuminatorRequiresArmed())
+           && (activeVehicle->flying() || !activeVehicle->illuminatorRequiresFlying())
+           && (FactMetaData::appSettingsVerticalDistanceUnitsToMeters(
+                   activeVehicle->altitudeRelative()->cookedValue())
+                   .toFloat()
+               >= activeVehicle->minIlluminatorAltitude())
+           && (dynamic_cast<VehicleGimbalFactGroup *>(activeVehicle->gimbalFactGroup())
+                   ->pitch()
+                   ->cookedValue()
+                   .toFloat()
+               >= activeVehicle->minIlluminatorPitch());
+}
+
 void CameraManagement::setSysIlluminatorOnCommand()
 {
+    if (_illuminatorSafetyCheck())
+    {
+        //start illuminator safety timer
+        _illuminatorSafetyTimer.start();
 
-    //start illuminator safety timer
-    _illuminatorSafetyTimer.start();
+        /* Sending the turn on laser command */
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 1, 0, 0, 0, 0, 0);
 
-    /* Sending the turn on laser command */
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,1,0,0,0,0,0);
+        //enable tracker offset
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 5, 1, 1, 0, 0, 0);
 
-    //enable tracker offset
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,1,1,0,0,0);
-
-    qCritical() << "ILLUMINATOR ON COMMAND SENT!!!";
-    qgcApp()->toolbox()->audioOutput()->say("Warning. Illuminator engaged");
+        qCritical() << "ILLUMINATOR ON COMMAND SENT!!!";
+        qgcApp()->toolbox()->audioOutput()->say("Warning. Illuminator engaged");
+    }
 }
 
 void CameraManagement::setSysIlluminatorOffCommand()
@@ -622,8 +639,11 @@ void CameraManagement::setSysIlluminatorOffCommand()
 
 void CameraManagement::setSysIlluminatorSafetyCommand()
 {
-    /* Sending the safety command, this must be sent at at least 10hz to keep laser on */
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,4,0,1,0,0,0);
+    if (_illuminatorSafetyCheck())
+    {
+        /* Sending the safety command, this must be sent at at least 10hz to keep laser on */
+        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 4, 0, 1, 0, 0, 0);
+    }
 }
 
 

@@ -129,7 +129,7 @@ Rectangle {
     property int    _nucPeriod:                                  _videoStreamSettings.nucPeriod.rawValue * 1000
     property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
     property bool   _illuminatorControlVisible:                 !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && (_activeVehicle ? _activeVehicle.illuminatorControlEnabled : false) //TODO attached a safety setting to this
-    property bool   _illuminatorAltitudeOk:                     _activeVehicle ? (_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude) : false
+    property bool   _illuminatorAltitudeOk:                     _activeVehicle ? (QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(_activeVehicle.altitudeRelative.value) >= _activeVehicle.minIlluminatorAltitude) : false
     property bool   _illuminatorPitchOk:                        _activeVehicle ? (_activeVehicle.nvGimbal.pitch.value >= _activeVehicle.minIlluminatorPitch) : false
     property bool   _illuminatorRequiresArmed:                  _activeVehicle ? _activeVehicle.illuminatorRequiresArmed : true;
     property bool   _illuminatorRequiresFlying:                 _activeVehicle ? _activeVehicle.illuminatorRequiresFlying : true;
@@ -630,8 +630,8 @@ Rectangle {
                             visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
             }
             GridLayout {
-                columns:            _illuminatorControlVisible ? 3 : 2
-                columnSpacing:      ScreenTools.defaultFontPixelWidth * (_illuminatorControlVisible ? 1 : 3)
+                columns:            2
+                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
                 rowSpacing:         ScreenTools.defaultFontPixelHeight
                 Layout.alignment:   Qt.AlignHCenter
                 visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
@@ -673,42 +673,6 @@ Rectangle {
                         joystickManager.cameraManagement.setSysSensorIrCommand()
                     }
                 }
-                QGCButton {
-                    id:             resetCamButton
-                    backRadius:     4
-                    showBorder:     true
-                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
-                    text:           qsTr("RST")
-                    leftPadding:    7
-                    rightPadding:   7
-                    hoverEnabled:   false
-                    SequentialAnimation {
-                                id: animResetButton
-                                // Expand the button
-                                PropertyAnimation {
-                                    target: resetCamButton
-                                    property: "scale"
-                                    to: 1.2
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-
-                                // Shrink back to normal
-                                PropertyAnimation {
-                                    target: resetCamButton
-                                    property: "scale"
-                                    to: 1.0
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-                            }
-                    onClicked: {
-                        animResetButton.start()
-                        joystickManager.cameraManagement.setSysResetCommand()
-                    }
-                }
 
                 QGCButton {
                     id:             dayButton
@@ -746,42 +710,6 @@ Rectangle {
                         joystickManager.cameraManagement.setSysSensorDayCommand()
                     }
                 }
-                QGCButton {
-                    id:             nucButton
-                    backRadius:     4
-                    showBorder:     true
-                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                    text:           qsTr("NUC")
-                    leftPadding:    7
-                    rightPadding:   7
-                    hoverEnabled:   false
-                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
-                    SequentialAnimation {
-                                id: animNucButton
-                                // Expand the button
-                                PropertyAnimation {
-                                    target: nucButton
-                                    property: "scale"
-                                    to: 1.2
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-
-                                // Shrink back to normal
-                                PropertyAnimation {
-                                    target: nucButton
-                                    property: "scale"
-                                    to: 1.0
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-                            }
-                    onClicked: {
-                        animNucButton.start()
-                        joystickManager.cameraManagement.setSysIrNUCCommand()
-                    }
-                }
 
                 QGCButton {
                     id: illuminatorButton
@@ -797,9 +725,6 @@ Rectangle {
 
                     warning: _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value
 
-                    //background.color:          _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertBackground : qgcPal.button
-                    //text.color:     _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertText : qgcPal.buttonText
-                    //border.color:   _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value ? qgcPal.alertBorder : qgcPal.buttonText
                     enabled:        _illuminatorControlVisible && _illuminatorControlEnabled
                     SequentialAnimation {
                                 id: animIllButton
@@ -842,6 +767,19 @@ Rectangle {
                 }
             }
             /*
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                //Layout.alignment:   Qt.AlignHCenter
+                //_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude
+                text:                (_activeVehicle?QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(_activeVehicle.altitudeRelative.value):"???")
+            }
+            QGCLabel{
+                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+                //Layout.alignment:   Qt.AlignHCenter
+                //_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude
+                text:                (_activeVehicle?_activeVehicle.minIlluminatorAltitude:"???")
+            }
+
             QGCLabel{
                 Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
                 Layout.alignment:   Qt.AlignHCenter
@@ -912,10 +850,50 @@ Rectangle {
                     columns:    2
 
                     QGCLabel {
+                        text:               qsTr("Press to NUC")
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
+                    }
+                    QGCButton {
+                        id:             nucButton
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
+                        text:           qsTr("NUC")
+                        leftPadding:    7
+                        rightPadding:   7
+                        hoverEnabled:   false
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
+                        SequentialAnimation {
+                                    id: animNucButton
+                                    // Expand the button
+                                    PropertyAnimation {
+                                        target: nucButton
+                                        property: "scale"
+                                        to: 1.2
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+
+                                    // Shrink back to normal
+                                    PropertyAnimation {
+                                        target: nucButton
+                                        property: "scale"
+                                        to: 1.0
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                        onClicked: {
+                            animNucButton.start()
+                            joystickManager.cameraManagement.setSysIrNUCCommand()
+                        }
+                    }
+
+                    QGCLabel {
                         text:               qsTr("Object Detection")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     FactComboBox {
                         id:                     objectDetection
                         Layout.fillWidth:       true
@@ -939,12 +917,12 @@ Rectangle {
                             }
                         }
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Map FOV Overlay")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.fovOverlay.rawValue
@@ -957,43 +935,42 @@ Rectangle {
                         text:               qsTr("Map Target Overlay")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.targetOverlay.rawValue
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.targetOverlay.rawValue = checked ? 1 : 0
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Remote Recording")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.remoteRecording.rawValue
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.remoteRecording.rawValue = checked ? 1 : 0
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Pilot view on FBW")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.pilotViewOnFBW.rawValue
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Downward view on Land")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.nadirViewOnLand.rawValue
@@ -1006,7 +983,6 @@ Rectangle {
                         text:               qsTr("Auto Record on Takeoff")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.recordOnFlying.rawValue
@@ -1026,6 +1002,7 @@ Rectangle {
                         visible:            _nextVisionGimbalAvailable
                         onClicked:          _videoStreamSettings.autoNuc.rawValue = checked ? true : false
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Auto NUC Period")
@@ -1036,13 +1013,11 @@ Rectangle {
                         visible:            _autoNucSwitch.checked
                     }
 
-
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Video Mode")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     FactComboBox {
                         id:                     videoPlaybackMode
                         Layout.topMargin:       ScreenTools.defaultFontPixelHeight
@@ -1058,7 +1033,6 @@ Rectangle {
                             }
                         }
                     }
-
 
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
@@ -1087,7 +1061,6 @@ Rectangle {
                         text:               qsTr("IR Display Mode")
                         visible:            _nextVisionGimbalAvailable
                     }
-
                     RowLayout{
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         QGCButton {
@@ -1107,6 +1080,7 @@ Rectangle {
                             }
                         }
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("IR Level")
@@ -1127,6 +1101,7 @@ Rectangle {
                             }
                         }
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("IR Gain")
@@ -1147,6 +1122,7 @@ Rectangle {
                             }
                         }
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("IR Gain/Level")
@@ -1178,12 +1154,12 @@ Rectangle {
                             onClicked: joystickManager.cameraManagement.setSysModeStowCommand()
                         }
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Video Grid Lines")
                         visible:            _anyVideoStreamAvailable
                     }
-
                     QGCSwitch {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         checked:            _videoStreamSettings.gridLines.rawValue
@@ -1191,13 +1167,11 @@ Rectangle {
                         onClicked:          _videoStreamSettings.gridLines.rawValue = checked ? 1 : 0
                     }
 
-
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Video Screen Fit")
                         visible:            _anyVideoStreamAvailable
                     }
-
                     FactComboBox {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         Layout.fillWidth:   true
@@ -1206,6 +1180,7 @@ Rectangle {
                         indexModel:         false
                         visible:            _anyVideoStreamAvailable
                     }
+
                     QGCLabel {
                         Layout.topMargin:   ScreenTools.defaultFontPixelHeight
                         text:               qsTr("Video OSD")
@@ -1226,6 +1201,7 @@ Rectangle {
                             }
                         }
                     }
+
                     Component {
                         id: changeOSDOnDialog
                         QGCPopupDialog {
@@ -1242,6 +1218,7 @@ Rectangle {
                         }
 
                     }
+
                     Component {
                         id: changeOSDOffDialog
                         QGCPopupDialog {
