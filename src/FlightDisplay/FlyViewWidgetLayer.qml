@@ -225,7 +225,7 @@ Item {
         anchors.top: instrumentPanel.bottom
         anchors.topMargin: _toolsMargin * 4
         anchors.right: parent.right
-        width: _rightPanelWidth
+        //width: _rightPanelWidth
         visible: _activeVehicle
         source: ScreenTools.isMobile ? "qrc:/qml/src/FlightMap/Widgets/PhotoVideoControlMobile.qml" : "qrc:/qml/QGroundControl/FlightMap/PhotoVideoControl.qml"
 

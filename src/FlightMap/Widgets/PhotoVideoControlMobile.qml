@@ -27,6 +27,7 @@ import QGroundControl.FactControls 1.0
 Rectangle {
     id: nvMainPanel
     height: mainLayout.height + (_margins * 1)
+    width: mainLayout.width + (_margins * 1)
     //color:      "#80000000"
     color: qgcPal.window
     radius: _margins
@@ -333,6 +334,7 @@ Rectangle {
             visible: _activeVehicle
             width: parent.width
             QGCColoredImage {
+                id: nvQuickPanelIcon
                 Layout.alignment: Qt.AlignLeft
                 source: "/res/target.svg"
                 mipmap: true
@@ -421,6 +423,7 @@ Rectangle {
             }
 
             QGCColoredImage {
+                id: settingsDialogIcon
                 Layout.alignment: Qt.AlignRight
                 source: "/res/gear-black.svg"
                 mipmap: true
@@ -512,8 +515,8 @@ Rectangle {
             GridLayout {
                 id: nvControlgridLayout
                 columns: 2
-                columnSpacing: ScreenTools.defaultFontPixelWidth * 0.25
-                rowSpacing: ScreenTools.defaultFontPixelHeight * 0.25
+                columnSpacing: ScreenTools.defaultFontPixelHeight * 0.5
+                rowSpacing: ScreenTools.defaultFontPixelHeight * 0.5
                 Layout.alignment: Qt.AlignHCenter
                 Layout.margins: _margins
                 visible: _activeVehicle
