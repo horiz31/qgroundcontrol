@@ -49,7 +49,7 @@ void CameraManagement::_activeVehicleChanged(Vehicle* activeVehicle)
 
         //hook up a timer to send laser safety messages while the laser is on
         _illuminatorSafetyTimer.setSingleShot(false);
-        _illuminatorSafetyTimer.setInterval(90);
+        _illuminatorSafetyTimer.setInterval(50);
         connect(&_illuminatorSafetyTimer, &QTimer::timeout, this, &CameraManagement::setSysIlluminatorSafetyCommand);
         _illuminatorSafetyTimer.stop();
 
@@ -602,21 +602,33 @@ bool CameraManagement::_illuminatorSafetyCheck() const
                    ->cookedValue()
                    .toFloat()
                >= activeVehicle->minIlluminatorPitch());
+
+    //return true;
 }
+
+//debug
+static size_t prevms = 0;
 
 void CameraManagement::setSysIlluminatorOnCommand()
 {
+    //stop illuminator safety timer
+    _illuminatorSafetyTimer.stop();
     if (_illuminatorSafetyCheck())
     {
         //start illuminator safety timer
         _illuminatorSafetyTimer.start();
-
-        /* Sending the turn on laser command */
-        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 1, 0, 0, 0, 0, 0);
-
+        //debug
+        prevms=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        //set the laser to continuous
+        activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true,MavExtCmd_SetLaserMode,0,0,0,0,0,0);
+        //send safety
+        activeVehicle->sendMavCommandNoAck(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true,MavExtCmd_SetLaser,4,0,1,0,0,0);
+        //turn on graphics
+        activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true, MavExtCmd_SetLaser, 3, 1, 1, 0, 0, 0);
+        //turn on laser
+        activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true, MavExtCmd_SetLaser, 1, 0, 0, 0, 0, 0);
         //enable tracker offset
-        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 5, 1, 1, 0, 0, 0);
-
+        activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true,MavExtCmd_SetLaser, 5, 1, 1, 0, 0, 0);
         qCritical() << "ILLUMINATOR ON COMMAND SENT!!!";
         qgcApp()->toolbox()->audioOutput()->say("Warning. Illuminator engaged");
     }
@@ -626,12 +638,14 @@ void CameraManagement::setSysIlluminatorOffCommand()
 {
     //stop illuminator safety timer
     _illuminatorSafetyTimer.stop();
+    //turn off graphics
+    activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true, MavExtCmd_SetLaser, 3, 0, 1, 0, 0, 0);
 
-    /* Sending the laser off command */
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,0,0,0,0,0,0);
+    //turn off laser
+    activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true, MavExtCmd_SetLaser, 0, 0, 0, 0, 0, 0);
 
     //disable  tracker offset
-    sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL,MavExtCmd_SetLaser,5,0,1,0,0,0);
+    activeVehicle->sendMavCommand(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true, MavExtCmd_SetLaser,5,0,1,0,0,0);
 
     qCritical() << "Illuminator off command sent";
     qgcApp()->toolbox()->audioOutput()->say("Illuminator disengaged");
@@ -641,11 +655,21 @@ void CameraManagement::setSysIlluminatorSafetyCommand()
 {
     if (_illuminatorSafetyCheck())
     {
-        /* Sending the safety command, this must be sent at at least 10hz to keep laser on */
-        sendMavCommandLong(MAV_CMD_DO_DIGICAM_CONTROL, MavExtCmd_SetLaser, 4, 0, 1, 0, 0, 0);
+        auto numMillis=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+        auto const diff = (numMillis-prevms);
+        if(diff>90)
+        {
+            qCritical()<<"millis="<<diff;
+        }
+        //send safety
+        activeVehicle->sendMavCommandNoAck(activeVehicle->defaultComponentId(),MAV_CMD_DO_DIGICAM_CONTROL,true,MavExtCmd_SetLaser,4,0,1,0,0,0);
+        prevms=numMillis;
+    }
+    else
+    {
+        setSysIlluminatorOffCommand();
     }
 }
-
 
 void CameraManagement::setSysModeStowCommand()
 {
