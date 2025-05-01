@@ -1,3 +1,5 @@
+
+
 /****************************************************************************
  *
  * (c) 2009-2020 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
@@ -6,39 +8,39 @@
  * COPYING.md in the root of the source code directory.
  *
  ****************************************************************************/
+import QtQuick 2.4
+import QtPositioning 5.2
+import QtQuick.Layouts 1.2
+import QtQuick.Controls 1.4
+import QtQuick.Dialogs 1.2
+import QtGraphicalEffects 1.0
 
-import QtQuick                  2.4
-import QtPositioning            5.2
-import QtQuick.Layouts          1.2
-import QtQuick.Controls         1.4
-import QtQuick.Dialogs          1.2
-import QtGraphicalEffects       1.0
-
-import QGroundControl                   1.0
-import QGroundControl.ScreenTools       1.0
-import QGroundControl.Controls          1.0
-import QGroundControl.Palette           1.0
-import QGroundControl.Vehicle           1.0
-import QGroundControl.Controllers       1.0
-import QGroundControl.FactSystem        1.0
-import QGroundControl.FactControls      1.0
+import QGroundControl 1.0
+import QGroundControl.ScreenTools 1.0
+import QGroundControl.Controls 1.0
+import QGroundControl.Palette 1.0
+import QGroundControl.Vehicle 1.0
+import QGroundControl.Controllers 1.0
+import QGroundControl.FactSystem 1.0
+import QGroundControl.FactControls 1.0
 
 Rectangle {
     id: nvMainPanel
-    height:     mainLayout.height + (_margins * 2)
+    height: mainLayout.height + (_margins * 1)
+    width: mainLayout.width + (_margins * 1)
     //color:      "#80000000"
-    color:      qgcPal.window
-    radius:     _margins
-    border.width: 2
-    border.color: qgcPal.window
+    color: qgcPal.window
+    radius: _margins
+    //border.width: 2
+    //border.color: qgcPal.window
     //visible:    _nextVisionGimbalAvailable// && multiVehiclePanelSelector.showSingleVehiclePanel
-    visible:    _activeVehicle// && multiVehiclePanelSelector.showSingleVehiclePanel
-    z:      QGroundControl.zOrderTopMost
+    visible: _activeVehicle // && multiVehiclePanelSelector.showSingleVehiclePanel
+    z: QGroundControl.zOrderTopMost
     MouseArea {
-        anchors.fill:   parent
+        anchors.fill: parent
         propagateComposedEvents: false
         hoverEnabled: true
-        preventStealing: true        
+        preventStealing: true
     }
     Connections {
         target: joystickManager.activeJoystick
@@ -52,117 +54,171 @@ Rectangle {
     Connections {
         target: QGroundControl.multiVehicleManager.activeVehicle
         onNvModeChanged: {
-            _currentNvMode = _activeVehicle.nvGimbal.mode.value;
+            _currentNvMode = _activeVehicle.nvGimbal.mode.value
         }
     }
-    property real   _margins:                                   ScreenTools.defaultFontPixelHeight / 2
-    property var    _activeVehicle:                             QGroundControl.multiVehicleManager.activeVehicle
-    property bool   _isArmed:                                   _activeVehicle ? (_activeVehicle.armed) : false
-    property bool   _isFlying:                                  _activeVehicle ? (_activeVehicle.flying) : false
+    property real _margins: ScreenTools.defaultFontPixelHeight / 2
+    property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
+    property bool _isArmed: _activeVehicle ? (_activeVehicle.armed) : false
+    property bool _isFlying: _activeVehicle ? (_activeVehicle.flying) : false
 
     // The following properties relate to a simple camera
-    property var    _flyViewSettings:                           QGroundControl.settingsManager.flyViewSettings
-    property bool   _simpleCameraAvailable:                     !_mavlinkCamera && _activeVehicle && _flyViewSettings.showSimpleCameraControl.rawValue
-    property bool   _nextVisionGimbalAvailable:                 _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
-    property bool   _onlySimpleCameraAvailable:                 !_anyVideoStreamAvailable && _simpleCameraAvailable
-    property bool   _simpleCameraIsShootingInCurrentMode:       _onlySimpleCameraAvailable && !_simplePhotoCaptureIsIdle
+    property var _flyViewSettings: QGroundControl.settingsManager.flyViewSettings
+    property bool _simpleCameraAvailable: !_mavlinkCamera && _activeVehicle
+                                          && _flyViewSettings.showSimpleCameraControl.rawValue
+    property bool _nextVisionGimbalAvailable: _activeVehicle ? (isNaN(
+                                                                    _activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
+    property bool _onlySimpleCameraAvailable: !_anyVideoStreamAvailable
+                                              && _simpleCameraAvailable
+    property bool _simpleCameraIsShootingInCurrentMode: _onlySimpleCameraAvailable
+                                                        && !_simplePhotoCaptureIsIdle
 
     // The following properties relate to a simple video stream
-    property bool   _videoStreamAvailable:                      _videoStreamManager.hasVideo
-    property var    _videoStreamSettings:                       QGroundControl.settingsManager.videoSettings
-    property var    _videoStreamManager:                        QGroundControl.videoManager
-    property bool   _videoStreamAllowsPhotoWhileRecording:      true
-    property bool   _videoStreamIsStreaming:                    _videoStreamManager.streaming
-    property bool   _simplePhotoCaptureIsIdle:             true
-    property bool   _videoStreamRecording:                      _videoStreamManager.recording
-    property bool   _recordButtonBusy:                          _videoStreamManager.recordTransitionInProgress
-    property bool   _videoStreamCanShoot:                       _videoStreamIsStreaming
-    property bool   _videoStreamIsShootingInCurrentMode:        _videoStreamInPhotoMode ? !_simplePhotoCaptureIsIdle : _isRecording
-    property bool   _videoStreamInPhotoMode:                    false
+    property bool _videoStreamAvailable: _videoStreamManager.hasVideo
+    property var _videoStreamSettings: QGroundControl.settingsManager.videoSettings
+    property var _videoStreamManager: QGroundControl.videoManager
+    property bool _videoStreamAllowsPhotoWhileRecording: true
+    property bool _videoStreamIsStreaming: _videoStreamManager.streaming
+    property bool _simplePhotoCaptureIsIdle: true
+    property bool _videoStreamRecording: _videoStreamManager.recording
+    //property bool   _recordButtonBusy:                          _videoStreamManager.recordTransitionInProgress
+    property bool _recordButtonBusy: false
+    property bool _videoStreamCanShoot: _videoStreamIsStreaming
+    property bool _videoStreamIsShootingInCurrentMode: _videoStreamInPhotoMode ? !_simplePhotoCaptureIsIdle : _isRecording
+    property bool _videoStreamInPhotoMode: false
 
     // The following properties relate to a mavlink protocol camera
-    property var    _mavlinkCameraManager:                      _activeVehicle ? _activeVehicle.cameraManager : null
-    property int    _mavlinkCameraManagerCurCameraIndex:        _mavlinkCameraManager ? _mavlinkCameraManager.currentCamera : -1
-    property bool   _noMavlinkCameras:                          _mavlinkCameraManager ? _mavlinkCameraManager.cameras.count === 0 : true
-    property var    _mavlinkCamera:                             !_noMavlinkCameras ? (_mavlinkCameraManager.cameras.get(_mavlinkCameraManagerCurCameraIndex) && _mavlinkCameraManager.cameras.get(_mavlinkCameraManagerCurCameraIndex).paramComplete ? _mavlinkCameraManager.cameras.get(_mavlinkCameraManagerCurCameraIndex) : null) : null
-    property bool   _multipleMavlinkCameras:                    _mavlinkCameraManager ? _mavlinkCameraManager.cameras.count > 1 : false
-    property string _mavlinkCameraName:                         _mavlinkCamera && _multipleMavlinkCameras ? _mavlinkCamera.modelName : ""
-    property bool   _noMavlinkCameraStreams:                    _mavlinkCamera ? _mavlinkCamera.streamLabels.length : true
-    property bool   _multipleMavlinkCameraStreams:              _mavlinkCamera ? _mavlinkCamera.streamLabels.length > 1 : false
-    property int    _mavlinCameraCurStreamIndex:                _mavlinkCamera ? _mavlinkCamera.currentStream : -1
-    property bool   _mavlinkCameraHasThermalVideoStream:        _mavlinkCamera ? _mavlinkCamera.thermalStreamInstance : false
-    property bool   _mavlinkCameraModeUndefined:                _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_UNDEFINED : true
-    property bool   _mavlinkCameraInVideoMode:                  _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_VIDEO : false
-    property bool   _mavlinkCameraInPhotoMode:                  _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_PHOTO : false
-    property bool   _mavlinkCameraElapsedMode:                  _mavlinkCamera && _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_PHOTO && _mavlinkCamera.photoMode === QGCCameraControl.PHOTO_CAPTURE_TIMELAPSE
-    property bool   _mavlinkCameraHasModes:                     _mavlinkCamera && _mavlinkCamera.hasModes
-    property bool   _mavlinkCameraVideoIsRecording:             _mavlinkCamera && _mavlinkCamera.videoStatus === QGCCameraControl.VIDEO_CAPTURE_STATUS_RUNNING
-    property bool   _mavlinkCameraPhotoCaptureIsIdle:           _mavlinkCamera && (_mavlinkCamera.photoStatus === QGCCameraControl.PHOTO_CAPTURE_IDLE || _mavlinkCamera.photoStatus >= QGCCameraControl.PHOTO_CAPTURE_LAST)
-    property bool   _mavlinkCameraStorageReady:                 _mavlinkCamera && _mavlinkCamera.storageStatus === QGCCameraControl.STORAGE_READY
-    property bool   _mavlinkCameraBatteryReady:                 _mavlinkCamera && _mavlinkCamera.batteryRemaining >= 0
-    property bool   _mavlinkCameraStorageSupported:             _mavlinkCamera && _mavlinkCamera.storageStatus !== QGCCameraControl.STORAGE_NOT_SUPPORTED
-    property bool   _mavlinkCameraAllowsPhotoWhileRecording:    false
-    property bool   _mavlinkCameraCanShoot:                     (!_mavlinkCameraModeUndefined && ((_mavlinkCameraStorageReady && _mavlinkCamera.storageFree > 0) || !_mavlinkCameraStorageSupported)) || _videoStreamManager.streaming
-    property bool   _mavlinkCameraIsShooting:                   ((_mavlinkCameraInVideoMode && _mavlinkCameraVideoIsRecording) || (_mavlinkCameraInPhotoMode && !_mavlinkCameraPhotoCaptureIsIdle)) || _videoStreamManager.recording
+    property var _mavlinkCameraManager: _activeVehicle ? _activeVehicle.cameraManager : null
+    property int _mavlinkCameraManagerCurCameraIndex: _mavlinkCameraManager ? _mavlinkCameraManager.currentCamera : -1
+    property bool _noMavlinkCameras: _mavlinkCameraManager ? _mavlinkCameraManager.cameras.count
+                                                             === 0 : true
+    property var _mavlinkCamera: !_noMavlinkCameras ? (_mavlinkCameraManager.cameras.get(
+                                                           _mavlinkCameraManagerCurCameraIndex)
+                                                       && _mavlinkCameraManager.cameras.get(
+                                                           _mavlinkCameraManagerCurCameraIndex).paramComplete ? _mavlinkCameraManager.cameras.get(_mavlinkCameraManagerCurCameraIndex) : null) : null
+    property bool _multipleMavlinkCameras: _mavlinkCameraManager ? _mavlinkCameraManager.cameras.count > 1 : false
+    property string _mavlinkCameraName: _mavlinkCamera
+                                        && _multipleMavlinkCameras ? _mavlinkCamera.modelName : ""
+    property bool _noMavlinkCameraStreams: _mavlinkCamera ? _mavlinkCamera.streamLabels.length : true
+    property bool _multipleMavlinkCameraStreams: _mavlinkCamera ? _mavlinkCamera.streamLabels.length
+                                                                  > 1 : false
+    property int _mavlinCameraCurStreamIndex: _mavlinkCamera ? _mavlinkCamera.currentStream : -1
+    property bool _mavlinkCameraHasThermalVideoStream: _mavlinkCamera ? _mavlinkCamera.thermalStreamInstance : false
+    property bool _mavlinkCameraModeUndefined: _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_UNDEFINED : true
+    property bool _mavlinkCameraInVideoMode: _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_VIDEO : false
+    property bool _mavlinkCameraInPhotoMode: _mavlinkCamera ? _mavlinkCamera.cameraMode === QGCCameraControl.CAM_MODE_PHOTO : false
+    property bool _mavlinkCameraElapsedMode: _mavlinkCamera
+                                             && _mavlinkCamera.cameraMode
+                                             === QGCCameraControl.CAM_MODE_PHOTO
+                                             && _mavlinkCamera.photoMode
+                                             === QGCCameraControl.PHOTO_CAPTURE_TIMELAPSE
+    property bool _mavlinkCameraHasModes: _mavlinkCamera
+                                          && _mavlinkCamera.hasModes
+    property bool _mavlinkCameraVideoIsRecording: _mavlinkCamera
+                                                  && _mavlinkCamera.videoStatus
+                                                  === QGCCameraControl.VIDEO_CAPTURE_STATUS_RUNNING
+    property bool _mavlinkCameraPhotoCaptureIsIdle: _mavlinkCamera
+                                                    && (_mavlinkCamera.photoStatus
+                                                        === QGCCameraControl.PHOTO_CAPTURE_IDLE
+                                                        || _mavlinkCamera.photoStatus
+                                                        >= QGCCameraControl.PHOTO_CAPTURE_LAST)
+    property bool _mavlinkCameraStorageReady: _mavlinkCamera
+                                              && _mavlinkCamera.storageStatus
+                                              === QGCCameraControl.STORAGE_READY
+    property bool _mavlinkCameraBatteryReady: _mavlinkCamera
+                                              && _mavlinkCamera.batteryRemaining >= 0
+    property bool _mavlinkCameraStorageSupported: _mavlinkCamera
+                                                  && _mavlinkCamera.storageStatus
+                                                  !== QGCCameraControl.STORAGE_NOT_SUPPORTED
+    property bool _mavlinkCameraAllowsPhotoWhileRecording: false
+    property bool _mavlinkCameraCanShoot: (!_mavlinkCameraModeUndefined
+                                           && ((_mavlinkCameraStorageReady
+                                                && _mavlinkCamera.storageFree > 0)
+                                               || !_mavlinkCameraStorageSupported))
+                                          || _videoStreamManager.streaming
+    property bool _mavlinkCameraIsShooting: ((_mavlinkCameraInVideoMode
+                                              && _mavlinkCameraVideoIsRecording)
+                                             || (_mavlinkCameraInPhotoMode
+                                                 && !_mavlinkCameraPhotoCaptureIsIdle))
+                                            || _videoStreamManager.recording
 
     // The following settings and functions unify between a mavlink camera and a simple video stream for simple access
-
-    property bool   _anyVideoStreamAvailable:                   _videoStreamManager.hasVideo || _nextVisionGimbalAvailable
-    property string _cameraName:                                _mavlinkCamera ? _mavlinkCameraName : ""
-    property bool   _showModeIndicator:                         _mavlinkCamera ? _mavlinkCameraHasModes : _videoStreamManager.hasVideo
-    property bool   _modeIndicatorPhotoMode:                    _mavlinkCamera ? _mavlinkCameraInPhotoMode : _videoStreamInPhotoMode || _onlySimpleCameraAvailable
-    property bool   _allowsPhotoWhileRecording:                  _mavlinkCamera ? _mavlinkCameraAllowsPhotoWhileRecording : _videoStreamAllowsPhotoWhileRecording
-    property bool   _switchToPhotoModeAllowed:                  !_modeIndicatorPhotoMode && (_mavlinkCamera ? !_mavlinkCameraIsShooting : true)
-    property bool   _switchToVideoModeAllowed:                  _modeIndicatorPhotoMode && (_mavlinkCamera ? !_mavlinkCameraIsShooting : true)
-    property bool   _videoIsRecording:                          _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamRecording
-    property bool   _canShootInCurrentMode:                     _mavlinkCamera ? _mavlinkCameraCanShoot : _videoStreamCanShoot || _simpleCameraAvailable
+    property bool _anyVideoStreamAvailable: _videoStreamManager.hasVideo
+                                            || _nextVisionGimbalAvailable
+    property string _cameraName: _mavlinkCamera ? _mavlinkCameraName : ""
+    property bool _showModeIndicator: _mavlinkCamera ? _mavlinkCameraHasModes : _videoStreamManager.hasVideo
+    property bool _modeIndicatorPhotoMode: _mavlinkCamera ? _mavlinkCameraInPhotoMode : _videoStreamInPhotoMode
+                                                            || _onlySimpleCameraAvailable
+    property bool _allowsPhotoWhileRecording: _mavlinkCamera ? _mavlinkCameraAllowsPhotoWhileRecording : _videoStreamAllowsPhotoWhileRecording
+    property bool _switchToPhotoModeAllowed: !_modeIndicatorPhotoMode
+                                             && (_mavlinkCamera ? !_mavlinkCameraIsShooting : true)
+    property bool _switchToVideoModeAllowed: _modeIndicatorPhotoMode
+                                             && (_mavlinkCamera ? !_mavlinkCameraIsShooting : true)
+    property bool _videoIsRecording: _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamRecording
+    property bool _canShootInCurrentMode: _mavlinkCamera ? _mavlinkCameraCanShoot : _videoStreamCanShoot
+                                                           || _simpleCameraAvailable
     //property bool   _isShootingInCurrentMode:                   _mavlinkCamera ? _mavlinkCameraIsShooting : _videoStreamIsShootingInCurrentMode
-    property bool   _isShootingInCurrentMode:                   _videoStreamIsShootingInCurrentMode
-    property bool   _nvRecording:                               _activeVehicle? _activeVehicle.nvGimbal.isRecording.value === 1 : false
-    property bool   _isRecording:                               _videoStreamRecording || _nvRecording
-    property bool   _nvDayMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 0 : false
-    property bool   _nvIRMode:                                  _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value === 1 : false
-    property string _nvSnapShotStatus:                          _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value === 0) ? qsTr("Idle") : qsTr("Busy")) : "Unknown"
-    property bool   _remoteRecording:                           _videoStreamSettings.remoteRecording.rawValue === 1 ? true : false
-    property bool   _autoRecording:                             _videoStreamSettings.recordOnFlying.rawValue
-    property bool   _autoNuc:                                   _videoStreamSettings.autoNuc.rawValue
-    property int    _nucPeriod:                                  _videoStreamSettings.nucPeriod.rawValue * 1000
-    property string _currentNvMode:                             _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
-    property bool   _illuminatorControlVisible:                 !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && (_activeVehicle ? _activeVehicle.illuminatorControlEnabled : false) //TODO attached a safety setting to this
-    property bool   _illuminatorAltitudeOk:                     _activeVehicle ? (QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(_activeVehicle.altitudeRelative.value) >= _activeVehicle.minIlluminatorAltitude) : false
-    property bool   _illuminatorPitchOk:                        _activeVehicle ? (_activeVehicle.nvGimbal.pitch.value >= _activeVehicle.minIlluminatorPitch) : false
-    property bool   _illuminatorRequiresArmed:                  _activeVehicle ? _activeVehicle.illuminatorRequiresArmed : true;
-    property bool   _illuminatorRequiresFlying:                 _activeVehicle ? _activeVehicle.illuminatorRequiresFlying : true;
-    property bool   _illuminatorControlEnabled:                 _illuminatorControlVisible && _illuminatorAltitudeOk && _illuminatorPitchOk && (_isArmed || !_illuminatorRequiresArmed) && (_isFlying || !_illuminatorRequiresFlying)
-
+    property bool _isShootingInCurrentMode: _videoStreamIsShootingInCurrentMode
+    property bool _nvRecording: _activeVehicle ? _activeVehicle.nvGimbal.isRecording.value
+                                                 === 1 : false
+    property bool _isRecording: _videoStreamRecording || _nvRecording
+    property bool _nvDayMode: _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value
+                                               === 0 : false
+    property bool _nvIRMode: _activeVehicle ? _activeVehicle.nvGimbal.activeSensor.value
+                                              === 1 : false
+    property string _nvSnapShotStatus: _activeVehicle ? ((_activeVehicle.nvGimbal.isSnapshot.value
+                                                          === 0) ? qsTr("Idle") : qsTr(
+                                                                       "Busy")) : "Unknown"
+    property bool _remoteRecording: _videoStreamSettings.remoteRecording.rawValue
+                                    === 1 ? true : false
+    property bool _autoRecording: _videoStreamSettings.recordOnFlying.rawValue
+    property bool _autoNuc: _videoStreamSettings.autoNuc.rawValue
+    property int _nucPeriod: _videoStreamSettings.nucPeriod.rawValue * 1000
+    property string _currentNvMode: _activeVehicle ? _activeVehicle.nvGimbal.mode.value : "Observation"
+    property bool _illuminatorControlVisible: !_videoStreamInPhotoMode
+                                              && _nextVisionGimbalAvailable
+                                              && (_activeVehicle ? _activeVehicle.illuminatorControlEnabled : false)
+    property bool _illuminatorAltitudeOk: _activeVehicle ? (QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(_activeVehicle.altitudeRelative.value) >= _activeVehicle.minIlluminatorAltitude) : false
+    property bool _illuminatorPitchOk: _activeVehicle ? (_activeVehicle.nvGimbal.pitch.value >= _activeVehicle.minIlluminatorPitch) : false
+    property bool _illuminatorRequiresArmed: _activeVehicle ? _activeVehicle.illuminatorRequiresArmed : true
+    property bool _illuminatorRequiresFlying: _activeVehicle ? _activeVehicle.illuminatorRequiresFlying : true
+    property bool _illuminatorControlEnabled: _illuminatorControlVisible
+                                              && _illuminatorAltitudeOk
+                                              && _illuminatorPitchOk
+                                              && (_isArmed
+                                                  || !_illuminatorRequiresArmed)
+                                              && (_isFlying
+                                                  || !_illuminatorRequiresFlying)
 
     on_IsFlyingChanged: {
-        if (_isFlying && _isArmed && _autoRecording && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode)
-        {
+        if (_isFlying && _isArmed && _autoRecording
+                && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode) {
             //flying just changed and we are now flying, and autorecording is enabled, so if we aren't recording, get to it
             if (!_videoStreamManager.recording) {
                 _videoStreamManager.startRecording()
-                _activeVehicle.say("Recording Started");
-                if (_nextVisionGimbalAvailable && !_nvRecording && _remoteRecording) //start remote recording (if enabled)
+                _activeVehicle.say("Recording Started")
+                if (_nextVisionGimbalAvailable && !_nvRecording
+                        && _remoteRecording) //start remote recording (if enabled)
                 {
-                    joystickManager.cameraManagement.setSysRecOnCommand(0);
-                    joystickManager.cameraManagement.setRecordChan1OnAfterDelay(1000);
+                    joystickManager.cameraManagement.setSysRecOnCommand(0)
+                    joystickManager.cameraManagement.setRecordChan1OnAfterDelay(
+                                1000)
                 }
             }
         }
     }
 
     on_IsArmedChanged: {
-        if (!_isArmed && _autoRecording && _nextVisionGimbalAvailable && !_videoStreamInPhotoMode)
-        {
+        if (!_isArmed && _autoRecording && _nextVisionGimbalAvailable
+                && !_videoStreamInPhotoMode) {
             //we have landed/disarmed and autorecording is enabled, if recording, stop
             if (_videoStreamManager.recording) {
                 _videoStreamManager.stopRecording()
                 if (_nextVisionGimbalAvailable && _nvRecording) {
-                   joystickManager.cameraManagement.setSysRecOffCommand(0);
-                   joystickManager.cameraManagement.setRecordChan1OffAfterDelay(1000);
+                    joystickManager.cameraManagement.setSysRecOffCommand(0)
+                    joystickManager.cameraManagement.setRecordChan1OffAfterDelay(
+                                1000)
                 }
-
             }
         }
     }
@@ -171,16 +227,16 @@ Rectangle {
         id: irColorModel
 
         ListElement {
-            text:       qsTr("Color")
+            text: qsTr("Color")
         }
         ListElement {
-            text:       qsTr("White Hot")
+            text: qsTr("White Hot")
         }
         ListElement {
-            text:       qsTr("Black Hot")
+            text: qsTr("Black Hot")
         }
         ListElement {
-            text:       qsTr("Color Inverse")
+            text: qsTr("Color Inverse")
         }
     }
 
@@ -198,224 +254,293 @@ Rectangle {
     function toggleShooting() {
         console.log("toggleShooting", _anyVideoStreamAvailable)
         // handle local recording
-        if (_anyVideoStreamAvailable)
-        {
+        if (_anyVideoStreamAvailable) {
             if (_videoStreamInPhotoMode) //system is in PHOTO mode
             {
                 _simplePhotoCaptureIsIdle = false
                 _videoStreamManager.grabImage()
                 simplePhotoCaptureTimer.start()
                 if (_nextVisionGimbalAvailable & _nvSnapShotStatus === "Idle") {
-                   console.log("nextvision snapshot");
-                   joystickManager.cameraManagement.setSysSnapshotCommand(0);
-
+                    console.log("nextvision snapshot")
+                    joystickManager.cameraManagement.setSysSnapshotCommand(0)
                 }
-
-            }
-            else   //system is in VIDEO MODE
+            } else //system is in VIDEO MODE
             {
                 if (_videoStreamManager.recording) {
-                    console.log("stop local recording");
+                    console.log("stop local recording")
                     _videoStreamManager.stopRecording()
-                    _activeVehicle.say("Recording Stopped");
+                    _activeVehicle.say("Recording Stopped")
                     //stop nextvision recording (if it is actually recording)
                     if (_nextVisionGimbalAvailable & _nvRecording) {
-                       console.log("nextvision recording stop");
-                       joystickManager.cameraManagement.setSysRecOffCommand(0);
-                       joystickManager.cameraManagement.setRecordChan1OffAfterDelay(1000);
+                        console.log("nextvision recording stop")
+                        joystickManager.cameraManagement.setSysRecOffCommand(0)
+                        joystickManager.cameraManagement.setRecordChan1OffAfterDelay(
+                                    1000)
                     }
-
                 } else {
-                    console.log("start local recording");
+                    console.log("start local recording")
                     _videoStreamManager.startRecording()
-                    _activeVehicle.say("Recording Started");
-                    if (_nextVisionGimbalAvailable & !_nvRecording & _remoteRecording) //start remote recording (if enabled)
+                    _activeVehicle.say("Recording Started")
+                    if (_nextVisionGimbalAvailable & !_nvRecording
+                            & _remoteRecording) //start remote recording (if enabled)
                     {
-                        console.log("nextvision recording start");
-                        joystickManager.cameraManagement.setSysRecOnCommand(0);
+                        console.log("nextvision recording start")
+                        joystickManager.cameraManagement.setSysRecOnCommand(0)
                         //record channel 1 as well
-                       joystickManager.cameraManagement.setRecordChan1OnAfterDelay(1000);
-                    }
-                    else
-                    {
-                        console.log("nextvision recording start skipped");
+                        joystickManager.cameraManagement.setRecordChan1OnAfterDelay(
+                                    1000)
+                    } else {
+                        console.log("nextvision recording start skipped")
                     }
                 }
             }
         }
-
     }
 
     Timer {
-        id:             autoNucTimer
-        interval:       _nucPeriod
-        running:        _autoNuc
-        repeat:         true
-        onTriggered:    {
+        id: autoNucTimer
+        interval: _nucPeriod
+        running: _autoNuc
+        repeat: true
+        onTriggered: {
 
-            if (_nextVisionGimbalAvailable && _nvIRMode )
-            {
-                 joystickManager.cameraManagement.setSysIrNUCCommand()
+            if (_nextVisionGimbalAvailable && _nvIRMode) {
+                joystickManager.cameraManagement.setSysIrNUCCommand()
             }
-
         }
     }
 
     Timer {
-        id:             simplePhotoCaptureTimer
-        interval:       500
-        onTriggered:    _simplePhotoCaptureIsIdle = true
+        id: simplePhotoCaptureTimer
+        interval: 500
+        onTriggered: _simplePhotoCaptureIsIdle = true
     }
 
-    QGCPalette { id: qgcPal; colorGroupEnabled: enabled }
-
-    QGCColoredImage {
-        anchors.margins:    _margins
-        anchors.top:        parent.top
-        anchors.left:      parent.left
-        anchors.leftMargin: ScreenTools.defaultFontPixelWidth
-        anchors.topMargin:  ScreenTools.defaultFontPixelWidth
-        source:             "/res/target.svg"
-        mipmap:             true
-        height:             ScreenTools.defaultFontPixelHeight * 1.3
-        width:              height
-        sourceSize.height:  height
-        color:              qgcPal.text
-        fillMode:           Image.PreserveAspectFit
-        visible:            _nextVisionGimbalAvailable
-
-        QGCMouseArea {
-            fillItem:   parent
-            onClicked:  {
-                _activeVehicle.showNvQuickPanel()
-            }
-        }
-    }
-    QGCColoredImage {
-        anchors.margins:    _margins
-        anchors.top:        parent.top
-        anchors.right:      parent.right
-        anchors.rightMargin: ScreenTools.defaultFontPixelWidth
-        anchors.topMargin:  ScreenTools.defaultFontPixelWidth
-        source:             "/res/gear-black.svg"
-        mipmap:             true
-        height:             ScreenTools.defaultFontPixelHeight * 1.3
-        width:              height
-        sourceSize.height:  height
-        color:              qgcPal.text
-        fillMode:           Image.PreserveAspectFit
-        visible:            _nextVisionGimbalAvailable
-
-        QGCMouseArea {
-            fillItem:   parent
-            onClicked:  {
-                mainWindow.showPopupDialogFromComponent(settingsDialogComponent)
-            }
-        }
+    QGCPalette {
+        id: qgcPal
+        colorGroupEnabled: enabled
     }
 
     ColumnLayout {
-        id:                         mainLayout
-        anchors.margins:            _margins
-        anchors.top:                parent.top
-        anchors.horizontalCenter:   parent.horizontalCenter
-        spacing:                    ScreenTools.defaultFontPixelHeight / 2
-        visible:                    _activeVehicle
+        id: mainLayout
+        anchors.margins: _margins
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: ScreenTools.defaultFontPixelHeight / 2
+        visible: _activeVehicle
+        RowLayout {
+            id: pauseSettingsAndTargetButtons
+            Layout.alignment: Qt.AlignHCenter
+            visible: _activeVehicle
+            width: parent.width
+            QGCColoredImage {
+                id: nvQuickPanelIcon
+                Layout.alignment: Qt.AlignLeft
+                source: "/res/target.svg"
+                mipmap: true
+                height: ScreenTools.defaultFontPixelHeight * 1.3
+                width: height
+                sourceSize.height: height
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
+                visible: _nextVisionGimbalAvailable
 
-
-        // Photo/Video Mode Selector
-        // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
-        // using the unified properties/functions.
-        Rectangle {
-            id:                 photoVidSwitch
-            Layout.alignment:   Qt.AlignHCenter
-            width:              ScreenTools.defaultFontPixelWidth * 12
-            height:             width / 2
-            color:              qgcPal.windowShadeLight
-            radius:             height * 0.5
-            visible:            _nextVisionGimbalAvailable
-            MouseArea {
-                anchors.fill:   parent
-                enabled:        true
-            }
-
-            //-- Video Mode
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width:                  parent.height
-                height:                 parent.height
-                color:                  _modeIndicatorPhotoMode ? qgcPal.windowShadeLight : qgcPal.window
-                radius:                 height * 0.5
-                anchors.left:           parent.left
-                border.color:           qgcPal.text
-                border.width:           _modeIndicatorPhotoMode ? 0 : 1
-
-                QGCColoredImage {
-                    height:             parent.height * 0.5
-                    width:              height
-                    anchors.centerIn:   parent
-                    source:             "/qmlimages/camera_video.svg"
-                    fillMode:           Image.PreserveAspectFit
-                    sourceSize.height:  height
-                    color:              _modeIndicatorPhotoMode ? qgcPal.text : qgcPal.colorGreen
-                    MouseArea {
-                        anchors.fill:   parent
-                        enabled:        _switchToVideoModeAllowed
-                        onClicked:      setCameraMode(false)
+                QGCMouseArea {
+                    fillItem: parent
+                    onClicked: {
+                        _activeVehicle.showNvQuickPanel()
                     }
-                }               
+                }
             }
-            //-- Photo Mode
+
+            // Photo/Video Mode Selector
+            // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
+            // using the unified properties/functions.
             Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
-                width:                  parent.height
-                height:                 parent.height
-                color:                  _modeIndicatorPhotoMode ? qgcPal.window : qgcPal.windowShadeLight
-                radius:                 height * 0.5
-                anchors.right:          parent.right
-                border.color:           qgcPal.text
-                border.width:           _modeIndicatorPhotoMode ? 1 : 0
-                QGCColoredImage {
-                    height:             parent.height * 0.5
-                    width:              height
-                    anchors.centerIn:   parent
-                    source:             "/qmlimages/camera_photo.svg"
-                    fillMode:           Image.PreserveAspectFit
-                    sourceSize.height:  height
-                    color:              _modeIndicatorPhotoMode ? qgcPal.colorGreen : qgcPal.text
-                    MouseArea {
-                        anchors.fill:   parent
-                        enabled:        _switchToPhotoModeAllowed
-                        onClicked:      setCameraMode(true)
+                id: photoVidSwitch
+                Layout.alignment: Qt.AlignHCenter
+                height: ScreenTools.defaultFontPixelHeight * 2.0
+                width: height * 2
+                color: qgcPal.windowShadeLight
+                radius: height * 0.5
+                visible: _nextVisionGimbalAvailable
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: true
+                }
+
+                //-- Video Mode
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.height
+                    height: parent.height
+                    color: _modeIndicatorPhotoMode ? qgcPal.windowShadeLight : qgcPal.window
+                    radius: height * 0.5
+                    anchors.left: parent.left
+                    border.color: qgcPal.text
+                    border.width: _modeIndicatorPhotoMode ? 0 : 1
+
+                    QGCColoredImage {
+                        height: parent.height * 0.5
+                        width: height
+                        anchors.centerIn: parent
+                        source: "/qmlimages/camera_video.svg"
+                        fillMode: Image.PreserveAspectFit
+                        sourceSize.height: height
+                        color: _modeIndicatorPhotoMode ? qgcPal.text : qgcPal.colorGreen
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: _switchToVideoModeAllowed
+                            onClicked: setCameraMode(false)
+                        }
+                    }
+                }
+                //-- Photo Mode
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.height
+                    height: parent.height
+                    color: _modeIndicatorPhotoMode ? qgcPal.window : qgcPal.windowShadeLight
+                    radius: height * 0.5
+                    anchors.right: parent.right
+                    border.color: qgcPal.text
+                    border.width: _modeIndicatorPhotoMode ? 1 : 0
+                    QGCColoredImage {
+                        height: parent.height * 0.5
+                        width: height
+                        anchors.centerIn: parent
+                        source: "/qmlimages/camera_photo.svg"
+                        fillMode: Image.PreserveAspectFit
+                        sourceSize.height: height
+                        color: _modeIndicatorPhotoMode ? qgcPal.colorGreen : qgcPal.text
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: _switchToPhotoModeAllowed
+                            onClicked: setCameraMode(true)
+                        }
+                    }
+                }
+            }
+
+            QGCColoredImage {
+                id: settingsDialogIcon
+                Layout.alignment: Qt.AlignRight
+                source: "/res/gear-black.svg"
+                mipmap: true
+                height: ScreenTools.defaultFontPixelHeight * 1.3
+                width: height
+                sourceSize.height: height
+                color: qgcPal.text
+                fillMode: Image.PreserveAspectFit
+                visible: _nextVisionGimbalAvailable
+
+                QGCMouseArea {
+                    fillItem: parent
+                    onClicked: {
+                        mainWindow.showPopupDialogFromComponent(
+                                    settingsDialogComponent)
                     }
                 }
             }
         }
-
 
         // Take Photo, Start/Stop Video button
         // IMPORTANT: This control supports both mavlink cameras and simple video streams. Do no reference anything here which is not
         // using the unified properties/functions.
         Rectangle {
             id: redRect
-            Layout.alignment:   Qt.AlignHCenter
-            Layout.topMargin:   ScreenTools.defaultFontPixelWidth
-            Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-            color:              Qt.rgba(0,0,0,0)
-            width:              ScreenTools.defaultFontPixelWidth * 8
-            height:             width
-            radius:             width * 0.5
-            border.color:       qgcPal.buttonText
-            border.width:       4
-            visible:            _activeVehicle
+            Layout.alignment: Qt.AlignHCenter
+            //Layout.topMargin:   ScreenTools.defaultFontPixelWidth
+            //Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
+            color: Qt.rgba(0, 0, 0, 0)
+            width: ScreenTools.defaultFontPixelWidth * 8
+            height: width
+            radius: width * 0.5
+            border.color: qgcPal.buttonText
+            border.width: 4
+            visible: _activeVehicle
+
             //visible:            _nextVisionGimbalAvailable
-
             SequentialAnimation {
-                        id: anim
+                id: anim
 
+                // Expand the button
+                PropertyAnimation {
+                    target: redRect
+                    property: "scale"
+                    to: 1.2
+                    duration: 200
+                    easing.type: Easing.InOutQuad
+                }
+
+                // Shrink back to normal
+                PropertyAnimation {
+                    target: redRect
+                    property: "scale"
+                    to: 1.0
+                    duration: 200
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: parent.width
+                       * (_isShootingInCurrentMode ? 0.5 : 0.75) //   _isShootingInCurrentMode
+                height: width
+                //changing the radius here to half the width makes it a circle
+                radius: _isShootingInCurrentMode ? 0 : width * 0.5 //   _isShootingInCurrentMode
+                color: _canShootInCurrentMode ? _recordButtonBusy ? qgcPal.colorOrange : qgcPal.colorRed : qgcPal.colorGrey
+                //color:              _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: _canShootInCurrentMode // && !_recordButtonBusy
+                onClicked: {
+                    //change the color to yellow
+                    anim.start()
+                    toggleShooting()
+                }
+            }
+        }
+
+        //-- Status Information
+        ColumnLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 0
+            visible: _activeVehicle
+            width: parent.width
+            //visible:            _nextVisionGimbalAvailable
+            GridLayout {
+                id: nvControlgridLayout
+                columns: 2
+                columnSpacing: ScreenTools.defaultFontPixelHeight * 0.5
+                rowSpacing: ScreenTools.defaultFontPixelHeight * 0.5
+                Layout.alignment: Qt.AlignHCenter
+                Layout.margins: _margins
+                visible: _activeVehicle
+
+                //visible:            _nextVisionGimbalAvailable
+                QGCButton {
+                    id: grrButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    highlight: _currentNvMode === "GRR"
+                    text: qsTr("GRR")
+                    //leftPadding:    ScreenTools.defaultFontPixelWidth * 1
+                    //rightPadding:   ScreenTools.defaultFontPixelWidth * 1
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable
+                    hoverEnabled: false
+                    SequentialAnimation {
+                        id: animGrrButton
                         // Expand the button
                         PropertyAnimation {
-                            target: redRect
+                            target: grrButton
                             property: "scale"
                             to: 1.2
                             duration: 200
@@ -424,412 +549,301 @@ Rectangle {
 
                         // Shrink back to normal
                         PropertyAnimation {
-                            target: redRect
+                            target: grrButton
                             property: "scale"
                             to: 1.0
                             duration: 200
                             easing.type: Easing.InOutQuad
                         }
                     }
-
-            Rectangle {
-                anchors.centerIn:   parent
-                width:              parent.width * (_isShootingInCurrentMode ? 0.5 : 0.75)  //   _isShootingInCurrentMode
-                height:             width
-                //changing the radius here to half the width makes it a circle
-                radius:             _isShootingInCurrentMode ? 0 : width * 0.5  //   _isShootingInCurrentMode
-                color:              _canShootInCurrentMode ? _recordButtonBusy ? qgcPal.colorOrange : qgcPal.colorRed : qgcPal.colorGrey
-                //color:              _canShootInCurrentMode ? qgcPal.colorRed : qgcPal.colorGrey
-
-
-            }
-
-            MouseArea {
-                anchors.fill:   parent
-                enabled:        _canShootInCurrentMode// && !_recordButtonBusy
-                onClicked:
-                {
-                    //change the color to yellow
-                    anim.start()
-                    toggleShooting()
+                    onClicked: {
+                        animGrrButton.start()
+                        joystickManager.cameraManagement.setSysModeGrrCommand()
+                    }
                 }
-            }
-        }
-
-
-
-        //-- Status Information
-        ColumnLayout {
-            Layout.alignment:   Qt.AlignHCenter
-            spacing:            0
-            visible:            _activeVehicle
-            //visible:            _nextVisionGimbalAvailable
-                GridLayout {
-                    id:     nvControlgridLayout
-                    columns:            2
-                    columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
-                    rowSpacing:         ScreenTools.defaultFontPixelHeight
-                    visible:            _activeVehicle
-                    //visible:            _nextVisionGimbalAvailable
-                    Layout.alignment:   Qt.AlignHCenter
-                    QGCButton {
-                        id:             grrButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        highlight:      _currentNvMode === "GRR"
-                        text:           qsTr("GRR")
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        hoverEnabled:   false
-                        SequentialAnimation {
-                                    id: animGrrButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: grrButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: grrButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animGrrButton.start()
-                            joystickManager.cameraManagement.setSysModeGrrCommand()
-                        }
-                    }
-                    QGCButton {
-                        id:             pilotButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        highlight:      ((_currentNvMode === "Stow") || (_currentNvMode === "Local Pos")) ? true : false
-                        text:           qsTr("PILOT")
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        hoverEnabled:   false
-                        SequentialAnimation {
-                                    id: animPilotButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: pilotButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: pilotButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animPilotButton.start()                            
-                            joystickManager.cameraManagement.setSysModePilotCommand()
-                        }
-                    }
-                    QGCButton {
-                        id:             obsButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        text:           qsTr("OBS")
-                        highlight:      _currentNvMode === "Observation"
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * 1
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * 1
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        hoverEnabled:   false
-                        SequentialAnimation {
-                                    id: animObsButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: obsButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: obsButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animObsButton.start()
-                            joystickManager.cameraManagement.setSysModeObsCommand()
-                        }
-                    }
-
-                    QGCButton {
-                        id:             holdButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        text:           qsTr("HOLD")
-                        highlight:      _currentNvMode === "Hold"
-                        leftPadding:    ScreenTools.defaultFontPixelWidth * .5
-                        rightPadding:   ScreenTools.defaultFontPixelWidth * .5
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-                        hoverEnabled:   false
-                        SequentialAnimation {
-                                    id: animHoldButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: holdButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: holdButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                        onClicked: {
-                            animHoldButton.start()
-                            joystickManager.cameraManagement.setSysModeHoldCommand()
-                        }
-                    }
-            }
-            QGCLabel {
-                            Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                            Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                            Layout.alignment:   Qt.AlignHCenter
-                            text:               qsTr("Sensor");
-                            visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-            }
-            GridLayout {
-                columns:            2
-                columnSpacing:      ScreenTools.defaultFontPixelWidth * 3
-                rowSpacing:         ScreenTools.defaultFontPixelHeight
-                Layout.alignment:   Qt.AlignHCenter
-                visible:            !_videoStreamInPhotoMode && _nextVisionGimbalAvailable
-
                 QGCButton {
-                    id:             irButton
-                    Layout.alignment:   Qt.AlignHCenter
-                    backRadius:     4
-                    showBorder:     true
-                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                    text:           qsTr("IR")
-                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
-                    leftPadding:    10
-                    rightPadding:   10
-                    hoverEnabled:   false
+                    id: pilotButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    highlight: ((_currentNvMode === "Stow")
+                                || (_currentNvMode === "Local Pos")) ? true : false
+                    text: qsTr("PILOT")
+                    //leftPadding:    ScreenTools.defaultFontPixelWidth * .5
+                    //rightPadding:   ScreenTools.defaultFontPixelWidth * .5
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable
+                    hoverEnabled: false
                     SequentialAnimation {
-                                id: animIrButton
-                                // Expand the button
-                                PropertyAnimation {
-                                    target: irButton
-                                    property: "scale"
-                                    to: 1.2
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
+                        id: animPilotButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: pilotButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
 
-                                // Shrink back to normal
-                                PropertyAnimation {
-                                    target: irButton
-                                    property: "scale"
-                                    to: 1.0
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-                            }
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: pilotButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                    onClicked: {
+                        animPilotButton.start()
+                        joystickManager.cameraManagement.setSysModePilotCommand(
+                                    )
+                    }
+                }
+                QGCButton {
+                    id: obsButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    text: qsTr("OBS")
+                    highlight: _currentNvMode === "Observation"
+                    //leftPadding:    ScreenTools.defaultFontPixelWidth * 1
+                    //rightPadding:   ScreenTools.defaultFontPixelWidth * 1
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable
+                    hoverEnabled: false
+                    SequentialAnimation {
+                        id: animObsButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: obsButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: obsButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                    onClicked: {
+                        animObsButton.start()
+                        joystickManager.cameraManagement.setSysModeObsCommand()
+                    }
+                }
+                QGCButton {
+                    id: holdButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    text: qsTr("HOLD")
+                    highlight: _currentNvMode === "Hold"
+                    //leftPadding:    ScreenTools.defaultFontPixelWidth * .5
+                    //rightPadding:   ScreenTools.defaultFontPixelWidth * .5
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable
+                    hoverEnabled: false
+                    SequentialAnimation {
+                        id: animHoldButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: holdButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: holdButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                    onClicked: {
+                        animHoldButton.start()
+                        joystickManager.cameraManagement.setSysModeHoldCommand()
+                    }
+                }
+                QGCButton {
+                    id: dayButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    text: qsTr("DAY")
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable && _nvIRMode
+                    hoverEnabled: false
+                    SequentialAnimation {
+                        id: animDayButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: dayButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: dayButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                    onClicked: {
+                        animDayButton.start()
+                        joystickManager.cameraManagement.setSysSensorDayCommand(
+                                    )
+                    }
+                }
+                QGCButton {
+                    id: irButton
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    Layout.fillWidth: true
+                    text: qsTr("IR")
+                    visible: !_videoStreamInPhotoMode
+                             && _nextVisionGimbalAvailable && _nvDayMode
+                    hoverEnabled: false
+                    SequentialAnimation {
+                        id: animIrButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: irButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: irButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                     onClicked: {
                         animIrButton.start()
                         joystickManager.cameraManagement.setSysSensorIrCommand()
                     }
                 }
-
-                QGCButton {
-                    id:             dayButton
-                    backRadius:     4
-                    showBorder:     true
-                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                    text:           qsTr("DAY")
-                    leftPadding:    7
-                    rightPadding:   7
-                    hoverEnabled:   false
-                    visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
-                    SequentialAnimation {
-                                id: animDayButton
-                                // Expand the button
-                                PropertyAnimation {
-                                    target: dayButton
-                                    property: "scale"
-                                    to: 1.2
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-
-                                // Shrink back to normal
-                                PropertyAnimation {
-                                    target: dayButton
-                                    property: "scale"
-                                    to: 1.0
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-                            }
-                    onClicked: {
-                        animDayButton.start()
-                        joystickManager.cameraManagement.setSysSensorDayCommand()
-                    }
-                }
-
                 QGCButton {
                     id: illuminatorButton
-                    backRadius:     4
-                    showBorder:     true
-                    font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                    pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                    text:           qsTr("ILL")
-                    leftPadding:    7
-                    rightPadding:   7
-                    hoverEnabled:   false
-                    visible:        _illuminatorControlVisible
+                    backRadius: 4
+                    showBorder: true
+                    font.pointSize: ScreenTools.smallFontPointSize
+                    pointSize: ScreenTools.defaultFontPointSize
+                    text: qsTr("ILL")
+                    hoverEnabled: false
+                    visible: _illuminatorControlVisible
+                    Layout.fillWidth: true
+                    warning: _illuminatorControlVisible
+                             && _activeVehicle.nvGimbal.isIlluminatorActive.value
 
-                    warning: _illuminatorControlVisible && _activeVehicle.nvGimbal.isIlluminatorActive.value
-
-                    enabled:        _illuminatorControlVisible && _illuminatorControlEnabled
+                    enabled: _illuminatorControlVisible
+                             && _illuminatorControlEnabled
                     SequentialAnimation {
-                                id: animIllButton
-                                // Expand the button
-                                PropertyAnimation {
-                                    target: illuminatorButton
-                                    property: "scale"
-                                    to: 1.2
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
+                        id: animIllButton
+                        // Expand the button
+                        PropertyAnimation {
+                            target: illuminatorButton
+                            property: "scale"
+                            to: 1.2
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
 
-                                // Shrink back to normal
-                                PropertyAnimation {
-                                    target: illuminatorButton
-                                    property: "scale"
-                                    to: 1.0
-                                    duration: 200
-                                    easing.type: Easing.InOutQuad
-                                }
-                            }
+                        // Shrink back to normal
+                        PropertyAnimation {
+                            target: illuminatorButton
+                            property: "scale"
+                            to: 1.0
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
                     onClicked: {
                         animIllButton.start()
-                        if(_nextVisionGimbalAvailable && _activeVehicle.nvGimbal.isIlluminatorActive.value)
-                        {
+                        if (_nextVisionGimbalAvailable
+                                && _activeVehicle.nvGimbal.isIlluminatorActive.value) {
                             joystickManager.cameraManagement.setSysIlluminatorOffCommand()
-                        }
-                        else
-                        {
+                        } else {
                             joystickManager.cameraManagement.setSysIlluminatorOnCommand()
                         }
                     }
                     onEnabledChanged: {
                         //always start with it being off
-                        if(_nextVisionGimbalAvailable && _activeVehicle.nvGimbal.isIlluminatorActive.value)
-                        {
+                        if (_nextVisionGimbalAvailable
+                                && _activeVehicle.nvGimbal.isIlluminatorActive.value) {
+
                             joystickManager.cameraManagement.setSysIlluminatorOffCommand()
                         }
                     }
                 }
-            }
-            /*
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                //Layout.alignment:   Qt.AlignHCenter
-                //_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude
-                text:                (_activeVehicle?QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsToMeters(_activeVehicle.altitudeRelative.value):"???")
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                //Layout.alignment:   Qt.AlignHCenter
-                //_activeVehicle.altitudeRelative.value >= _activeVehicle.minIlluminatorAltitude
-                text:                (_activeVehicle?_activeVehicle.minIlluminatorAltitude:"???")
-            }
-
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "relativeAltitude = " + (_activeVehicle?_activeVehicle.altitudeRelative.value:"n/a")
-            }
 
 
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_illuminatorAltitudeOk = " + _illuminatorAltitudeOk
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_illuminatorPitchOk = " + _illuminatorPitchOk
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_illuminatorRequiresArmed = " + _illuminatorRequiresArmed
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_illuminatorRequiresFlying = " + _illuminatorRequiresFlying
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_isFlying = " + _isFlying
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_isArmed = " + _isArmed
-            }
-            QGCLabel{
-                Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                Layout.alignment:   Qt.AlignHCenter
-                text:               "_illuminatorControlVisible = " + _illuminatorControlVisible
-            }
-            */
+                /*
+                    QGCButton {
+                        id:             resetCamButton
+                        backRadius:     4
+                        showBorder:     true
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        pointSize:      ScreenTools.defaultFontPointSize
+                        Layout.fillWidth: true
+                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvDayMode
+                        text:           qsTr("RST")
+                        hoverEnabled:   false
+                        SequentialAnimation {
+                                    id: animResetButton
+                                    // Expand the button
+                                    PropertyAnimation {
+                                        target: resetCamButton
+                                        property: "scale"
+                                        to: 1.2
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
 
-
-            QGCLabel {
-                            Layout.bottomMargin:   ScreenTools.defaultFontPixelWidth
-                            Layout.alignment:   Qt.AlignHCenter
-                            text:               qsTr("Status: ") + _nvSnapShotStatus
-                            visible:            false //debug only
+                                    // Shrink back to normal
+                                    PropertyAnimation {
+                                        target: resetCamButton
+                                        property: "scale"
+                                        to: 1.0
+                                        duration: 200
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                        onClicked: {
+                            animResetButton.start()
+                            joystickManager.cameraManagement.setSysResetCommand()
+                        }
+                    */
             }
         }
     }
@@ -838,209 +852,218 @@ Rectangle {
         id: settingsDialogComponent
 
         QGCPopupDialog {
-            id:         videoSettingsPopup
-            title:      qsTr("Video Settings")
-            buttons:    StandardButton.Close
+            id: videoSettingsPopup
+            title: qsTr("Video Settings")
+            buttons: StandardButton.Close
 
             ColumnLayout {
                 spacing: _margins
 
                 GridLayout {
-                    id:         gridLayout
-                    columns:    2
+                    id: gridLayout
+                    columns: 2
 
                     QGCLabel {
-                        text:               qsTr("Press to NUC")
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
+                        text: qsTr("Press to NUC")
+                        visible: !_videoStreamInPhotoMode
+                                 && _nextVisionGimbalAvailable && _nvIRMode
                     }
                     QGCButton {
-                        id:             nucButton
-                        backRadius:     4
-                        showBorder:     true
-                        font.pointSize: ScreenTools.isMobile? point_size : ScreenTools.smallFontPointSize
-                        pointSize:      ScreenTools.isMobile? point_size : ScreenTools.defaultFontPointSize
-                        text:           qsTr("NUC")
-                        leftPadding:    7
-                        rightPadding:   7
-                        hoverEnabled:   false
-                        visible:        !_videoStreamInPhotoMode && _nextVisionGimbalAvailable && _nvIRMode
+                        id: nucButton
+                        backRadius: 4
+                        showBorder: true
+                        font.pointSize: ScreenTools.smallFontPointSize
+                        pointSize: ScreenTools.defaultFontPointSize
+                        Layout.fillWidth: true
+                        text: qsTr("NUC")
+                        visible: !_videoStreamInPhotoMode
+                                 && _nextVisionGimbalAvailable && _nvIRMode
+                        hoverEnabled: false
                         SequentialAnimation {
-                                    id: animNucButton
-                                    // Expand the button
-                                    PropertyAnimation {
-                                        target: nucButton
-                                        property: "scale"
-                                        to: 1.2
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
+                            id: animNucButton
+                            // Expand the button
+                            PropertyAnimation {
+                                target: nucButton
+                                property: "scale"
+                                to: 1.2
+                                duration: 200
+                                easing.type: Easing.InOutQuad
+                            }
 
-                                    // Shrink back to normal
-                                    PropertyAnimation {
-                                        target: nucButton
-                                        property: "scale"
-                                        to: 1.0
-                                        duration: 200
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
+                            // Shrink back to normal
+                            PropertyAnimation {
+                                target: nucButton
+                                property: "scale"
+                                to: 1.0
+                                duration: 200
+                                easing.type: Easing.InOutQuad
+                            }
+                        }
                         onClicked: {
                             animNucButton.start()
-                            joystickManager.cameraManagement.setSysIrNUCCommand()
+                            joystickManager.cameraManagement.setSysIrNUCCommand(
+                                        )
                         }
                     }
 
                     QGCLabel {
-                        text:               qsTr("Object Detection")
-                        visible:            _nextVisionGimbalAvailable
+                        text: qsTr("Object Detection")
+                        visible: _nextVisionGimbalAvailable
                     }
+
                     FactComboBox {
-                        id:                     objectDetection
-                        Layout.fillWidth:       true
-                        sizeToContents:         true
-                        fact:                   _videoStreamSettings.objDetection
-                        visible:                fact.visible && _nextVisionGimbalAvailable
-                        indexModel:             false
-                        onCurrentIndexChanged:  {
-                            if (_videoStreamSettings.objDetection.value !== _videoStreamSettings.objDetection.enumValues[currentIndex])
-                            {
-                                if (_videoStreamSettings.objDetection.enumValues[currentIndex] === 4)
-                                {
-                                    joystickManager.cameraManagement.setSysObjDetOffCommand();
-                                }
-                                else
-                                {
-                                    console.log("setting obj detection to" + _videoStreamSettings.objDetection.enumValues[currentIndex]);
-                                    joystickManager.cameraManagement.setSysObjDetSetNetTypeCommand(_videoStreamSettings.objDetection.enumValues[currentIndex])
-                                    joystickManager.cameraManagement.setSysObjDetOnCommandAfterDelay(1000);  //turn on object detection after delay
+                        id: objectDetection
+                        Layout.fillWidth: true
+                        sizeToContents: true
+                        fact: _videoStreamSettings.objDetection
+                        visible: fact.visible && _nextVisionGimbalAvailable
+                        indexModel: false
+                        onCurrentIndexChanged: {
+                            if (_videoStreamSettings.objDetection.value
+                                    !== _videoStreamSettings.objDetection.enumValues[currentIndex]) {
+                                if (_videoStreamSettings.objDetection.enumValues[currentIndex]
+                                        === 4) {
+                                    joystickManager.cameraManagement.setSysObjDetOffCommand()
+                                } else {
+                                    console.log("setting obj detection to" + _videoStreamSettings.objDetection.enumValues[currentIndex])
+                                    joystickManager.cameraManagement.setSysObjDetSetNetTypeCommand(
+                                                _videoStreamSettings.objDetection.enumValues[currentIndex])
+                                    joystickManager.cameraManagement.setSysObjDetOnCommandAfterDelay(
+                                                1000) //turn on object detection after delay
                                 }
                             }
                         }
                     }
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Map FOV Overlay")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.fovOverlay.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.fovOverlay.rawValue = checked ? 1 : 0
+                    }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Map FOV Overlay")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Map Target Overlay")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.targetOverlay.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.targetOverlay.rawValue = checked ? 1 : 0
+                    }
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Remote Recording")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.remoteRecording.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.remoteRecording.rawValue = checked ? 1 : 0
+                    }
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Pilot view on FBW")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.pilotViewOnFBW.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.pilotViewOnFBW.rawValue
+                                   = checked ? true : false
+                    }
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Downward view on Land")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.nadirViewOnLand.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.nadirViewOnLand.rawValue
+                                   = checked ? true : false
+                    }
+
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Auto Record on Takeoff")
+                        visible: _nextVisionGimbalAvailable
+                    }
+
+                    QGCSwitch {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.recordOnFlying.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.recordOnFlying.rawValue
+                                   = checked ? true : false
+                    }
+                    QGCLabel {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Auto NUC Periodically")
+                        visible: _nextVisionGimbalAvailable
                     }
                     QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.fovOverlay.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.fovOverlay.rawValue = checked ? 1 : 0
+                        id: _autoNucSwitch
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.autoNuc.rawValue
+                        visible: _nextVisionGimbalAvailable
+                        onClicked: _videoStreamSettings.autoNuc.rawValue = checked ? true : false
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Map Target Overlay")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.targetOverlay.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.targetOverlay.rawValue = checked ? 1 : 0
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Remote Recording")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.remoteRecording.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.remoteRecording.rawValue = checked ? 1 : 0
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Pilot view on FBW")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.pilotViewOnFBW.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.pilotViewOnFBW.rawValue = checked ? true : false
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Downward view on Land")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.nadirViewOnLand.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.nadirViewOnLand.rawValue = checked ? true : false
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Auto Record on Takeoff")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.recordOnFlying.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.recordOnFlying.rawValue = checked ? true : false
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Auto NUC Periodically")
-                        visible:            _nextVisionGimbalAvailable
-                    }
-                    QGCSwitch {
-                        id:                 _autoNucSwitch
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.autoNuc.rawValue
-                        visible:            _nextVisionGimbalAvailable
-                        onClicked:          _videoStreamSettings.autoNuc.rawValue = checked ? true : false
-                    }
-
-                    QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Auto NUC Period")
-                        visible:            _autoNucSwitch.checked
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Auto NUC Period")
+                        visible: _autoNucSwitch.checked
                     }
                     FactTextField {
-                        fact:                   _videoStreamSettings.nucPeriod
-                        visible:            _autoNucSwitch.checked
+                        fact: _videoStreamSettings.nucPeriod
+                        visible: _autoNucSwitch.checked
                     }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Video Mode")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Video Mode")
+                        visible: _nextVisionGimbalAvailable
                     }
+
                     FactComboBox {
-                        id:                     videoPlaybackMode
-                        Layout.topMargin:       ScreenTools.defaultFontPixelHeight
-                        Layout.fillWidth:       true
-                        sizeToContents:         true
-                        fact:                   _videoStreamSettings.videoPlaybackMode
-                        visible:                fact.visible && _nextVisionGimbalAvailable
-                        indexModel:             false
-                        onCurrentIndexChanged:  {
-                            if (_videoStreamSettings.videoPlaybackMode.value !== _videoStreamSettings.videoPlaybackMode.enumValues[currentIndex])
-                            {
-                                joystickManager.cameraManagement.setSysStreamModeCommand(_videoStreamSettings.videoPlaybackMode.enumValues[currentIndex],0);
+                        id: videoPlaybackMode
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        Layout.fillWidth: true
+                        sizeToContents: true
+                        fact: _videoStreamSettings.videoPlaybackMode
+                        visible: fact.visible && _nextVisionGimbalAvailable
+                        indexModel: false
+                        onCurrentIndexChanged: {
+                            if (_videoStreamSettings.videoPlaybackMode.value
+                                    !== _videoStreamSettings.videoPlaybackMode.enumValues[currentIndex]) {
+                                joystickManager.cameraManagement.setSysStreamModeCommand(
+                                            _videoStreamSettings.videoPlaybackMode.enumValues[currentIndex],
+                                            0)
                             }
                         }
                     }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("IR Color Mode")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("IR Color Mode")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "B&W"
                             onClicked: {
@@ -1057,19 +1080,18 @@ Rectangle {
                     }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("IR Display Mode")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("IR Display Mode")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "White Hot"
-                            onClicked:
-                            {
+                            onClicked: {
                                 //joystickManager.cameraManagement.setSysIrBWPCommand()
                                 joystickManager.cameraManagement.setSysIrPolarityWHCommand()
-
                             }
                         }
                         QGCButton {
@@ -1080,14 +1102,13 @@ Rectangle {
                             }
                         }
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("IR Level")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("IR Level")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "Decrease"
                             onClicked: {
@@ -1101,14 +1122,13 @@ Rectangle {
                             }
                         }
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("IR Gain")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("IR Gain")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "Decrease"
                             onClicked: {
@@ -1122,14 +1142,13 @@ Rectangle {
                             }
                         }
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("IR Gain/Level")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("IR Gain/Level")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "Reset"
                             onClicked: {
@@ -1139,12 +1158,12 @@ Rectangle {
                     }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Advanced Modes")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Advanced Modes")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "Nadir"
                             onClicked: joystickManager.cameraManagement.setSysNadirCommand()
@@ -1154,61 +1173,64 @@ Rectangle {
                             onClicked: joystickManager.cameraManagement.setSysModeStowCommand()
                         }
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Video Grid Lines")
-                        visible:            _anyVideoStreamAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Video Grid Lines")
+                        visible: _anyVideoStreamAvailable
                     }
+
                     QGCSwitch {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        checked:            _videoStreamSettings.gridLines.rawValue
-                        visible:            _anyVideoStreamAvailable
-                        onClicked:          _videoStreamSettings.gridLines.rawValue = checked ? 1 : 0
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        checked: _videoStreamSettings.gridLines.rawValue
+                        visible: _anyVideoStreamAvailable
+                        onClicked: _videoStreamSettings.gridLines.rawValue = checked ? 1 : 0
                     }
 
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Video Screen Fit")
-                        visible:            _anyVideoStreamAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Video Screen Fit")
+                        visible: _anyVideoStreamAvailable
                     }
+
                     FactComboBox {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        Layout.fillWidth:   true
-                        sizeToContents:     true
-                        fact:               _videoStreamSettings.videoFit
-                        indexModel:         false
-                        visible:            _anyVideoStreamAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        Layout.fillWidth: true
+                        sizeToContents: true
+                        fact: _videoStreamSettings.videoFit
+                        indexModel: false
+                        visible: _anyVideoStreamAvailable
                     }
-
                     QGCLabel {
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
-                        text:               qsTr("Video OSD")
-                        visible:            _nextVisionGimbalAvailable
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
+                        text: qsTr("Video OSD")
+                        visible: _nextVisionGimbalAvailable
                     }
-                    RowLayout{
-                        Layout.topMargin:   ScreenTools.defaultFontPixelHeight
+                    RowLayout {
+                        Layout.topMargin: ScreenTools.defaultFontPixelHeight
                         QGCButton {
                             text: "OSD On"
                             onClicked: {
-                                 mainWindow.showPopupDialogFromComponent(changeOSDOnDialog)
+                                mainWindow.showPopupDialogFromComponent(
+                                            changeOSDOnDialog)
                             }
                         }
                         QGCButton {
                             text: "OSD Off"
                             onClicked: {
-                                 mainWindow.showPopupDialogFromComponent(changeOSDOffDialog)
+                                mainWindow.showPopupDialogFromComponent(
+                                            changeOSDOffDialog)
                             }
                         }
                     }
-
                     Component {
                         id: changeOSDOnDialog
                         QGCPopupDialog {
-                           title:      qsTr("Enable OSD?")
-                            buttons:    StandardButton.Yes | StandardButton.Cancel
+                            title: qsTr("Enable OSD?")
+                            buttons: StandardButton.Yes | StandardButton.Cancel
 
-                            QGCLabel { text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")}
+                            QGCLabel {
+                                text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")
+                            }
 
                             function accept() {
                                 joystickManager.cameraManagement.setSysOSDOnCommand()
@@ -1216,16 +1238,16 @@ Rectangle {
                                 videoSettingsPopup.hideDialog()
                             }
                         }
-
                     }
-
                     Component {
                         id: changeOSDOffDialog
                         QGCPopupDialog {
-                           title:      qsTr("Disable OSD?")
-                            buttons:    StandardButton.Yes | StandardButton.Cancel
+                            title: qsTr("Disable OSD?")
+                            buttons: StandardButton.Yes | StandardButton.Cancel
 
-                            QGCLabel { text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")}
+                            QGCLabel {
+                                text: qsTr("Warning: Changing OSD settings requires a full reboot of the Camera system. It will be offline for approximately 30 seconds. Are you sure you want to do this?")
+                            }
 
                             function accept() {
                                 joystickManager.cameraManagement.setSysOSDOffCommand()
@@ -1233,9 +1255,7 @@ Rectangle {
                                 videoSettingsPopup.hideDialog()
                             }
                         }
-
                     }
-
                 }
             }
         }
