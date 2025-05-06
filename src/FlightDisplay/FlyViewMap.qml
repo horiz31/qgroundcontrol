@@ -1479,7 +1479,7 @@ FlightMap {
                 id: atakCol
                 Layout.fillWidth:   true
                 QGCLabel {
-                    text:           qsTr("Location: " + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7))
+                    text:           qsTr("Location: ") + QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(mapMouseArea.clickCoord, 7)
                 }
                 Item {
                     Layout.fillWidth:   true
@@ -1567,7 +1567,7 @@ FlightMap {
                 id: annotationCol
                 Layout.fillWidth:   true
                 QGCLabel {
-                    text:           qsTr("Location: " + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7))
+                    text:           qsTr("Location: ") + QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(mapMouseArea.clickCoord, 7)
                 }
                 Item {
                     Layout.fillWidth:   true

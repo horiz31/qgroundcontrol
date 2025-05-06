@@ -119,12 +119,13 @@ public:
                     .toUInt()
                 == (uint32_t) UnitsSettings::MGRS)
             {
-                return GPSUnitsController{}.convertToMGRS(latitude, longitude, precision);
+                //it was requested that MGRS always have 5 for the precision
+                return GPSUnitsController{}.convertToMGRS(latitude, longitude, 5);
             }
             else
             {
-                return QString::number(latitude, 'g', precision) + "°, "
-                       + QString::number(longitude, 'g', precision) + "°";
+                return QString::number(latitude, 'f', precision) + "°, "
+                       + QString::number(longitude, 'f', precision) + "°";
             }
         }
     }
