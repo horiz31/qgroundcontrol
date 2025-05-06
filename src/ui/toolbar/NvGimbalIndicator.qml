@@ -62,10 +62,10 @@ Item {
 
                     QGCLabel { text: qsTr("Mode:") }
                     QGCLabel { text: _activeVehicle? _activeVehicle.nvGimbal.mode.value : "" }
-                    QGCLabel { text: qsTr("Target Latitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°" }
-                    QGCLabel { text: qsTr("Target Longitude:") }
-                    QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°" }
+                    QGCLabel { text: qsTr("Target Coordinates:")}
+                    QGCLabel { text: _activeVehicle && (_activeVehicle.nvGimbal.groundCrossingLat.value !== 400.0 && _activeVehicle.nvGimbal.groundCrossingLon.value !== 400.0)
+                                     ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(_activeVehicle.nvGimbal.groundCrossingLat.value, _activeVehicle.nvGimbal.groundCrossingLon.value, 7)
+                                     : QGroundControl.unitsConversion.appSettingsGeoCoordinateToString() }
                     QGCLabel { text: qsTr("Target Altitude:") }
                     QGCLabel { text: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) === 32808.0)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----" }
                     QGCLabel { text: qsTr("Slant Range:") }

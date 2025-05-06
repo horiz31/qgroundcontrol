@@ -1383,8 +1383,8 @@ FlightMap {
                         QGCLabel {
                             Layout.fillWidth:       true
 
-                            text:                   mapMouseArea.clickCoord ? qsTr("Lat,Lon: ") + mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7) : ""
-                            //horizontalAlignment:    Text.AlignHCenter
+                            text: mapMouseArea.clickCoord ? qsTr("Coordinates: ")+QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(mapMouseArea.clickCoord, 7)
+                                                          : ""
                             visible:                true
                         }
                         QGCColoredImage {
@@ -1400,38 +1400,8 @@ FlightMap {
                                  fillItem:   positionCopyPaste
                                  onClicked: {
 
-                                     textEdit.text = mapMouseArea.clickCoord.latitude.toFixed(7) + ", " + mapMouseArea.clickCoord.longitude.toFixed(7)
-                                     textEdit.selectAll()
-                                     textEdit.copy()
-                                     mapClickIconItem.hide()
-                                     hideDialog()
-
-                                 }
-
-                             }
-                         }
-                    }
-                    RowLayout {
-                        Layout.leftMargin:      ScreenTools.defaultFontPixelHeight
-                        QGCLabel {
-                            Layout.fillWidth:       true
-                            text:                   mapMouseArea.clickCoord ? qsTr("MGRS: ") + gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)  : ""
-                            visible:                true
-                        }
-                        QGCColoredImage {
-                             id:                     positionCopyPasteMGRS
-                             width:                  _copyContentSize
-                             height:                 _copyContentSize
-                             sourceSize.height:      _copyContentSize
-                             source:                 "/res/content_copy.svg"
-                             visible:                true
-                             color:                  qgcPal.text
-
-                             QGCMouseArea {
-                                 fillItem:   positionCopyPasteMGRS
-                                 onClicked: {
-
-                                     textEdit.text = gpsUnitsController.convertToMGRS(mapMouseArea.clickCoord)
+                                     textEdit.text = mapMouseArea.clickCoord ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(mapMouseArea.clickCoord, 7)
+                                                                             : ""
                                      textEdit.selectAll()
                                      textEdit.copy()
                                      mapClickIconItem.hide()

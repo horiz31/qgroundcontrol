@@ -111,23 +111,33 @@ bool convertUTMToGeo(double easting, double northing, int zone, bool southhemi, 
     return true;
 }
 
-QString convertGeoToMGRS(const QGeoCoordinate& coord)
+QString convertGeoToMGRS(double latitude, double longitude, int precision)
+{
+    return convertGeoToMGRS(QGeoCoordinate(latitude, longitude), precision);
+}
+
+QString convertGeoToMGRS(const QGeoCoordinate& coord, int precision)
 {
     int zone;
     bool northp;
     double x, y;
     std::string mgrs;
 
-    try {
+    try
+    {
         GeographicLib::UTMUPS::Forward(coord.latitude(), coord.longitude(), zone, northp, x, y);
-        GeographicLib::MGRS::Forward(zone, northp, x, y, coord.latitude(), 5, mgrs);
-    } catch(...) {
+        GeographicLib::MGRS::Forward(zone, northp, x, y, coord.latitude(), precision, mgrs);
+    }
+    catch (...)
+    {
         mgrs = "";
     }
 
     QString qstr = QString::fromStdString(mgrs);
-    for (int i = qstr.length() - 1; i >= 0; i--) {
-        if (!qstr.at(i).isDigit()) {
+    for (int i = qstr.length() - 1; i >= 0; i--)
+    {
+        if (!qstr.at(i).isDigit())
+        {
             int l = (qstr.length() - i) / 2;
             return qstr.left(i + 1) + " " + qstr.mid(i + 1, l) + " " + qstr.mid(i + 1 + l);
         }

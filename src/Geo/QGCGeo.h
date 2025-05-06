@@ -90,7 +90,8 @@ bool convertUTMToGeo(double easting, double northing, int zone, bool southhemi, 
 // Returns:
 //   The MGRS coordinate string
 //   If conversion fails the function returns empty string
-QString convertGeoToMGRS(const QGeoCoordinate& coord);
+QString convertGeoToMGRS(const QGeoCoordinate& coord, int precision = 6);
+QString convertGeoToMGRS(double latitude, double longitude, int precision = 6);
 
 // Converts MGRS string to a latitude/longitude pair.
 //

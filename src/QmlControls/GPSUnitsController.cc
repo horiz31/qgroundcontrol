@@ -9,13 +9,18 @@
 
 #include "GPSUnitsController.h"
 #include "QGCGeo.h"
-#include "QGCApplication.h"
 
 GPSUnitsController::GPSUnitsController(void)
 {}
 
-QString GPSUnitsController::convertToMGRS(QGeoCoordinate coordinate)
+QString GPSUnitsController::convertToMGRS(QGeoCoordinate coordinate, int precision)
 {
-      QString mgrs = convertGeoToMGRS(coordinate);
-      return mgrs;
+    QString mgrs = convertGeoToMGRS(coordinate, precision);
+    return mgrs;
+}
+
+QString GPSUnitsController::convertToMGRS(double latitude, double longitude, int precision)
+{
+    QString mgrs = convertGeoToMGRS(latitude, longitude, precision);
+    return mgrs;
 }
