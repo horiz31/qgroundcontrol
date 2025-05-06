@@ -20,8 +20,8 @@ class GPSUnitsController : public QObject
 public:
     GPSUnitsController(void);
 
-    Q_INVOKABLE QString convertToMGRS(QGeoCoordinate);
-
+    Q_INVOKABLE QString convertToMGRS(QGeoCoordinate, int precision = 6);
+    Q_INVOKABLE QString convertToMGRS(double latitude, double longitude, int precision = 6);
 
 signals:
 private:

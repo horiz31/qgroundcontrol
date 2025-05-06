@@ -10,10 +10,14 @@
 #ifndef QMLUNITSCONVERSION_H
 #define QMLUNITSCONVERSION_H
 
+#include <QGeoCoordinate>
 #include <QObject>
-#include <qmath.h>
 #include "FactMetaData.h"
-
+#include "GPSUnitsController.h"
+#include "QGCApplication.h"
+#include "SettingsManager.h"
+#include "UnitsSettings.h"
+#include <qmath.h>
 class QmlUnitsConversion : public QObject
 {
     Q_OBJECT
@@ -68,6 +72,63 @@ public:
 
     /// Converts from user specified area unit to square meters
     Q_INVOKABLE QVariant appSettingsAreaUnitsToSquareMeters(const QVariant& area) const { return FactMetaData::appSettingsAreaUnitsToSquareMeters(area); }
+
+    Q_INVOKABLE QString appSettingsGeoCoordinateToString() const
+    {
+        if (qgcApp()
+                ->toolbox()
+                ->settingsManager()
+                ->unitsSettings()
+                ->geoCoordinateSystem()
+                ->rawValue()
+                .toUInt()
+            == (uint32_t) UnitsSettings::MGRS)
+        {
+            return "----- ----- -----";
+        }
+        else
+        {
+            return "--.-------°, --.-------°";
+        }
+    }
+
+    Q_INVOKABLE QString appSettingsGeoCoordinateToString(QGeoCoordinate const& coordinate,
+                                                         int precision = 6) const
+    {
+        return appSettingsGeoCoordinateToString(coordinate.latitude(),
+                                                coordinate.longitude(),
+                                                precision);
+    }
+
+    Q_INVOKABLE QString appSettingsGeoCoordinateToString(double latitude,
+                                                         double longitude,
+                                                         int precision = 6) const
+    {
+        if (std::isnan(latitude) || std::isnan(longitude))
+        {
+            return appSettingsGeoCoordinateToString();
+        }
+        else
+        {
+            if (qgcApp()
+                    ->toolbox()
+                    ->settingsManager()
+                    ->unitsSettings()
+                    ->geoCoordinateSystem()
+                    ->rawValue()
+                    .toUInt()
+                == (uint32_t) UnitsSettings::MGRS)
+            {
+                //it was requested that MGRS always have 5 for the precision
+                return GPSUnitsController{}.convertToMGRS(latitude, longitude, 5);
+            }
+            else
+            {
+                return QString::number(latitude, 'f', precision) + "°, "
+                       + QString::number(longitude, 'f', precision) + "°";
+            }
+        }
+    }
 
     QString appSettingsAreaUnitsString(void) const { return FactMetaData::appSettingsAreaUnitsString(); }
 

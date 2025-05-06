@@ -474,14 +474,28 @@ Rectangle {
                             Layout.fillWidth:           false
                             anchors.horizontalCenter:   parent.horizontalCenter
                             flow:                       GridLayout.TopToBottom
-                            rows:                       5
+                            rows:                       6
 
                             Repeater {
-                                model: [ qsTr("Horizontal Distance"), qsTr("Vertical Distance"), qsTr("Area"), qsTr("Speed"), qsTr("Temperature") ]
+                                model: [
+                                    qsTr("Horizontal Distance"),
+                                    qsTr("Vertical Distance"),
+                                    qsTr("Area"),
+                                    qsTr("Speed"),
+                                    qsTr("Temperature"),
+                                    qsTr("GeoCoordinate System")
+                                ]
                                 QGCLabel { text: modelData }
                             }
                             Repeater {
-                                model:  [ QGroundControl.settingsManager.unitsSettings.horizontalDistanceUnits, QGroundControl.settingsManager.unitsSettings.verticalDistanceUnits, QGroundControl.settingsManager.unitsSettings.areaUnits, QGroundControl.settingsManager.unitsSettings.speedUnits, QGroundControl.settingsManager.unitsSettings.temperatureUnits ]
+                                model:  [
+                                    QGroundControl.settingsManager.unitsSettings.horizontalDistanceUnits,
+                                    QGroundControl.settingsManager.unitsSettings.verticalDistanceUnits,
+                                    QGroundControl.settingsManager.unitsSettings.areaUnits,
+                                    QGroundControl.settingsManager.unitsSettings.speedUnits,
+                                    QGroundControl.settingsManager.unitsSettings.temperatureUnits,
+                                    QGroundControl.settingsManager.unitsSettings.geoCoordinateSystem
+                                ]
                                 FactComboBox {
                                     Layout.preferredWidth:  _comboFieldWidth
                                     fact:                   modelData

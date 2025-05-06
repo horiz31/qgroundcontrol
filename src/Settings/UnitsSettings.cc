@@ -211,3 +211,26 @@ DECLARE_SETTINGSFACT_NO_FUNC(UnitsSettings, weightUnits)
     }
     return _weightUnitsFact;
 }
+
+DECLARE_SETTINGSFACT_NO_FUNC(UnitsSettings, geoCoordinateSystem)
+{
+    if (!_geoCoordinateSystemFact)
+    {
+        // Units settings can't be loaded from json since it creates an infinite loop of meta data loading.
+        QStringList enumStrings;
+        QVariantList enumValues;
+        enumStrings << "Decimal Degrees"
+                    << "MGRS";
+        enumValues << QVariant::fromValue(static_cast<uint32_t>(DecimalDegrees))
+                   << QVariant::fromValue(static_cast<uint32_t>(MGRS));
+        FactMetaData* metaData = new FactMetaData(FactMetaData::valueTypeUint32, this);
+        metaData->setName(geoCoordinateSystemName);
+        metaData->setShortDescription(UnitsSettings::tr("GeoCoordinate System"));
+        metaData->setEnumInfo(enumStrings, enumValues);
+        GeoCoordinateSystem defaultGeoCoordinateSystem = DecimalDegrees;
+        metaData->setRawDefaultValue(defaultGeoCoordinateSystem);
+        metaData->setQGCRebootRequired(false);
+        _geoCoordinateSystemFact = new SettingsFact(_settingsGroup, metaData, this);
+    }
+    return _geoCoordinateSystemFact;
+}

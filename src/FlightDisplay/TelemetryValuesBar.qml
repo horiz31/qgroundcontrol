@@ -29,22 +29,18 @@ Rectangle {
     property bool    bottomMode: true
     property var     _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
     property bool    _nvRecording: _activeVehicle? _activeVehicle.nvGimbal.isRecording.value === 1 : false
-    property string  _targetLatitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLat.value) || (_activeVehicle.nvGimbal.groundCrossingLat.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLat.value.toFixed(7) + "°") : "--.-------°"
-    property string  _targetLongitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingLon.value) || (_activeVehicle.nvGimbal.groundCrossingLon.value === 400.0)) ? "--.-------°" : _activeVehicle.nvGimbal.groundCrossingLon.value.toFixed(7) + "°") : "--.-------°"
+    property string  _targetCoordinates: _activeVehicle && (_activeVehicle.nvGimbal.groundCrossingLat.value !== 400.0 && _activeVehicle.nvGimbal.groundCrossingLon.value !== 400.0)
+                                         ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(_activeVehicle.nvGimbal.groundCrossingLat.value, _activeVehicle.nvGimbal.groundCrossingLon.value, 7)
+                                         : QGroundControl.unitsConversion.appSettingsGeoCoordinateToString()
     property string  _targetAltitude: _activeVehicle ? ((isNaN(_activeVehicle.nvGimbal.groundCrossingAlt.value) || (_activeVehicle.nvGimbal.groundCrossingAlt.rawValue === 10000)) ? "----" : _activeVehicle.nvGimbal.groundCrossingAlt.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) + " MSL" : "----"
     property string  _slantRange:_activeVehicle ? (isNaN(_activeVehicle.nvGimbal.slantRange.value) ? "----" : _activeVehicle.nvGimbal.slantRange.value.toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString) : "----"
     property string  _fov: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.fov.value) ? "--°" : _activeVehicle.nvGimbal.fov.value.toFixed(0) + "°") : "--°"
     property string  _azimuth: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.azimuth.value) ? "--°" : _activeVehicle.nvGimbal.azimuth.value.toFixed(0) + "°") : "--°"
+    property string  _pitch: _activeVehicle ? (isNaN(_activeVehicle.nvGimbal.pitch.value) ? "--°" : _activeVehicle.nvGimbal.pitch.value.toFixed(0) + "°") : "--°"
     property bool    _nvPresent:  _activeVehicle ? (_activeVehicle.nvGimbal.mode.value !== "" ? true : false) : false
-    property string  _vehicleLatitude: _activeVehicle ? ((isNaN(_activeVehicle.latitude)) ? "--.-------°" : _activeVehicle.latitude.toFixed(6) + "°") : "--.-------°"
-    property string  _vehicleLongitude: _activeVehicle ? ((isNaN(_activeVehicle.latitude)) ? "--.-------°" : _activeVehicle.longitude.toFixed(6) + "°") : "--.-------°"
-
-    //need to get this from mouse area on map
-    property string _cursorLatitude: _activeVehicle ? ((isNaN(_activeVehicle.longitude.toString())) ? "--.-------°" : _activeVehicle.longitude.toFixed(6) + "°") : "--.-------°"
-
-
-    //DeadMouseArea { anchors.fill: parent }
-
+    property string  _vehicleCoordinate: _activeVehicle
+                                         ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(_activeVehicle.coordinate, 7)
+                                         : QGroundControl.unitsConversion.appSettingsGeoCoordinateToString()
 
     function toggleNvPanel()
     {
@@ -199,12 +195,12 @@ Rectangle {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                    RowLayout{
-                    QGCLabel { text: qsTr("Target Latitude: ") + _targetLatitude
+                RowLayout{
+                    QGCLabel {
+                        text: qsTr("Target Coordinates: ") + _targetCoordinates
                         font.family:        ScreenTools.demiboldFontFamily
                         font.pointSize:     ScreenTools.mediumFontPointSize
                         Layout.fillWidth: false
-
                     }
                     QGCColoredImage {
                         Layout.alignment:  Qt.AlignLeft
@@ -220,7 +216,7 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape:  Qt.PointingHandCursor
                             onClicked:    {
-                                textEdit.text = _targetLatitude + ", " + _targetLongitude
+                                textEdit.text = _targetCoordinates
                                 textEdit.selectAll()
                                 textEdit.copy()
                             }
@@ -229,31 +225,9 @@ Rectangle {
                                    visible: false
                             }
                         }
-                   }
+                    }
                     Item {
                         Layout.fillWidth: true
-                    }
-                }
-
-
-
-                QGCLabel { text: qsTr("Target Longitude: ") + _targetLongitude
-                    font.family:        ScreenTools.demiboldFontFamily
-                    font.pointSize:     ScreenTools.mediumFontPointSize
-                    Layout.fillWidth: true
-                    QGCMouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape:  Qt.PointingHandCursor
-                        onClicked:    {
-                            textEdit2.text = _targetLatitude + ", " + _targetLongitude
-                            textEdit2.selectAll()
-                            textEdit2.copy()
-                        }
-                        TextEdit {
-                               id: textEdit2
-                               visible: false
-                        }
                     }
                 }
                 QGCLabel { text: qsTr("Target Altitude: ") + _targetAltitude
@@ -261,8 +235,6 @@ Rectangle {
                     font.pointSize:     ScreenTools.mediumFontPointSize
                     Layout.fillWidth: true
                 }
-
-
             }
             ColumnLayout {
                 Layout.alignment: Qt.AlignRight
@@ -292,6 +264,11 @@ Rectangle {
                     font.pointSize:     ScreenTools.mediumFontPointSize
                     Layout.fillWidth: true
                 }
+                QGCLabel { text: qsTr("Pitch: ") + _pitch
+                    font.family:        ScreenTools.demiboldFontFamily
+                    font.pointSize:     ScreenTools.mediumFontPointSize
+                    Layout.fillWidth: true
+                }
 
             }
 
@@ -315,7 +292,7 @@ Rectangle {
             ColumnLayout {
                 Layout.fillWidth: true
                     RowLayout{
-                    QGCLabel { text: qsTr("Vehicle Coordinates: ") + _vehicleLatitude + ", " + _vehicleLongitude
+                    QGCLabel { text: qsTr("Vehicle Coordinates: ") + _vehicleCoordinate
                         font.family:        ScreenTools.demiboldFontFamily
                         font.pointSize:     ScreenTools.mediumFontPointSize
                         Layout.fillWidth: false
@@ -335,7 +312,7 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape:  Qt.PointingHandCursor
                             onClicked:    {
-                                textEdit3.text = _vehicleLatitude + ", " + _vehicleLongitude
+                                textEdit3.text = _vehicleCoordinate
                                 textEdit3.selectAll()
                                 textEdit3.copy()
                             }
@@ -348,11 +325,13 @@ Rectangle {
 
                 }
                 RowLayout {
-                    QGCLabel { text: qsTr("Cursor Coodinates: ") + (mouseCursor ? mouseCursor.latitude.toFixed(6) + ", " + mouseCursor.longitude.toFixed(6) : "--.-------°, --.-------°")
+                    QGCLabel {
+                        text: qsTr("Cursor Coordinates: ") +
+                                     (mouseCursor ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(mouseCursor, 7)
+                                                  : QGroundControl.unitsConversion.appSettingsGeoCoordinateToString())
                         font.family:        ScreenTools.demiboldFontFamily
                         font.pointSize:     ScreenTools.mediumFontPointSize
                         Layout.fillWidth: true
-
                     }
 
                 }
