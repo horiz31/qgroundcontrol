@@ -60,8 +60,8 @@ public:
 
     enum GeoCoordinateSystem
     {
-        MGRS = 0,
-        DecimalDegrees
+        DecimalDegrees = 0,
+        MGRS,
     };
 
     Q_ENUM(HorizontalDistanceUnits)
