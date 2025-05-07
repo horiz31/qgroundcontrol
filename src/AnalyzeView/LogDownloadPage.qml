@@ -11,6 +11,7 @@ import QtQuick              2.3
 import QtQuick.Controls     1.2
 import QtQuick.Dialogs      1.2
 import QtQuick.Layouts      1.2
+import QtQuick.Controls.Styles 1.4
 
 import QGroundControl               1.0
 import QGroundControl.Palette       1.0
@@ -54,15 +55,17 @@ AnalyzePage {
                 model:              logController.model
                 selectionMode:      SelectionMode.MultiSelection
                 Layout.fillWidth:   true
-
-
+                style:  TableViewStyle{
+                    backgroundColor: palette.window
+                    alternateBackgroundColor: palette.windowShade
+                }
                 TableViewColumn {
                     title: qsTr("Id")
                     width: ScreenTools.defaultFontPixelWidth * 6
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignHCenter
-                        color: "white"
+                        color: palette.text
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.id : ""
@@ -75,7 +78,7 @@ AnalyzePage {
                     width: ScreenTools.defaultFontPixelWidth * 34
                     horizontalAlignment: Text.AlignHCenter
                     delegate: Text  {
-                        color: "white"
+                        color: palette.text
                         text: {                            
                             var o = logController.model.get(styleData.row)
                             if (o) {
@@ -99,7 +102,7 @@ AnalyzePage {
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignRight
-                        color: "white"
+                        color: palette.text
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.sizeStr : ""
@@ -113,7 +116,7 @@ AnalyzePage {
                     horizontalAlignment: Text.AlignHCenter
                     delegate : Text  {
                         horizontalAlignment: Text.AlignHCenter
-                        color: "white"
+                        color: palette.text
                         text: {
                             var o = logController.model.get(styleData.row)
                             return o ? o.status : ""
