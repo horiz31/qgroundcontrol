@@ -105,48 +105,16 @@ Item {
             sourceSize.width:   width
             fillMode:           Image.PreserveAspectFit
         }
-        //left airspeed background
+        //airspeed and altitude background
         Rectangle {
-            id:             asBackground
+            id:             asaltBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
-            width:          root.width * .4
-            height:         root.height * .3
+            width:          root.width
+            height:         root.height * .4
             color:          "black"
             opacity:        0.5
             radius:         5
-        }
-        //right altitude background
-        Rectangle {
-            id:             altBackground
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.right
-            width:          root.width * .4
-            height:         root.height * .3
-            color:          "black"
-            opacity:        0.5
-            radius:         5
-            visible:        true
-        }
-        QGCLabel {
-            id: hudAltitudeUnits
-            anchors.top:                altBackground.bottom
-            anchors.right:               parent.right
-            anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 3)
-            text:                       vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : ""  //this should pull from current units, then when displayed it can use the conversion methood  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
-            color:                      "black"
-            font.family:        ScreenTools.normalFontFamily
-            font.pointSize:     ScreenTools.mediumFontPointSize
-        }
-        QGCLabel {
-            id: hudAirspeedUnits
-            anchors.top:                asBackground.bottom
-            anchors.left:               parent.left
-            anchors.leftMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 3)
-            text:                       vehicle ? QGroundControl.unitsConversion.appSettingsSpeedUnitsString : ""  //appSettingsSpeedUnitsString.. best I can tell there is not a method defined to convert speed from metersperSecondtoSpeedUnits
-            color:                      "black"
-            font.family:        ScreenTools.normalFontFamily
-            font.pointSize:     ScreenTools.mediumFontPointSize
         }
     }
 
@@ -191,31 +159,59 @@ Item {
 
     //Ground and Airspeed, left, vertical center
     GridLayout {
-        id:                 hudAirspeed
+        id:                 hudSpeed
         anchors.verticalCenter:     parent.verticalCenter
         anchors.left:               parent.left
         anchors.leftMargin:         Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
         rowSpacing:         0
-        columns:            1
-        rows:               2
-
+        columns:            2
         QGCLabel {
-            id:                 airSpeed
-            text:               vehicle ? vehicle.airSpeed.value.toFixed(1) : "--.-"
+            text:               "AS"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
             font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
         }
         QGCLabel {
-            text:               vehicle ?  vehicle.groundSpeed.value.toFixed(1) : "--.-"
+            text:               vehicle ? vehicle.airSpeed.value.toFixed(0) : "--"
             color:              "white"
             font.family:        ScreenTools.normalFontFamily
             font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
+        }
+        QGCLabel {
+            text:               "GS"
+            color:              "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
+        }
+        QGCLabel {
+            text:               vehicle ?  vehicle.groundSpeed.value.toFixed(0) : "--"
+            color:              "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
+        }
+        QGCLabel {
+            text:               ""
+            color:              "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
+        }
+        QGCLabel {
+            id: hudSpeedUnits
+            text:                       vehicle ? QGroundControl.unitsConversion.appSettingsSpeedUnitsString : ""  //appSettingsSpeedUnitsString.. best I can tell there is not a method defined to convert speed from metersperSecondtoSpeedUnits
+            color:                       "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignLeft
         }
 
     }
     QGCMouseArea {
-        anchors.fill: hudAirspeed
+        anchors.fill: hudSpeed
         onClicked: {
             onClicked:  mainWindow.showPopupDialogFromComponent(airSpeedDialogComponent)
         }
@@ -223,15 +219,70 @@ Item {
 
 
     //Altitude, right, vertical center
-    QGCLabel {
-        id: hudAltitude
+    GridLayout {
+        id:                 hudAltitudeLayout
         anchors.verticalCenter:     parent.verticalCenter
-        anchors.right:               parent.right
+        anchors.right:              parent.right
         anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
-        text:                       vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.rawValue).toFixed(0) : "----"
-        color:                      vehicle ? getAltColor() : "white"
-        font.family:        ScreenTools.normalFontFamily
-        font.pointSize:     ScreenTools.mediumFontPointSize
+        rowSpacing:         0
+        columns:            2
+
+        QGCLabel {
+            text:               vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeRelative.rawValue).toFixed(0) : "----"
+            color:              vehicle ? parent.getAltColor() : "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            text:               "AHL"
+            color:              vehicle ? parent.getAltColor() : "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            text:               vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(vehicle.altitudeAMSL.rawValue).toFixed(0) : "----"
+            color:              "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            text:               "MSL"
+            color:              "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            id: hudAltitudeUnits
+            text:                       vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : ""  //this should pull from current units, then when displayed it can use the conversion methood  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
+            color:                      "white"
+            font.family:        ScreenTools.normalFontFamily
+            font.pointSize:     ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCColoredImage {
+            width:                  height
+            height:                 ScreenTools.defaultFontPixelWidth * 2.2
+            sourceSize.height:      height
+            source:                 getAirSpeedArrow()
+            color:  "white"
+            Layout.alignment: Qt.AlignRight
+            function getAirSpeedArrow()
+            {
+                if (vehicle)
+                {
+                    if (vehicle.climbRate.value > 1.5)
+                        return "/InstrumentValueIcons/arrow-thick-up.svg"
+                    else if (vehicle.climbRate.value < -1.5)
+                        return "/InstrumentValueIcons/arrow-thick-down.svg"
+                }
+                return ""
+            }
+        }
+
         function getAltColor() {
             if (!vehicle.flying)
                 return "white"
@@ -243,41 +294,6 @@ Item {
                 return "white"
         }
     }
-
-    QGCColoredImage {
-        width:                  height
-        height:                 ScreenTools.defaultFontPixelWidth * 2.2
-        sourceSize.height:      height
-        source:                 getAirSpeedArrow()
-        color:                  qgcPal.text
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.right:               hudAltitude.left
-        anchors.rightMargin:        Math.round(ScreenTools.defaultFontPixelWidth/3)
-        visible:                isAscending()
-        function getAirSpeedArrow()
-        {
-            if (vehicle)
-            {
-                if (vehicle.climbRate.value > 0)
-                    return "/InstrumentValueIcons/arrow-thick-up.svg"
-                else
-                    return "/InstrumentValueIcons/arrow-thick-down.svg"
-            }
-            return ""
-        }
-        function isAscending()
-        {
-            if (vehicle)
-            {
-                if (vehicle.climbRate.value > 1.5 || vehicle.climbRate.value < -1.5)
-                    return true
-                else
-                    return false
-            }
-            return false
-        }
-    }
-
     Component {
         id: airSpeedDialogComponent
 
