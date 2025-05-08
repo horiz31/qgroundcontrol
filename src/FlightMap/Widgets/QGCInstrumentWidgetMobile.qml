@@ -43,6 +43,7 @@ Item{
         size:                   _width
         vehicle:                globals.activeVehicle
     }
+    /*
     Rectangle{
         id: windRoot
         anchors.horizontalCenter: attitude.left
@@ -86,4 +87,5 @@ Item{
 
 
     }
+    */
 }
