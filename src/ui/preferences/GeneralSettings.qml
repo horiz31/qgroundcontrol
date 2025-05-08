@@ -158,6 +158,7 @@ Rectangle {
                                 }
                             }
 
+                            /*
                             FactCheckBox {
                                 text:       qsTr("Use Vertical Instrument Panel")
                                 visible:    _alternateInstrumentPanel.visible
@@ -165,6 +166,7 @@ Rectangle {
 
                                 property Fact _alternateInstrumentPanel: QGroundControl.settingsManager.flyViewSettings.alternateInstrumentPanel
                             }
+                            */
 
                             FactCheckBox {
                                 text:       qsTr("Show additional heading indicators on Compass")
