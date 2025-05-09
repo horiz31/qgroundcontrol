@@ -3078,9 +3078,9 @@ void Vehicle::_initRC()
     }
     //1000 is low
     //2000 is high
-    //set RC 7 low at start
-    constexpr uint16_t const rc7Value=1000;
-    _rc7High = false;
+    //set RC 7 high at start
+    constexpr uint16_t const rc7Value=2000;
+    _rc7High = true;
     emit rc7Changed(_rc7High);
     mavlink_message_t msg;
     constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
