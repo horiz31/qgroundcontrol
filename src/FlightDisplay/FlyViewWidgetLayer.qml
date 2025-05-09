@@ -64,6 +64,8 @@ Item {
     property var _windDirection: _activeVehicle ? _activeVehicle.wind.direction.value.toFixed(0) : 0
     property var _windSpeed: _activeVehicle ? _activeVehicle.wind.speed.value.toFixed(0) : 0
     property var _windUnits: _activeVehicle ? _activeVehicle.wind.speed.units : ""
+    property alias _navLightMenu: navLightOptions
+
 
     //Create the pre-flight checklist after vehicle created and params loaded. Then the checklist stays in memory and its state is preserved
     Connections {
@@ -410,6 +412,10 @@ Item {
         onCenterMap:           { mapControl.zoomLevel = 16; mapControl.animatedMapRecenter(mapControl.center, _activeVehicle.coordinate);}
         onClearMeasure: {  _showDistanceToAircraft = false; QGroundControl.annotationManager.setMeasureDistanceStartPoint("", true);}
         property real leftInset: x + width
+    }
+
+    NavLightMenu {
+           id: navLightOptions
     }
 
     MapFitFunctions {

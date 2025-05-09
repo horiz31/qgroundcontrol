@@ -252,6 +252,8 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     _commonInit();
 
+    _initRC();
+
     _vehicleLinkManager->_addLink(link);
 
     // Set video stream to udp if running ArduSub and Video is disabled
@@ -3067,6 +3069,33 @@ void Vehicle::guidedModeRTL(bool smartRTL)
     _firmwarePlugin->guidedModeRTL(this, smartRTL);
 }
 
+void Vehicle::_initRC()
+{
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog) << "_initRC: primary link gone!";
+        return;
+    }
+    //1000 is low
+    //2000 is high
+    //set RC 7 low at start
+    constexpr uint16_t const rc7Value=1000;
+    _rc7High = false;
+    emit rc7Changed(_rc7High);
+    mavlink_message_t msg;
+    constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
+    mavlink_msg_rc_channels_override_pack(_mavlink->getSystemId(),
+                                          _mavlink->getComponentId(),
+                                          &msg,
+                                          _id, //target system
+                                          defaultComponentId(), //target component
+                                          0, 0, 0, 0, 0, 0,
+                                          rc7Value,//channel 7
+                                          0,
+                                          uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1);
+    sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+}
+
 void Vehicle::guidedModeLand()
 {
     if (!guidedModeSupported()) {
@@ -3097,6 +3126,13 @@ void Vehicle::setToGuidedMode()
 double Vehicle::minimumTakeoffAltitude()
 {
     return _firmwarePlugin->minimumTakeoffAltitude(this);
+}
+
+bool Vehicle::hasNavLight()  const
+{
+    //TODO implement hasNavLight
+    return true;
+    //return _firmwarePlugin->hasGripper(this);
 }
 
 void Vehicle::startMission()
@@ -5255,6 +5291,48 @@ void Vehicle::triggerSimpleCamera()
                    true,                        // show errors
                    0.0, 0.0, 0.0, 0.0,          // param 1-4 unused
                    1.0);                        // trigger camera
+}
+
+
+
+void Vehicle::sendNavLightAction(NAVLIGHT_OPTIONS navLightOption)
+{
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog) << "sendNavLightAction: primary link gone!";
+        return;
+    }
+    uint16_t newRC7 = 2000;
+    if(_rc7High && navLightOption == NAVLIGHT_OPTIONS::NavLight_Off)
+    {
+        newRC7 = 1000;
+        _rc7High=false;
+        emit rc7Changed(_rc7High);
+        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_Off";
+    }
+    else if(!_rc7High && navLightOption == NAVLIGHT_OPTIONS::NavLight_On)
+    {
+        _rc7High=true;
+        emit rc7Changed(_rc7High);
+        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_On";
+    }
+    else
+    {
+        qCDebug(VehicleLog) << "sendNavLightAction: doing nothing";
+        return;
+    }
+    mavlink_message_t msg;
+    constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
+    mavlink_msg_rc_channels_override_pack(_mavlink->getSystemId(),
+                                          _mavlink->getComponentId(),
+                                          &msg,
+                                          _id, //target system
+                                          defaultComponentId(), //target component
+                                          0, 0, 0, 0, 0, 0,
+                                          newRC7,//channel 7
+                                          0,
+                                          uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1);
+    sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
 }
 
 void Vehicle::showNvQuickPanel()

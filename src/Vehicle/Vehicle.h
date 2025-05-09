@@ -298,11 +298,14 @@ public:
     Q_PROPERTY(QVariantList         RadioRSSI                    READ RadioRSSI                                                       NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMax                 READ RadioRSSIMax                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMin                 READ RadioRSSIMin                                                    NOTIFY RSSIChanged)
-
+    Q_PROPERTY(bool hasNavLight READ hasNavLight CONSTANT)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
-    Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)    
+    Q_PROPERTY(QGCMapCircle* orbitMapCircle READ orbitMapCircle CONSTANT)
+
+    //RC States
+    Q_PROPERTY(bool rc7High READ rc7High NOTIFY rc7Changed)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -526,6 +529,7 @@ public:
     bool    roiModeSupported        () const;
     bool    takeoffVehicleSupported () const;
     QString gotoFlightMode          () const;
+    bool hasNavLight() const;
 
     // Property accessors
 
@@ -596,6 +600,15 @@ public:
     void setFlightMode                      (const QString& flightMode);
     float guidedModeRadius                   () { return _guidedModeRadius; }
 
+    enum NAVLIGHT_OPTIONS
+    {
+        NavLight_Off = 0,
+        NavLight_On = 1,
+        Invalid_option = 2,
+    };
+    Q_ENUM(NAVLIGHT_OPTIONS)
+
+    Q_INVOKABLE void sendNavLightAction(NAVLIGHT_OPTIONS navLightOption);
 
     bool airship() const;
     bool fixedWing() const;
@@ -660,6 +673,7 @@ public:
     uint            messagesSent                () const{ return _messagesSent; }
     uint            messagesLost                () const{ return _messagesLost; }
     bool            flying                      () const { return _flying; }
+    bool rc7High() const { return _rc7High; }
     bool            landing                     () const { return _landing; }
     bool            guidedMode                  () const;
     bool            vtolInFwdFlight             () const { return _vtolInFwdFlight; }
@@ -986,7 +1000,8 @@ signals:
     void flightModeChanged              (const QString& flightMode);
     void guidedModeRadiusChanged        ();
     void flyingChanged                  (bool flying);
-    void landingChanged                 (bool landing);
+    void rc7Changed(bool rc7High);
+    void landingChanged(bool landing);
     void guidedModeChanged              (bool guidedMode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
     void prearmErrorChanged             (const QString& prearmError);
@@ -1201,6 +1216,7 @@ private:
     void _handleMavlinkLoggingDataAcked (mavlink_message_t& message);
     void _ackMavlinkLogData             (uint16_t sequence);
     void _commonInit                    ();
+    void _initRC();
     void _setupAutoDisarmSignalling     ();
     void _setupGuidedModeRadius         ();
     void _getSystemSerialNumber         ();
@@ -1280,6 +1296,7 @@ private:
     int             _rcRSSI = 255;
     double          _rcRSSIstore = 255;
     bool            _flying = false;
+    bool _rc7High = false;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
     bool            _lowAltitudeWarningEnable = false;
