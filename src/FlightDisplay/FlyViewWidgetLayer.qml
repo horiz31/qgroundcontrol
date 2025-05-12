@@ -485,6 +485,10 @@ Item {
         id: preFlightChecklistPopup
         FlyViewPreFlightChecklistPopup {
             id: preflightRoot
+
+            onVisibleChanged: {
+                _isCheckListWindowVisible = visible
+            }
         }
     }
 
