@@ -8,7 +8,7 @@ GuidedToolStripAction {
     property bool _navlight_enable: _initialConnectComplete ? activeVehicle.hasNavLight : false
 
     text: "Nav Lights"
-    iconSource: "/res/NavLight.svg" //TODO get a more appropriate icon
+    iconSource: "/InstrumentValueIcons/light-bulb.svg" //TODO get a more appropriate icon
     visible: _navlight_enable
     enabled: _navlight_enable
     actionID: _guidedController.actionNavLight

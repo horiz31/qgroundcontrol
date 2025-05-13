@@ -80,6 +80,9 @@ Item {
                 allowFailurePercentOverride:    true
             }
 
+            PreFlightRangefinderCheck {
+            }
+
             PreFlightSensorsHealthCheck {
                 allowTelemetryFailureOverride:    true
             }

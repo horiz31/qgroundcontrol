@@ -305,7 +305,7 @@ public:
     Q_PROPERTY(QGCMapCircle* orbitMapCircle READ orbitMapCircle CONSTANT)
 
     //RC States
-    Q_PROPERTY(bool rc7High READ rc7High NOTIFY rc7Changed)
+    Q_PROPERTY(int rc7 READ rc7 WRITE setRC7 NOTIFY rc7Changed)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -552,6 +552,7 @@ public:
     void setMinIlluminatorAltitude(float minAltitude);
     float minIlluminatorPitch() const;
     void setMinIlluminatorPitch(float minPitch);
+    void setRC7(int val);
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
@@ -673,7 +674,7 @@ public:
     uint            messagesSent                () const{ return _messagesSent; }
     uint            messagesLost                () const{ return _messagesLost; }
     bool            flying                      () const { return _flying; }
-    bool rc7High() const { return _rc7High; }
+    int rc7() const { return _rc7; }
     bool            landing                     () const { return _landing; }
     bool            guidedMode                  () const;
     bool            vtolInFwdFlight             () const { return _vtolInFwdFlight; }
@@ -1000,7 +1001,7 @@ signals:
     void flightModeChanged              (const QString& flightMode);
     void guidedModeRadiusChanged        ();
     void flyingChanged                  (bool flying);
-    void rc7Changed(bool rc7High);
+    void rc7Changed(int rc7High);
     void landingChanged(bool landing);
     void guidedModeChanged              (bool guidedMode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
@@ -1216,7 +1217,6 @@ private:
     void _handleMavlinkLoggingDataAcked (mavlink_message_t& message);
     void _ackMavlinkLogData             (uint16_t sequence);
     void _commonInit                    ();
-    void _initRC();
     void _setupAutoDisarmSignalling     ();
     void _setupGuidedModeRadius         ();
     void _getSystemSerialNumber         ();
@@ -1240,6 +1240,7 @@ private:
     void _lowAltitudeWarningTick        ();
     void _lowBatteryWarningTick         ();
     void _lowFuelWarningTick              ();
+    void _setAutopilotLights(bool enabled);
 
     QWebSocket _persistentWebSocket;
 
@@ -1296,7 +1297,7 @@ private:
     int             _rcRSSI = 255;
     double          _rcRSSIstore = 255;
     bool            _flying = false;
-    bool _rc7High = false;
+    int _rc7;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
     bool            _lowAltitudeWarningEnable = false;

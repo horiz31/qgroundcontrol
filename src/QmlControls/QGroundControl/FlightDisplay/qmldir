@@ -32,6 +32,7 @@ FullScreen                      1.0 FullScreen.qml
 CenterMap                       1.0 CenterMap.qml
 MultiVehicleList                1.0 MultiVehicleList.qml
 PreFlightBatteryCheck           1.0 PreFlightBatteryCheck.qml
+PreFlightRangefinderCheck       1.0 PreFlightRangefinderCheck.qml
 PreFlightGPSCheck               1.0 PreFlightGPSCheck.qml
 PreFlightRCCheck                1.0 PreFlightRCCheck.qml
 PreFlightSensorsHealthCheck     1.0 PreFlightSensorsHealthCheck.qml

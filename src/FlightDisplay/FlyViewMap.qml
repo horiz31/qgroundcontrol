@@ -57,7 +57,7 @@ FlightMap {
     property real   _toolsMargin:               ScreenTools.defaultFontPixelWidth * 0.75
     property bool   _airspaceEnabled:           QGroundControl.airmapSupported ? (QGroundControl.settingsManager.airMapSettings.enableAirMap.rawValue && QGroundControl.airspaceManager.connected): false
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
-    property bool   _keepMapCenteredOnVehicle:  _flyViewSettings.keepMapCenteredOnVehicle.rawValue
+    property bool   _keepMapCenteredOnVehicle:  false//_flyViewSettings.keepMapCenteredOnVehicle.rawValue
     readonly property real  _hamburgerSize:     ScreenTools.defaultFontPixelHeight * 2
     readonly property real _copyContentSize:    ScreenTools.defaultFontPixelHeight * 1.5
 

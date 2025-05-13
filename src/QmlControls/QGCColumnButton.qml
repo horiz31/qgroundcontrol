@@ -8,6 +8,7 @@ import QGroundControl.ScreenTools   1.0
 
 QGCButton {
     id:             control     //This is a button rework from DonLakeFlyer's QGCButton that allows to contain a text and an Icon with a column look and the same capabilites
+    property var iconColor : qgcPal.text
 
     background: Rectangle {
         id:             backRect
@@ -34,7 +35,7 @@ QGCButton {
                 Layout.maximumHeight:   parent.height - textLabelContainer.height
                 Layout.alignment:       control.text !== "" ? Qt.AlignTop : Qt.AlignHCenter | Qt.AlignVCenter
                 source:                 control.iconSource
-                color:                  qgcPal.text
+                color:                  iconColor
                 fillMode:               Image.PreserveAspectFit
                 sourceSize.height:      height
                 sourceSize.width:       width
