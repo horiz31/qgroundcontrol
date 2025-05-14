@@ -116,6 +116,8 @@ Item {
     readonly property int actionMissionLand:                27
     readonly property int actionQRTLLand:                   28
     readonly property int actionNavLight:                   29
+    readonly property int actionChangeAirSpeed:             30
+
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
@@ -555,6 +557,9 @@ Item {
         case actionNavLight:
             mainWindow.showPopupDialogFromComponent(_widgetLayer._navLightMenu)
             return;
+        case actionChangeAirSpeed:
+            mainWindow.showPopupDialogFromComponent(_widgetLayer._changeAirSpeedMenu)
+            return;
         default:
             console.warn("Unknown actionCode", actionCode)
             return
@@ -663,6 +668,7 @@ Item {
         case actionROI:
             _activeVehicle.guidedModeROI(actionData)
             break
+        case actionChangeAirSpeed:
         case actionNavLight:
             break
         default:

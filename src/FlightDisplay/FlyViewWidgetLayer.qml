@@ -70,6 +70,7 @@ Item {
                                                   0) : 0
     property var _windUnits: _activeVehicle ? _activeVehicle.wind.speed.units : ""
     property alias _navLightMenu: navLightOptions
+    property alias _changeAirSpeedMenu: changeAirSpeedOptions
 
 
 
@@ -166,60 +167,6 @@ Item {
         property real rightInset: visible ? parent.width - x : 0
     }
 
-    //new wind panel (non-mobile only)
-    Rectangle {
-        visible: !QGroundControl.videoManager.fullScreen
-                 && !ScreenTools.isMobile
-        id: newWind
-        radius: _windPanelWidth
-        width: _windPanelWidth
-        anchors.horizontalCenter: instrumentPanel.left
-        anchors.verticalCenter: instrumentPanel.verticalCenter
-        height: _windPanelWidth
-        color: QGroundControl.globalPalette.window
-
-        //Prevent all clicks from going through to lower layers
-        DeadMouseArea {
-            anchors.fill: parent
-        }
-    }
-
-    Column {
-        visible: !QGroundControl.videoManager.fullScreen
-                 && !ScreenTools.isMobile
-        z: QGroundControl.zOrderTopMost
-        anchors.left: newWind.left
-        anchors.leftMargin: ScreenTools.defaultFontPixelWidth * 2.5
-        anchors.verticalCenter: newWind.verticalCenter
-
-        QGCLabel {
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: true
-            text: qsTr("Wind")
-            font.family: ScreenTools.demiboldFontFamily
-        }
-        Image {
-            id: windIcon
-            source: "/res/wind-arrow.svg"
-            mipmap: true
-            height: ScreenTools.defaultFontPixelHeight * 1.5
-            width: ScreenTools.defaultFontPixelHeight * 1.5
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            transform: Rotation {
-                origin.x: windIcon.width / 2
-                origin.y: windIcon.height / 2
-                angle: _windDirection
-            }
-        }
-
-        QGCLabel {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: _windSpeed + " " + _windUnits
-            font.family: ScreenTools.demiboldFontFamily
-            visible: _activeVehicle ? (isNaN(_windSpeed) ? false : true) : false
-        }
-    }
 
     Loader {
         id: photoVideoControl
@@ -233,6 +180,7 @@ Item {
 
         property var missionController
     }
+
 
 
     /*
@@ -452,6 +400,10 @@ Item {
 
     NavLightMenu {
            id: navLightOptions
+    }
+
+    ChangeAirSpeedMenu {
+           id: changeAirSpeedOptions
     }
 
     MapFitFunctions {

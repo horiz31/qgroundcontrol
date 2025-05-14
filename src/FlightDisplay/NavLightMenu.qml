@@ -26,7 +26,7 @@ Component {
 
                     id: onButton
                     text:                   "On"
-                    iconSource:             "/InstrumentValueIcons/light-bulb.svg"
+                    iconSource:             "/InstrumentValueIcons/lightbulb_on.svg"
                     pointSize:              ScreenTools.defaultFontPointSize * 3.5
                     backRadius:             width / 40
                     heightFactor:           0.75
@@ -56,7 +56,7 @@ Component {
                 QGCColumnButton {
                     id: offButton
                     text:                   "Off"
-                    iconSource:             "/InstrumentValueIcons/light-bulb.svg"
+                    iconSource:             "/InstrumentValueIcons/lightbulb_off.svg"
                     pointSize:              ScreenTools.defaultFontPointSize * 3.5
                     backRadius:             width / 40
                     heightFactor:           0.75

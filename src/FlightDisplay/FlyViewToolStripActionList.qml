@@ -54,7 +54,8 @@ ToolStripActionList {
         GuidedActionRTL { },
         GuidedActionPause { },
         GuidedActionActionList { },
-        GuidedActionNavLight { }
+        GuidedActionNavLight { },
+        GuidedActionChangeAirSpeed { }
 
     ]
 }

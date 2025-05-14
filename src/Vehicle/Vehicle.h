@@ -299,13 +299,14 @@ public:
     Q_PROPERTY(int                  RadioRSSIMax                 READ RadioRSSIMax                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMin                 READ RadioRSSIMin                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(bool hasNavLight READ hasNavLight CONSTANT)
+    Q_PROPERTY(bool navLightOn READ navLightOn NOTIFY rc12Changed)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
     Q_PROPERTY(QGCMapCircle* orbitMapCircle READ orbitMapCircle CONSTANT)
 
     //RC States
-    Q_PROPERTY(int rc7 READ rc7 WRITE setRC7 NOTIFY rc7Changed)
+    Q_PROPERTY(int rc12 READ rc12 WRITE setRC12 NOTIFY rc12Changed)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -552,7 +553,7 @@ public:
     void setMinIlluminatorAltitude(float minAltitude);
     float minIlluminatorPitch() const;
     void setMinIlluminatorPitch(float minPitch);
-    void setRC7(int val);
+    void setRC12(int val);
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
@@ -674,7 +675,8 @@ public:
     uint            messagesSent                () const{ return _messagesSent; }
     uint            messagesLost                () const{ return _messagesLost; }
     bool            flying                      () const { return _flying; }
-    int rc7() const { return _rc7; }
+    int rc12() const { return _rc12; }
+    bool navLightOn() const;
     bool            landing                     () const { return _landing; }
     bool            guidedMode                  () const;
     bool            vtolInFwdFlight             () const { return _vtolInFwdFlight; }
@@ -1001,7 +1003,7 @@ signals:
     void flightModeChanged              (const QString& flightMode);
     void guidedModeRadiusChanged        ();
     void flyingChanged                  (bool flying);
-    void rc7Changed(int rc7High);
+    void rc12Changed(int rc12);
     void landingChanged(bool landing);
     void guidedModeChanged              (bool guidedMode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
@@ -1297,7 +1299,7 @@ private:
     int             _rcRSSI = 255;
     double          _rcRSSIstore = 255;
     bool            _flying = false;
-    int _rc7;
+    int _rc12;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
     bool            _lowAltitudeWarningEnable = false;

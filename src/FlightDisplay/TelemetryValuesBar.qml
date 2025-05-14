@@ -24,7 +24,6 @@ Rectangle {
     color: qgcPal.window
     opacity: 0.95
     radius: ScreenTools.defaultFontPixelWidth / 2
-    property bool _isMobile: ScreenTools.isMobile
 
     property var mouseCursor
     property bool bottomMode: true
@@ -296,82 +295,51 @@ Rectangle {
 
             id: superVoloTelemGrid
             RowLayout {
-                visible: _isMobile
                 spacing: ScreenTools.defaultFontPixelWidth * 2
                 Layout.alignment: Qt.AlignHCenter
                 RowLayout {
-                    //relative altitude
+                    //air speed
                     QGCLabel {
-                        text: "AHL:"
+                        text: "AS:"
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
-                        color: _activeVehicle ? parent.getAltColor(
-                                                    ) : qgcPal.text
+                        color: qgcPal.text
                     }
                     QGCLabel {
-                        text: _activeVehicle ? (QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(_activeVehicle.altitudeRelative.rawValue).toFixed(0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----"
-                        color: _activeVehicle ? parent.getAltColor(
-                                                    ) : qgcPal.text
+                        text: _activeVehicle ? _activeVehicle.airSpeed.value.toFixed(0) : "--"
+                        color: qgcPal.text
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
                     }
-                    function getAltColor() {
-                        if (!_activeVehicle.flying)
-                            return qgcPal.text
-                        else if (_activeVehicle.altitudeRelative.value < 15.24)
-                            return "red"
-                        else if (_activeVehicle.altitudeRelative.value < 30.48)
-                            return "orange"
-                        else
-                            return qgcPal.text
+                    QGCLabel {
+                        text: _activeVehicle ? QGroundControl.unitsConversion.appSettingsSpeedUnitsString : ""
+                        color: qgcPal.text
+                        font.family: ScreenTools.demiboldFontFamily
+                        font.pointSize: ScreenTools.smallFontPointSize
                     }
                 }
                 RowLayout {
-                    //absolute altitude
+                    //ground speed
                     QGCLabel {
-                        text: "MSL:"
+                        text: "GS:"
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
                         color: qgcPal.text
                     }
                     QGCLabel {
-                        text: _activeVehicle ? (QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
-                                                    _activeVehicle.altitudeAMSL.rawValue).toFixed(
-                                                    0) + " " + QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString) : "----"
+                        text: _activeVehicle ? _activeVehicle.groundSpeed.value.toFixed(0) : "--"
                         color: qgcPal.text
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
                     }
-                    function getAltColor() {
-                        if (!_activeVehicle.flying)
-                            return qgcPal.text
-                        else if (_activeVehicle.altitudeRelative.value < 15.24)
-                            return "red"
-                        else if (_activeVehicle.altitudeRelative.value < 30.48)
-                            return "orange"
-                        else
-                            return qgcPal.text
-                    }
-                }
-                RowLayout {
-                    //climb rate indicator
-                    QGCColoredImage {
-                        width: height
-                        height: ScreenTools.defaultFontPixelWidth * 2.2
-                        sourceSize.height: height
-                        source: getAirSpeedArrow()
+                    QGCLabel {
+                        text: _activeVehicle ? QGroundControl.unitsConversion.appSettingsSpeedUnitsString : ""
                         color: qgcPal.text
-                        function getAirSpeedArrow() {
-                            if (_activeVehicle) {
-                                if (_activeVehicle.climbRate.value > 1.5)
-                                    return "/InstrumentValueIcons/arrow-thick-up.svg"
-                                else if (_activeVehicle.climbRate.value < -1.5)
-                                    return "/InstrumentValueIcons/arrow-thick-down.svg"
-                            }
-                            return ""
-                        }
+                        font.family: ScreenTools.demiboldFontFamily
+                        font.pointSize: ScreenTools.smallFontPointSize
                     }
                 }
+
                 RowLayout {
                     //wind
                     property var _windDirection: _activeVehicle ? _activeVehicle.wind.direction.value.toFixed(
@@ -402,9 +370,16 @@ Rectangle {
                     }
 
                     QGCLabel {
-                        text: _windSpeed + " " + _windUnits
+                        text: _windSpeed
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
+                        visible: _activeVehicle ? (isNaN(
+                                                       _windSpeed) ? false : true) : false
+                    }
+                    QGCLabel {
+                        text: _windUnits
+                        font.family: ScreenTools.demiboldFontFamily
+                        font.pointSize: ScreenTools.smallFontPointSize
                         visible: _activeVehicle ? (isNaN(
                                                        _windSpeed) ? false : true) : false
                     }
