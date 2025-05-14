@@ -131,8 +131,8 @@ const char* Vehicle::_hygrometerFactGroupName =         "hygrometer";
 
 namespace
 {
-constexpr static inline auto const NAV_LIGHTS_RC7_ON = 1500;
-constexpr static inline auto const NAV_LIGHTS_RC7_OFF = 1000;
+constexpr static inline auto const NAV_LIGHTS_RC12_ON = 1500;
+constexpr static inline auto const NAV_LIGHTS_RC12_OFF = 1000;
 }
 
 // Standard connected vehicle
@@ -150,7 +150,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _vehicleType                  (vehicleType)
     , _toolbox                      (qgcApp()->toolbox())
     , _settingsManager              (_toolbox->settingsManager())
-    , _rc7                          (NAV_LIGHTS_RC7_OFF)
+    , _rc12                         (NAV_LIGHTS_RC12_OFF)
     , _defaultCruiseSpeed           (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed            (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _firmwarePluginManager        (firmwarePluginManager)
@@ -413,7 +413,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _vehicleType                      (vehicleType)
     , _toolbox                          (qgcApp()->toolbox())
     , _settingsManager                  (_toolbox->settingsManager())
-    , _rc7                              (NAV_LIGHTS_RC7_OFF)
+    , _rc12                             (NAV_LIGHTS_RC12_OFF)
     , _defaultCruiseSpeed               (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed                (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _mavlinkProtocolRequestComplete   (true)
@@ -481,6 +481,12 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
 
     _offlineFirmwareTypeSettingChanged(_firmwareType);  // This adds correct terrain capability bit
     _firmwarePlugin->initializeVehicle(this);
+}
+
+
+bool            Vehicle::navLightOn                  () const
+{
+    return hasNavLight() && _rc12 == NAV_LIGHTS_RC12_ON;
 }
 
 void Vehicle::trackFirmwareVehicleTypeChanges(void)
@@ -1103,11 +1109,11 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
         break;
 
         // Following are ArduPilot dialect messages
-#if !defined(NO_ARDUPILOT_DIALECT)
-    case MAVLINK_MSG_ID_CAMERA_FEEDBACK:
-        _handleCameraFeedback(message);
-        break;
-#endif
+//#if !defined(NO_ARDUPILOT_DIALECT)
+//    case MAVLINK_MSG_ID_CAMERA_FEEDBACK:
+//        _handleCameraFeedback(message);
+//        break;
+//#endif
     }
 
     // This must be emitted after the vehicle processes the message. This way the vehicle state is up to date when anyone else
@@ -1120,13 +1126,13 @@ void Vehicle::_mavlinkMessageReceived(LinkInterface* link, mavlink_message_t mes
 #if !defined(NO_ARDUPILOT_DIALECT)
 void Vehicle::_handleCameraFeedback(const mavlink_message_t& message)
 {
-    mavlink_camera_feedback_t feedback;
+    //mavlink_camera_feedback_t feedback;
 
-    mavlink_msg_camera_feedback_decode(&message, &feedback);
+    //mavlink_msg_camera_feedback_decode(&message, &feedback);
 
-    QGeoCoordinate imageCoordinate((double)feedback.lat / qPow(10.0, 7.0), (double)feedback.lng / qPow(10.0, 7.0), feedback.alt_msl);
-    qCDebug(VehicleLog) << "_handleCameraFeedback coord:index" << imageCoordinate << feedback.img_idx;
-    _cameraTriggerPoints.append(new QGCQGeoCoordinate(imageCoordinate, this));
+    //QGeoCoordinate imageCoordinate((double)feedback.lat / qPow(10.0, 7.0), (double)feedback.lng / qPow(10.0, 7.0), feedback.alt_msl);
+    //qCDebug(VehicleLog) << "_handleCameraFeedback coord:index" << imageCoordinate << feedback.img_idx;
+    //_cameraTriggerPoints.append(new QGCQGeoCoordinate(imageCoordinate, this));
 }
 #endif
 
@@ -1173,7 +1179,7 @@ void Vehicle::_handleCameraImageCaptured(const mavlink_message_t& message)
     mavlink_msg_camera_image_captured_decode(&message, &feedback);
 
     QGeoCoordinate imageCoordinate((double)feedback.lat / qPow(10.0, 7.0), (double)feedback.lon / qPow(10.0, 7.0), feedback.alt);
-    qCDebug(VehicleLog) << "_handleCameraFeedback coord:index" << imageCoordinate << feedback.image_index << feedback.capture_result;
+    qCDebug(VehicleLog) << "_handleCameraImageCaptured coord:index" << imageCoordinate << feedback.image_index << feedback.capture_result;
     if (feedback.capture_result == 1) {
         _cameraTriggerPoints.append(new QGCQGeoCoordinate(imageCoordinate, this));
     }
@@ -2791,7 +2797,7 @@ void Vehicle::_parametersReady(bool parametersReady)
         _setupGuidedModeRadius();
         _getSystemSerialNumber();
         _initialConnectStateMachine->advance();
-        _setAutopilotLights(_rc7==NAV_LIGHTS_RC7_ON);
+        _setAutopilotLights(_rc12==NAV_LIGHTS_RC12_ON);
         _toolbox->joystickManager()->cameraManagement()->setSysModePilotCommand();
     }
 }
@@ -3078,19 +3084,18 @@ void Vehicle::guidedModeRTL(bool smartRTL)
     _firmwarePlugin->guidedModeRTL(this, smartRTL);
 }
 
-void Vehicle::setRC7(int const val){
+void Vehicle::setRC12(int const val){
     constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
     uint16_t newVal = (uint16_t)std::clamp<int>(val,0,(int)uintMaxMin1);
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
     if (!sharedLink) {
-        qCDebug(VehicleLog) << "setRC7: primary link gone!";
+        qCDebug(VehicleLog) << "setRC12: primary link gone!";
         return;
     }
-    //if((int)newVal != _rc7)
     {
-        qCDebug(VehicleLog) << "setRC7: new RC7 value is "<<newVal;
-        _rc7 = (int)newVal;
-        emit rc7Changed(_rc7);
+        qCDebug(VehicleLog) << "setRC12: new RC7 value is "<<newVal;
+        _rc12 = (int)newVal;
+        emit rc12Changed(_rc12);
         mavlink_message_t msg;
         mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
                                            _mavlink->getComponentId(),
@@ -5324,14 +5329,14 @@ void Vehicle::sendNavLightAction(NAVLIGHT_OPTIONS navLightOption)
     case NavLight_Off:
     {
         qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_Off";
-        setRC7(NAV_LIGHTS_RC7_OFF);
+        setRC12(NAV_LIGHTS_RC12_OFF);
         _setAutopilotLights(false);
         break;
     }
     case NavLight_On:
     {
         qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_On";
-        setRC7(NAV_LIGHTS_RC7_ON);
+        setRC12(NAV_LIGHTS_RC12_ON);
         _setAutopilotLights(true);
         break;
     }

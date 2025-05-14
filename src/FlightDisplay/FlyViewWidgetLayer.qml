@@ -65,6 +65,7 @@ Item {
     property var _windSpeed: _activeVehicle ? _activeVehicle.wind.speed.value.toFixed(0) : 0
     property var _windUnits: _activeVehicle ? _activeVehicle.wind.speed.units : ""
     property alias _navLightMenu: navLightOptions
+    property alias _changeAirSpeedMenu: changeAirSpeedOptions
 
 
     //Create the pre-flight checklist after vehicle created and params loaded. Then the checklist stays in memory and its state is preserved
@@ -154,6 +155,7 @@ Item {
         property real rightInset: visible ? parent.width - x : 0
     }
 
+    /*
     //new wind panel
     Rectangle {
         visible:    !QGroundControl.videoManager.fullScreen
@@ -171,6 +173,7 @@ Item {
         }
 
     }
+
 
 
     Column {
@@ -211,6 +214,7 @@ Item {
         }
 
     }
+       */
 
 
 
@@ -416,6 +420,10 @@ Item {
 
     NavLightMenu {
            id: navLightOptions
+    }
+
+    ChangeAirSpeedMenu {
+           id: changeAirSpeedOptions
     }
 
     MapFitFunctions {

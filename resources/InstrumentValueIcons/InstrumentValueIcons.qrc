@@ -298,5 +298,8 @@
         <file alias="cheveron-down.svg">cheveron-down.svg</file>
         <file alias="view-tile.svg">view-tile.svg</file>
         <file alias="fullscreen-outline.svg">fullscreen-outline.svg</file>
+        <file alias="lightbulb_off.svg">lightbulb_off.svg</file>
+        <file alias="lightbulb_on.svg">lightbulb_on.svg</file>
+        <file alias="speedometer.svg">speedometer.svg</file>
     </qresource>
 </RCC>

@@ -50,6 +50,8 @@ add_custom_target(FligthDisplayQml
 		ObstacleDistanceOverlayMap.qml
 		ObstacleDistanceOverlayVideo.qml
                 GuidedActionNavLight.qml
+                GuidedActionChangeAirSpeed.qml
                 NavLightMenu.qml
+                ChangeAirSpeedMenu.qml
 )
 

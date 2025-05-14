@@ -21,16 +21,17 @@ import QGroundControl.Palette       1.0
         id: visualInstrument
         height: _outerRadius * 4
         radius: _outerRadius
-        color:  QGroundControl.globalPalette.window
+        color:  "transparent"
+        //opacity: 0
 
         property real _outerMargin: (width * 0.05) / 2
         property real _outerRadius: width / 2
         property real _innerRadius: _outerRadius - _outerMargin
 
         //Prevent all clicks from going through to lower layers
-        DeadMouseArea {
-            anchors.fill: parent
-        }
+        //DeadMouseArea {
+        //    anchors.fill: parent
+        //}
 
         QGCAttitudeWidget {
             id:                         attitude
@@ -40,6 +41,9 @@ import QGroundControl.Palette       1.0
             size:                       _innerRadius * 2
             vehicle:                    globals.activeVehicle
             z:                          QGroundControl.zOrderWidgets + 2
+            DeadMouseArea {
+                anchors.fill: attitude
+            }
         }
 
         QGCCompassWidget {
@@ -50,6 +54,9 @@ import QGroundControl.Palette       1.0
             size:                       _innerRadius * 2
             vehicle:                    globals.activeVehicle
             z:                          QGroundControl.zOrderWidgets + 2
+            DeadMouseArea {
+                anchors.fill: compass
+            }
         }
 
     }

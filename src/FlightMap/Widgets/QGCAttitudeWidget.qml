@@ -110,8 +110,9 @@ Item {
         Rectangle {
             id: asaltBackground
             anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            width: root.width * (_isMobile ? .6 : 1)
+            anchors.right: parent.right
+            width: root.width * 0.6
+            //width: root.width * (_isMobile ? .6 : 1)
             height: root.height * (_isMobile ? .5 : .4)
             color: "black"
             opacity: 0.5
@@ -163,6 +164,7 @@ Item {
     }
 
     //Ground and Airspeed, left, vertical center
+    /*
     GridLayout {
         id: hudSpeed
         anchors.verticalCenter: parent.verticalCenter
@@ -222,6 +224,7 @@ Item {
                            airSpeedDialogComponent)
         }
     }
+    */
 
     //Altitude, right, vertical center
     GridLayout {
@@ -277,10 +280,10 @@ Item {
             width: height
             height: ScreenTools.defaultFontPixelWidth * 2.2
             sourceSize.height: height
-            source: getAirSpeedArrow()
+            source: getClimbrateArrow()
             color: "white"
             Layout.alignment: Qt.AlignRight
-            function getAirSpeedArrow() {
+            function getClimbrateArrow() {
                 if (vehicle) {
                     if (vehicle.climbRate.value > 1.5)
                         return "/InstrumentValueIcons/arrow-thick-up.svg"
@@ -302,100 +305,5 @@ Item {
                 return "white"
         }
     }
-    Component {
-        id: airSpeedDialogComponent
 
-        QGCPopupDialog {
-            title: qsTr("Change Target Airspeed")
-            buttons: StandardButton.Close
-            ColumnLayout {
-                id: airSpeedCol
-                Layout.fillWidth: true
-                GridLayout {
-                    columnSpacing: ScreenTools.defaultFontPixelWidth * 2
-                    columns: 3
-                    QGCLabel {
-                        text: qsTr("Target Airspeed:")
-                    }
-                    QGCTextField {
-                        id: targetAirspeed
-                        inputMethodHints: Qt.ImhDigitsOnly
-                        text: vehicle ? getCurrentAirSpeed() : ""
-                        enabled: true
-
-                        function getCurrentAirSpeed() {
-                            console.log("target airspeed is "
-                                        + vehicle.targetAirSpeedSetPoint.value)
-                            return QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
-                                        vehicle.targetAirSpeedSetPoint.value).toFixed(
-                                        0)
-                        }
-                    }
-                    QGCLabel {
-                        text: QGroundControl.unitsConversion.appSettingsSpeedUnitsString
-                        enabled: true
-                    }
-                }
-
-                Item {
-                    width: 1
-                    height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
-                }
-                QGCSlider {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    maximumValue: QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
-                                      33.5).toFixed(0)
-                    minimumValue: QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
-                                      22.35).toFixed(0)
-                    value: vehicle ? QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
-                                         vehicle.targetAirSpeedSetPoint.value).toFixed(
-                                         0) : 0
-                    updateValueWhileDragging: true
-                    visible: true
-                    onValueChanged: targetAirspeed.text = value.toFixed(0)
-                }
-                Item {
-                    width: 1
-                    height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
-                }
-                GridLayout {
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    columnSpacing: ScreenTools.defaultFontPixelWidth * 2
-                    columns: 2
-
-                    QGCButton {
-                        text: qsTr("Cancel")
-                        onClicked: {
-                            hideDialog()
-                        }
-                    }
-                    QGCButton {
-                        function testEnabled() {
-                            if (vehicle) {
-                                var temp = QGroundControl.unitsConversion.appSettingsSpeedUnitsToMetersPerSecond(
-                                            targetAirspeed.text)
-                                //convert to m/s first
-                                if (temp >= 20 && temp <= 33.6)
-                                    return true
-                                return false
-                            }
-                            return false
-                        }
-                        enabled: testEnabled()
-                        text: qsTr("Apply")
-                        onClicked: {
-                            console.log("sending speed " + QGroundControl.unitsConversion.appSettingsSpeedUnitsToMetersPerSecond(
-                                            targetAirspeed.text))
-                            vehicle.setAirSpeed(
-                                        QGroundControl.unitsConversion.appSettingsSpeedUnitsToMetersPerSecond(
-                                            targetAirspeed.text)) //this should be sent in m/s
-                            hideDialog()
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
