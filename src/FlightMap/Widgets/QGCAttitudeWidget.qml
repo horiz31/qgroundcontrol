@@ -111,7 +111,7 @@ Item {
             id: asaltBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            width: root.width * (_isMobile ? .8 : .6)
+            width: root.width * (_isMobile ? .9 : .6)
             height: root.height * (_isMobile ? .5 : .4)
             color: "black"
             opacity: 0.5
@@ -218,7 +218,6 @@ Item {
             font.pointSize: ScreenTools.smallFontPointSize
             Layout.alignment: Qt.AlignRight
         }
-
 
         QGCColoredImage {
             width: height
