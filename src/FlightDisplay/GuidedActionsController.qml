@@ -65,7 +65,7 @@ Item {
     readonly property string forceArmMessage:                   qsTr("WARNING: This will force arming of the vehicle bypassing any safety checks.")
     readonly property string disarmMessage:                     qsTr("Disarm the vehicle")
     readonly property string emergencyStopMessage:              qsTr("WARNING: THIS WILL STOP ALL MOTORS. IF VEHICLE IS CURRENTLY IN THE AIR IT WILL CRASH.")
-    readonly property string takeoffMessage:                    qsTr("Takeoff ffrom ground and hold position.")
+    readonly property string takeoffMessage:                    qsTr("Takeoff from ground and hold position.")
     readonly property string startMissionMessage:               qsTr("Takeoff from ground and start the current mission.")
     readonly property string continueMissionMessage:            qsTr("Continue the mission from the current waypoint.")
     readonly property string resumeMissionUploadFailMessage:    qsTr("Upload of resume mission failed. Confirm to retry upload")
@@ -115,11 +115,13 @@ Item {
     readonly property int actionLandQLand:                  26
     readonly property int actionMissionLand:                27
     readonly property int actionQRTLLand:                   28
+    readonly property int actionNavLight:                   29
 
     property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
     property bool   _useChecklist:              QGroundControl.settingsManager.appSettings.useChecklist.rawValue && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
     property bool   _enforceChecklist:          _useChecklist && QGroundControl.settingsManager.appSettings.enforceChecklist.rawValue
     property bool   _canArm:                    _activeVehicle ? (_useChecklist ? (_enforceChecklist ? _activeVehicle.checkListState === Vehicle.CheckListPassed : true) : true) : false
+    property bool   _initialConnectComplete:    _activeVehicle ? _activeVehicle.initialConnectComplete : false
 
     property bool showEmergenyStop:     _guidedActionsEnabled && !_hideEmergenyStop && _vehicleArmed && _vehicleFlying
     property bool showArm:              _guidedActionsEnabled && !_vehicleArmed && _canArm
@@ -550,6 +552,9 @@ Item {
         case actionActionLandingList:
             actionLandingList.show()
             return
+        case actionNavLight:
+            mainWindow.showPopupDialogFromComponent(_widgetLayer._navLightMenu)
+            return;
         default:
             console.warn("Unknown actionCode", actionCode)
             return
@@ -657,6 +662,8 @@ Item {
             break
         case actionROI:
             _activeVehicle.guidedModeROI(actionData)
+            break
+        case actionNavLight:
             break
         default:
             console.warn(qsTr("Internal error: unknown actionCode"), actionCode)

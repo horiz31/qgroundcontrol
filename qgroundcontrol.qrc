@@ -312,6 +312,10 @@
         <file alias="QGroundControl/FlightDisplay/FullScreen.qml">src/FlightDisplay/FullScreen.qml</file>
         <file>src/FlightMap/Widgets/PhotoVideoControlMobile.qml</file>
         <file>src/FlightMap/Widgets/QGCInstrumentWidgetMobile.qml</file>
+        <file alias="QGroundControl/FlightDisplay/GuidedActionNavLight.qml">src/FlightDisplay/GuidedActionNavLight.qml</file>
+        <file alias="QGroundControl/FlightDisplay/NavLightMenu.qml">src/FlightDisplay/NavLightMenu.qml</file>
+        <file alias="QGroundControl/Controls/QGCColumnButton.qml">src/QmlControls/QGCColumnButton.qml</file>
+        <file alias="QGroundControl/FlightDisplay/PreFlightRangefinderCheck.qml">src/FlightDisplay/PreFlightRangefinderCheck.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>

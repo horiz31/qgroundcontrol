@@ -53,7 +53,8 @@ ToolStripActionList {
         GuidedActionActionLandingList { },  //GuidedActionLand
         GuidedActionRTL { },
         GuidedActionPause { },
-        GuidedActionActionList { }
+        GuidedActionActionList { },
+        GuidedActionNavLight { }
 
     ]
 }

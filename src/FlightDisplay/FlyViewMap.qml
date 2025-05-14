@@ -47,20 +47,18 @@ FlightMap {
     property bool pipMode: false // true: map is shown in a small pip mode
     property var toolInsets
 
-    // Insets for the center viewport area
-    property var _activeVehicle: QGroundControl.multiVehicleManager.activeVehicle
-    property var _planMasterController: planMasterController
-    property var _geoFenceController: planMasterController.geoFenceController
-    property var _rallyPointController: planMasterController.rallyPointController
-    property var _activeVehicleCoordinate: _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
-    property real _toolButtonTopMargin: parent.height - mainWindow.height
-                                        + (ScreenTools.defaultFontPixelHeight / 2)
-    property real _toolsMargin: ScreenTools.defaultFontPixelWidth * 0.75
-    property bool _airspaceEnabled: QGroundControl.airmapSupported ? (QGroundControl.settingsManager.airMapSettings.enableAirMap.rawValue && QGroundControl.airspaceManager.connected) : false
-    property var _flyViewSettings: QGroundControl.settingsManager.flyViewSettings
-    property bool _keepMapCenteredOnVehicle: _flyViewSettings.keepMapCenteredOnVehicle.rawValue
-    readonly property real _hamburgerSize: ScreenTools.defaultFontPixelHeight * 2
-    readonly property real _copyContentSize: ScreenTools.defaultFontPixelHeight * 1.5
+    property var    _activeVehicle:             QGroundControl.multiVehicleManager.activeVehicle
+    property var    _planMasterController:      planMasterController
+    property var    _geoFenceController:        planMasterController.geoFenceController
+    property var    _rallyPointController:      planMasterController.rallyPointController
+    property var    _activeVehicleCoordinate:   _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
+    property real   _toolButtonTopMargin:       parent.height - mainWindow.height + (ScreenTools.defaultFontPixelHeight / 2)
+    property real   _toolsMargin:               ScreenTools.defaultFontPixelWidth * 0.75
+    property bool   _airspaceEnabled:           QGroundControl.airmapSupported ? (QGroundControl.settingsManager.airMapSettings.enableAirMap.rawValue && QGroundControl.airspaceManager.connected): false
+    property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
+    property bool   _keepMapCenteredOnVehicle:  false//_flyViewSettings.keepMapCenteredOnVehicle.rawValue
+    readonly property real  _hamburgerSize:     ScreenTools.defaultFontPixelHeight * 2
+    readonly property real _copyContentSize:    ScreenTools.defaultFontPixelHeight * 1.5
 
     property bool _disableVehicleTracking: false
     property bool _keepVehicleCentered: pipMode ? true : false
@@ -144,11 +142,36 @@ FlightMap {
             QGroundControl.flightMapZoom = zoomLevel
             updateAirspace(false)
         }
+        //updateGridlines()
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = center
         updateAirspace(false)
+        //updateGridlines()
     }
+
+
+
+
+/*
+
+    function updateGridlines() {
+        var tl = toCoordinate(Qt.point(0,0))
+        var br = toCoordinate(Qt.point(width, height))
+        mapGridlineModel.updateGridlines(tl, br, zoomLevel)
+    }
+
+    MapItemView {
+        model: mapGridlineModel
+        delegate: MapPolyline{
+            line.width: 1
+            line.color: "black"
+            path: model.path
+            z:          QGroundControl.zOrderTrajectoryLines
+        }
+    }
+    */
+
 
     on_AirspaceEnabledChanged: {
         updateAirspace(true)

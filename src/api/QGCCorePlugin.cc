@@ -7,14 +7,15 @@
  *
  ****************************************************************************/
 
-#include "QGCApplication.h"
 #include "QGCCorePlugin.h"
+#include "AppMessages.h"
+#include "FactMetaData.h"
+#include "MapGridlineModel.h"
+#include "QGCApplication.h"
 #include "QGCOptions.h"
 #include "QmlComponentInfo.h"
-#include "FactMetaData.h"
-#include "SettingsManager.h"
-#include "AppMessages.h"
 #include "QmlObjectListModel.h"
+#include "SettingsManager.h"
 #include "VideoManager.h"
 #if defined(QGC_GST_STREAMING)
 #include "GStreamer.h"
@@ -373,6 +374,8 @@ QQmlApplicationEngine* QGCCorePlugin::createQmlApplicationEngine(QObject* parent
     qmlEngine->addImportPath("qrc:/qml");
     qmlEngine->rootContext()->setContextProperty("joystickManager", qgcApp()->toolbox()->joystickManager());
     qmlEngine->rootContext()->setContextProperty("debugMessageModel", AppMessages::getModel());
+    MapGridlineModel* p_mapGridlineModel = new MapGridlineModel(qgcApp());
+    qmlEngine->rootContext()->setContextProperty("mapGridlineModel", p_mapGridlineModel);
     return qmlEngine;
 }
 

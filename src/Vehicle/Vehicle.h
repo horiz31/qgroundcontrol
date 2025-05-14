@@ -298,11 +298,14 @@ public:
     Q_PROPERTY(QVariantList         RadioRSSI                    READ RadioRSSI                                                       NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMax                 READ RadioRSSIMax                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMin                 READ RadioRSSIMin                                                    NOTIFY RSSIChanged)
-
+    Q_PROPERTY(bool hasNavLight READ hasNavLight CONSTANT)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
-    Q_PROPERTY(QGCMapCircle*    orbitMapCircle  READ orbitMapCircle     CONSTANT)    
+    Q_PROPERTY(QGCMapCircle* orbitMapCircle READ orbitMapCircle CONSTANT)
+
+    //RC States
+    Q_PROPERTY(int rc7 READ rc7 WRITE setRC7 NOTIFY rc7Changed)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -526,6 +529,7 @@ public:
     bool    roiModeSupported        () const;
     bool    takeoffVehicleSupported () const;
     QString gotoFlightMode          () const;
+    bool hasNavLight() const;
 
     // Property accessors
 
@@ -548,6 +552,7 @@ public:
     void setMinIlluminatorAltitude(float minAltitude);
     float minIlluminatorPitch() const;
     void setMinIlluminatorPitch(float minPitch);
+    void setRC7(int val);
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
@@ -596,6 +601,15 @@ public:
     void setFlightMode                      (const QString& flightMode);
     float guidedModeRadius                   () { return _guidedModeRadius; }
 
+    enum NAVLIGHT_OPTIONS
+    {
+        NavLight_Off = 0,
+        NavLight_On = 1,
+        Invalid_option = 2,
+    };
+    Q_ENUM(NAVLIGHT_OPTIONS)
+
+    Q_INVOKABLE void sendNavLightAction(NAVLIGHT_OPTIONS navLightOption);
 
     bool airship() const;
     bool fixedWing() const;
@@ -660,6 +674,7 @@ public:
     uint            messagesSent                () const{ return _messagesSent; }
     uint            messagesLost                () const{ return _messagesLost; }
     bool            flying                      () const { return _flying; }
+    int rc7() const { return _rc7; }
     bool            landing                     () const { return _landing; }
     bool            guidedMode                  () const;
     bool            vtolInFwdFlight             () const { return _vtolInFwdFlight; }
@@ -986,7 +1001,8 @@ signals:
     void flightModeChanged              (const QString& flightMode);
     void guidedModeRadiusChanged        ();
     void flyingChanged                  (bool flying);
-    void landingChanged                 (bool landing);
+    void rc7Changed(int rc7High);
+    void landingChanged(bool landing);
     void guidedModeChanged              (bool guidedMode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
     void prearmErrorChanged             (const QString& prearmError);
@@ -1224,6 +1240,7 @@ private:
     void _lowAltitudeWarningTick        ();
     void _lowBatteryWarningTick         ();
     void _lowFuelWarningTick              ();
+    void _setAutopilotLights(bool enabled);
 
     QWebSocket _persistentWebSocket;
 
@@ -1280,6 +1297,7 @@ private:
     int             _rcRSSI = 255;
     double          _rcRSSIstore = 255;
     bool            _flying = false;
+    int _rc7;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
     bool            _lowAltitudeWarningEnable = false;

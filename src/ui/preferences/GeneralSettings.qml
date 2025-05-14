@@ -125,6 +125,7 @@ Rectangle {
                                 property Fact _enforceJoystickRequired: QGroundControl.settingsManager.appSettings.enforceJoystickRequired
                             }
 
+                            /*
                             FactCheckBox {
                                 text:       qsTr("Keep Map Centered On Vehicle")
                                 fact:       _keepMapCenteredOnVehicle
@@ -132,6 +133,7 @@ Rectangle {
 
                                 property Fact _keepMapCenteredOnVehicle: QGroundControl.settingsManager.flyViewSettings.keepMapCenteredOnVehicle
                             }
+                            */
 
                             FactCheckBox {
                                 text:       qsTr("Show Telemetry Log Replay Status Bar")

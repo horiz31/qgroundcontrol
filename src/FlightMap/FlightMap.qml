@@ -39,7 +39,7 @@ Map {
     property real   gcsHeading:                     QGroundControl.qgcPositionManger.gcsHeading
     property bool   allowGCSLocationCenter:         false   ///< true: map will center/zoom to gcs location one time
     property bool   allowVehicleLocationCenter:     false   ///< true: map will center/zoom to vehicle location one time
-    property bool   firstGCSPositionReceived:       false   ///< true: first gcs position update was responded to
+    //property bool   firstGCSPositionReceived:       false   ///< true: first gcs position update was responded to
     property bool   firstVehiclePositionReceived:   false   ///< true: first vehicle position update was responded to
     property bool   planView:                       false   ///< true: map being using for Plan view, items should be draggable
 
@@ -78,15 +78,15 @@ Map {
     }
 
     // Center map to gcs location
-    onGcsPositionChanged: {
-        if (gcsPosition.isValid && allowGCSLocationCenter && !firstGCSPositionReceived && !firstVehiclePositionReceived) {
-            firstGCSPositionReceived = true
+    //onGcsPositionChanged: {
+        //if (gcsPosition.isValid && allowGCSLocationCenter && !firstGCSPositionReceived && !firstVehiclePositionReceived) {
+            //firstGCSPositionReceived = true
             //-- Only center on gsc if we have no vehicle (and we are supposed to do so)
-            var _activeVehicleCoordinate = _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
-            if(QGroundControl.settingsManager.flyViewSettings.keepMapCenteredOnVehicle.rawValue || !_activeVehicleCoordinate.isValid)
-                center = gcsPosition
-        }
-    }
+            //var _activeVehicleCoordinate = _activeVehicle ? _activeVehicle.coordinate : QtPositioning.coordinate()
+            //if(QGroundControl.settingsManager.flyViewSettings.keepMapCenteredOnVehicle.rawValue || !_activeVehicleCoordinate.isValid)
+            //    center = gcsPosition
+        //}
+    //}
 
     function updateActiveMapType() {
         var settings =  QGroundControl.settingsManager.flightMapSettings

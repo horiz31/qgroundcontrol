@@ -69,6 +69,8 @@ Item {
     property var _windSpeed: _activeVehicle ? _activeVehicle.wind.speed.value.toFixed(
                                                   0) : 0
     property var _windUnits: _activeVehicle ? _activeVehicle.wind.speed.units : ""
+    property alias _navLightMenu: navLightOptions
+
 
 
     /*
@@ -446,6 +448,10 @@ Item {
                                                                           true)
         }
         property real leftInset: x + width
+    }
+
+    NavLightMenu {
+           id: navLightOptions
     }
 
     MapFitFunctions {

@@ -129,6 +129,12 @@ const char* Vehicle::_estimatorStatusFactGroupName =    "estimatorStatus";
 const char* Vehicle::_terrainFactGroupName =            "terrain";
 const char* Vehicle::_hygrometerFactGroupName =         "hygrometer";
 
+namespace
+{
+constexpr static inline auto const NAV_LIGHTS_RC7_ON = 1500;
+constexpr static inline auto const NAV_LIGHTS_RC7_OFF = 1000;
+}
+
 // Standard connected vehicle
 Vehicle::Vehicle(LinkInterface*             link,
                  int                        vehicleId,
@@ -144,6 +150,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _vehicleType                  (vehicleType)
     , _toolbox                      (qgcApp()->toolbox())
     , _settingsManager              (_toolbox->settingsManager())
+    , _rc7                          (NAV_LIGHTS_RC7_OFF)
     , _defaultCruiseSpeed           (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed            (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _firmwarePluginManager        (firmwarePluginManager)
@@ -251,6 +258,9 @@ Vehicle::Vehicle(LinkInterface*             link,
 
 
     _commonInit();
+
+
+    sendNavLightAction(NavLight_On);
 
     _vehicleLinkManager->_addLink(link);
 
@@ -403,6 +413,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _vehicleType                      (vehicleType)
     , _toolbox                          (qgcApp()->toolbox())
     , _settingsManager                  (_toolbox->settingsManager())
+    , _rc7                              (NAV_LIGHTS_RC7_OFF)
     , _defaultCruiseSpeed               (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed                (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _mavlinkProtocolRequestComplete   (true)
@@ -2663,7 +2674,7 @@ void Vehicle::requestDataStream(MAV_DATA_STREAM stream, uint16_t rate, bool send
 void Vehicle::_sendMessageMultipleNext()
 {
     if (_nextSendMessageMultipleIndex < _sendMessageMultipleList.count()) {
-        qCDebug(VehicleLog) << "_sendMessageMultipleNext:" << _sendMessageMultipleList[_nextSendMessageMultipleIndex].message.msgid;
+        //qCDebug(VehicleLog) << "_sendMessageMultipleNext:" << _sendMessageMultipleList[_nextSendMessageMultipleIndex].message.msgid;
 
         SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
         if (sharedLink) {
@@ -2780,8 +2791,8 @@ void Vehicle::_parametersReady(bool parametersReady)
         _setupGuidedModeRadius();
         _getSystemSerialNumber();
         _initialConnectStateMachine->advance();
-
-
+        _setAutopilotLights(_rc7==NAV_LIGHTS_RC7_ON);
+        _toolbox->joystickManager()->cameraManagement()->setSysModePilotCommand();
     }
 }
 
@@ -3067,6 +3078,33 @@ void Vehicle::guidedModeRTL(bool smartRTL)
     _firmwarePlugin->guidedModeRTL(this, smartRTL);
 }
 
+void Vehicle::setRC7(int const val){
+    constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
+    uint16_t newVal = (uint16_t)std::clamp<int>(val,0,(int)uintMaxMin1);
+    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
+    if (!sharedLink) {
+        qCDebug(VehicleLog) << "setRC7: primary link gone!";
+        return;
+    }
+    //if((int)newVal != _rc7)
+    {
+        qCDebug(VehicleLog) << "setRC7: new RC7 value is "<<newVal;
+        _rc7 = (int)newVal;
+        emit rc7Changed(_rc7);
+        mavlink_message_t msg;
+        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                           _mavlink->getComponentId(),
+                                           sharedLink->mavlinkChannel(),
+                                           &msg,
+                                           id(),
+                                           defaultComponentId(),            // target component
+                                           MAV_CMD_DO_SET_SERVO,    // command id
+                                           0,                                // 0=first transmission of command
+                                           12, (float)val, 0, 0, 0, 0, 0);
+        sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+    }
+}
+
 void Vehicle::guidedModeLand()
 {
     if (!guidedModeSupported()) {
@@ -3097,6 +3135,13 @@ void Vehicle::setToGuidedMode()
 double Vehicle::minimumTakeoffAltitude()
 {
     return _firmwarePlugin->minimumTakeoffAltitude(this);
+}
+
+bool Vehicle::hasNavLight()  const
+{
+    //TODO implement hasNavLight
+    return true;
+    //return _firmwarePlugin->hasGripper(this);
 }
 
 void Vehicle::startMission()
@@ -3663,7 +3708,7 @@ void Vehicle::_handleCommandAck(mavlink_message_t& message)
     mavlink_msg_command_ack_decode(&message, &ack);
 
     QString rawCommandName  =_toolbox->missionCommandTree()->rawName(static_cast<MAV_CMD>(ack.command));
-    qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));
+   // qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));
 
     if (ack.command == MAV_CMD_DO_SET_ROI_LOCATION) {
         if (ack.result == MAV_RESULT_ACCEPTED) {
@@ -3724,7 +3769,7 @@ void Vehicle::_handleCommandAck(mavlink_message_t& message)
     }
 
     if (!commandInList) {
-        qCDebug(VehicleLog) << "_handleCommandAck Ack not in list" << rawCommandName;
+     //   qCDebug(VehicleLog) << "_handleCommandAck Ack not in list" << rawCommandName;
     }
 
     // advance PID tuning setup/teardown
@@ -5255,6 +5300,45 @@ void Vehicle::triggerSimpleCamera()
                    true,                        // show errors
                    0.0, 0.0, 0.0, 0.0,          // param 1-4 unused
                    1.0);                        // trigger camera
+}
+
+void Vehicle::_setAutopilotLights(bool enabled)
+{
+    QString const parameterName = "NTF_LED_BRIGHT";
+    if (_parameterManager->parameterExists(defaultComponentId(), parameterName))
+    {
+        _parameterManager->getParameter(defaultComponentId(), parameterName)->setRawValue(enabled ? 3 : 0);
+        qCDebug(VehicleLog) << "_setAutopilotLights: sent autopilot lights "<<(enabled?"on":"off");
+    }
+    else
+    {
+        qCCritical(VehicleLog) << "_setAutopilotLights: NTF_LED_BRIGHT parameter does not exist";
+    }
+}
+
+
+void Vehicle::sendNavLightAction(NAVLIGHT_OPTIONS navLightOption)
+{
+    switch(navLightOption)
+    {
+    case NavLight_Off:
+    {
+        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_Off";
+        setRC7(NAV_LIGHTS_RC7_OFF);
+        _setAutopilotLights(false);
+        break;
+    }
+    case NavLight_On:
+    {
+        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_On";
+        setRC7(NAV_LIGHTS_RC7_ON);
+        _setAutopilotLights(true);
+        break;
+    }
+    default:
+        qCDebug(VehicleLog) << "sendNavLightAction: doing nothing";
+        break;
+    }
 }
 
 void Vehicle::showNvQuickPanel()
