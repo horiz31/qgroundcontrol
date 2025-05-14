@@ -111,8 +111,7 @@ Item {
             id: asaltBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            width: root.width * 0.6
-            //width: root.width * (_isMobile ? .6 : 1)
+            width: root.width * (_isMobile ? .8 : .6)
             height: root.height * (_isMobile ? .5 : .4)
             color: "black"
             opacity: 0.5
@@ -228,7 +227,6 @@ Item {
 
     //Altitude, right, vertical center
     GridLayout {
-        visible: !_isMobile
         id: hudAltitudeLayout
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
