@@ -299,8 +299,15 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 RowLayout {
                     //air speed
+                    QGCColoredImage {
+                        source:  "/InstrumentValueIcons/speedometer.svg"
+                        mipmap: true
+                        height: ScreenTools.defaultFontPixelHeight * 1.5
+                        width: ScreenTools.defaultFontPixelHeight * 1.5
+                        color: qgcPal.text
+                    }
                     QGCLabel {
-                        text: "AS:"
+                        text: "Air:"
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
                         color: qgcPal.text
@@ -320,8 +327,15 @@ Rectangle {
                 }
                 RowLayout {
                     //ground speed
+                    QGCColoredImage {
+                        source:  "/InstrumentValueIcons/speedometer.svg"
+                        mipmap: true
+                        height: ScreenTools.defaultFontPixelHeight * 1.5
+                        width: ScreenTools.defaultFontPixelHeight * 1.5
+                        color: qgcPal.text
+                    }
                     QGCLabel {
-                        text: "GS:"
+                        text: "Ground:"
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.largeFontPointSize
                         color: qgcPal.text
