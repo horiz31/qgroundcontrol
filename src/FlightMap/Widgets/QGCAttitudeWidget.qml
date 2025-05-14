@@ -111,7 +111,7 @@ Item {
             id: asaltBackground
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            width: root.width * (_isMobile ? .8 : 6)
+            width: root.width * (_isMobile ? .8 : .6)
             height: root.height * (_isMobile ? .5 : .4)
             color: "black"
             opacity: 0.5
@@ -258,14 +258,14 @@ Item {
                                 0) : "----"
             color: "white"
             font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
+            font.pointSize: ScreenTools.smallFontPointSize
             Layout.alignment: Qt.AlignRight
         }
         QGCLabel {
             text: "MSL"
             color: "white"
             font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
+            font.pointSize: ScreenTools.smallFontPointSize
             Layout.alignment: Qt.AlignRight
         }
         QGCLabel {
@@ -273,7 +273,7 @@ Item {
             text: vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : "" //this should pull from current units, then when displayed it can use the conversion methood  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
             color: "white"
             font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
+            font.pointSize: ScreenTools.smallFontPointSize
             Layout.alignment: Qt.AlignRight
         }
         QGCColoredImage {
