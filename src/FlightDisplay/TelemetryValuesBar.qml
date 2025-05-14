@@ -45,8 +45,9 @@ Rectangle {
                                                     _activeVehicle.nvGimbal.azimuth.value) ? "--°" : _activeVehicle.nvGimbal.azimuth.value.toFixed(0) + "°") : "--°"
     property string _pitch: _activeVehicle ? (isNaN(
                                                   _activeVehicle.nvGimbal.pitch.value) ? "--°" : _activeVehicle.nvGimbal.pitch.value.toFixed(0) + "°") : "--°"
-    property bool _nvPresent: _activeVehicle ? (_activeVehicle.nvGimbal.mode.value
-                                                !== "" ? true : false) : false
+    property bool _nvPresent: _activeVehicle ? (isNaN(
+                                                    _activeVehicle.nvGimbal.nvVersion.value) ? false : true) : false
+
     property string _vehicleCoordinate: _activeVehicle ? QGroundControl.unitsConversion.appSettingsGeoCoordinateToString(
                                                              _activeVehicle.coordinate,
                                                              7) : QGroundControl.unitsConversion.appSettingsGeoCoordinateToString()
