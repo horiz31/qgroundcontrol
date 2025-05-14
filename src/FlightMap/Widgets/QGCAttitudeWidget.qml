@@ -162,71 +162,6 @@ Item {
                                          === 2 ? "0" + _headingString2 : _headingString2
     }
 
-    //Ground and Airspeed, left, vertical center
-
-
-    /*
-    GridLayout {
-        id: hudSpeed
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        anchors.leftMargin: Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
-        rowSpacing: 0
-        columns: 2
-        QGCLabel {
-            text: "AS"
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-        }
-        QGCLabel {
-            text: vehicle ? vehicle.airSpeed.value.toFixed(0) : "--"
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-        }
-        QGCLabel {
-            text: "GS"
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-        }
-        QGCLabel {
-            text: vehicle ? vehicle.groundSpeed.value.toFixed(0) : "--"
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-        }
-        QGCLabel {
-            text: ""
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-            visible: !_isMobile
-        }
-        QGCLabel {
-            id: hudSpeedUnits
-            text: vehicle ? QGroundControl.unitsConversion.appSettingsSpeedUnitsString : "" //appSettingsSpeedUnitsString.. best I can tell there is not a method defined to convert speed from metersperSecondtoSpeedUnits
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.mediumFontPointSize
-            Layout.alignment: Qt.AlignLeft
-        }
-    }
-    QGCMouseArea {
-        anchors.fill: hudSpeed
-        onClicked: {
-            onClicked: mainWindow.showPopupDialogFromComponent(
-                           airSpeedDialogComponent)
-        }
-    }
-    */
-
     //Altitude, right, vertical center
     GridLayout {
         id: hudAltitudeLayout
@@ -234,12 +169,19 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: Math.round(ScreenTools.defaultFontPixelWidth * 1.5)
         rowSpacing: 0
-        columns: 2
+        columns: 3
 
         QGCLabel {
             text: vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
                                 vehicle.altitudeRelative.rawValue).toFixed(
                                 0) : "----"
+            color: vehicle ? parent.getAltColor() : "white"
+            font.family: ScreenTools.normalFontFamily
+            font.pointSize: ScreenTools.mediumFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            text: vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : ""
             color: vehicle ? parent.getAltColor() : "white"
             font.family: ScreenTools.normalFontFamily
             font.pointSize: ScreenTools.mediumFontPointSize
@@ -252,10 +194,18 @@ Item {
             font.pointSize: ScreenTools.mediumFontPointSize
             Layout.alignment: Qt.AlignRight
         }
+
         QGCLabel {
             text: vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
                                 vehicle.altitudeAMSL.rawValue).toFixed(
                                 0) : "----"
+            color: "white"
+            font.family: ScreenTools.normalFontFamily
+            font.pointSize: ScreenTools.smallFontPointSize
+            Layout.alignment: Qt.AlignRight
+        }
+        QGCLabel {
+            text: vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : ""
             color: "white"
             font.family: ScreenTools.normalFontFamily
             font.pointSize: ScreenTools.smallFontPointSize
@@ -268,14 +218,8 @@ Item {
             font.pointSize: ScreenTools.smallFontPointSize
             Layout.alignment: Qt.AlignRight
         }
-        QGCLabel {
-            id: hudAltitudeUnits
-            text: vehicle ? QGroundControl.unitsConversion.appSettingsVerticalDistanceUnitsString : "" //this should pull from current units, then when displayed it can use the conversion methood  QGroundControl.unitsConversion.metersToAppSettingsHorizontalDistanceUnits(altitude).toFixed(0)
-            color: "white"
-            font.family: ScreenTools.normalFontFamily
-            font.pointSize: ScreenTools.smallFontPointSize
-            Layout.alignment: Qt.AlignRight
-        }
+
+
         QGCColoredImage {
             width: height
             height: ScreenTools.defaultFontPixelWidth * 2.2

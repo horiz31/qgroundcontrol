@@ -309,7 +309,7 @@ Rectangle {
                     QGCLabel {
                         text: "Air:"
                         font.family: ScreenTools.demiboldFontFamily
-                        font.pointSize: ScreenTools.largeFontPointSize
+                        font.pointSize: ScreenTools.mediumFontPointSize
                         color: qgcPal.text
                     }
                     QGCLabel {
@@ -337,7 +337,7 @@ Rectangle {
                     QGCLabel {
                         text: "Ground:"
                         font.family: ScreenTools.demiboldFontFamily
-                        font.pointSize: ScreenTools.largeFontPointSize
+                        font.pointSize: ScreenTools.mediumFontPointSize
                         color: qgcPal.text
                     }
                     QGCLabel {
@@ -365,7 +365,7 @@ Rectangle {
                     QGCLabel {
                         text: "Wind:"
                         font.family: ScreenTools.demiboldFontFamily
-                        font.pointSize: ScreenTools.largeFontPointSize
+                        font.pointSize: ScreenTools.mediumFontPointSize
                         color: qgcPal.text
                     }
                     QGCColoredImage {
