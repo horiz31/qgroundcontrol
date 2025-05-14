@@ -14,25 +14,25 @@
 #ifndef __mobile__
 #include "GPSManager.h"
 #endif
-#include "JoystickManager.h"
-#include "LinkManager.h"
-#include "MAVLinkProtocol.h"
-#include "MissionCommandTree.h"
-#include "MultiVehicleManager.h"
-#include "QGCImageProvider.h"
-#include "UASMessageHandler.h"
-#include "QGCMapEngineManager.h"
-#include "FollowMe.h"
-#include "PositionManager.h"
-#include "VideoManager.h"
-#include "MAVLinkLogManager.h"
-#include "QGCCorePlugin.h"
-#include "QGCOptions.h"
-#include "SettingsManager.h"
-#include "QGCApplication.h"
 #include "ADSBVehicleManager.h"
 #include "ATAKMarkerManager.h"
 #include "AnnotationManager.h"
+#include "FollowMe.h"
+#include "JoystickManager.h"
+#include "LinkManager.h"
+#include "MAVLinkLogManager.h"
+#include "MAVLinkProtocol.h"
+#include "MissionCommandTree.h"
+#include "MultiVehicleManager.h"
+#include "PositionManager.h"
+#include "QGCApplication.h"
+#include "QGCCorePlugin.h"
+#include "QGCImageProvider.h"
+#include "QGCMapEngineManager.h"
+#include "QGCOptions.h"
+#include "SettingsManager.h"
+#include "UASMessageHandler.h"
+#include "VideoManager.h"
 #if defined(QGC_ENABLE_PAIRING)
 #include "PairingManager.h"
 #endif
@@ -52,49 +52,49 @@
 #include CUSTOMHEADER
 #endif
 
-QGCToolbox::QGCToolbox(QGCApplication* app)
-{
-    // SettingsManager must be first so settings are available to any subsequent tools
-    _settingsManager        = new SettingsManager           (app, this);
-    //-- Scan and load plugins
-    _scanAndLoadPlugins(app);
-    _audioOutput            = new AudioOutput               (app, this);
-    _factSystem             = new FactSystem                (app, this);
-    _firmwarePluginManager  = new FirmwarePluginManager     (app, this);
+ QGCToolbox::QGCToolbox(QGCApplication* app)
+ {
+     // SettingsManager must be first so settings are available to any subsequent tools
+     _settingsManager = new SettingsManager(app, this);
+     //-- Scan and load plugins
+     _scanAndLoadPlugins(app);
+     _audioOutput = new AudioOutput(app, this);
+     _factSystem = new FactSystem(app, this);
+     _firmwarePluginManager = new FirmwarePluginManager(app, this);
 #ifndef __mobile__
-    _gpsManager             = new GPSManager                (app, this);
+     _gpsManager = new GPSManager(app, this);
 #endif
-    _imageProvider          = new QGCImageProvider          (app, this);
-    _joystickManager        = new JoystickManager           (app, this);
-    _linkManager            = new LinkManager               (app, this);
-    _mavlinkProtocol        = new MAVLinkProtocol           (app, this);
-    _missionCommandTree     = new MissionCommandTree        (app, this);
-    _multiVehicleManager    = new MultiVehicleManager       (app, this);
-    _mapEngineManager       = new QGCMapEngineManager       (app, this);
-    _uasMessageHandler      = new UASMessageHandler         (app, this);
-    _qgcPositionManager     = new QGCPositionManager        (app, this);
-    _followMe               = new FollowMe                  (app, this);
-    _videoManager           = new VideoManager              (app, this);
-    _mavlinkLogManager      = new MAVLinkLogManager         (app, this);
-    _adsbVehicleManager     = new ADSBVehicleManager        (app, this);
-    _atakMarkerManager      = new ATAKMarkerManager         (app, this);
-    _annotationManager      = new AnnotationManager         (app, this);
+     _imageProvider = new QGCImageProvider(app, this);
+     _joystickManager = new JoystickManager(app, this);
+     _linkManager = new LinkManager(app, this);
+     _mavlinkProtocol = new MAVLinkProtocol(app, this);
+     _missionCommandTree = new MissionCommandTree(app, this);
+     _multiVehicleManager = new MultiVehicleManager(app, this);
+     _mapEngineManager = new QGCMapEngineManager(app, this);
+     _uasMessageHandler = new UASMessageHandler(app, this);
+     _qgcPositionManager = new QGCPositionManager(app, this);
+     _followMe = new FollowMe(app, this);
+     _videoManager = new VideoManager(app, this);
+     _mavlinkLogManager = new MAVLinkLogManager(app, this);
+     _adsbVehicleManager = new ADSBVehicleManager(app, this);
+     _atakMarkerManager = new ATAKMarkerManager(app, this);
+     _annotationManager = new AnnotationManager(app, this);
 #if defined(QGC_ENABLE_PAIRING)
-    _pairingManager         = new PairingManager            (app, this);
+     _pairingManager = new PairingManager(app, this);
 #endif
-    //-- Airmap Manager
-    //-- This should be "pluggable" so an arbitrary AirSpace manager can be used
-    //-- For now, we instantiate the one and only AirMap provider
+     //-- Airmap Manager
+     //-- This should be "pluggable" so an arbitrary AirSpace manager can be used
+     //-- For now, we instantiate the one and only AirMap provider
 #if defined(QGC_AIRMAP_ENABLED)
-    _airspaceManager        = new AirMapManager             (app, this);
+     _airspaceManager = new AirMapManager(app, this);
 #else
-    _airspaceManager        = new AirspaceManager           (app, this);
+     _airspaceManager = new AirspaceManager(app, this);
 #endif
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    _taisyncManager         = new TaisyncManager            (app, this);
+     _taisyncManager = new TaisyncManager(app, this);
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
-    _microhardManager       = new MicrohardManager          (app, this);
+     _microhardManager = new MicrohardManager(app, this);
 #endif
 }
 

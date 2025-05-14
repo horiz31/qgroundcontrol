@@ -437,6 +437,7 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 HEADERS += \
     src/Annotations/Annotation.h \
     src/Annotations/AnnotationManager.h \
+    src/QmlControls/MapGridlineModel.h \
     src/QmlControls/QmlUnitsConversion.h \
     src/Vehicle/VehicleEscStatusFactGroup.h \
     src/api/QGCCorePlugin.h \
@@ -458,6 +459,7 @@ contains (DEFINES, QGC_ENABLE_PAIRING) {
 SOURCES += \
     src/Annotations/Annotation.cc \
     src/Annotations/AnnotationManager.cc \
+    src/QmlControls/MapGridlineModel.cpp \
     src/Vehicle/VehicleEscStatusFactGroup.cc \
     src/api/QGCCorePlugin.cc \
     src/api/QGCOptions.cc \

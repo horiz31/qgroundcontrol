@@ -137,11 +137,36 @@ FlightMap {
             QGroundControl.flightMapZoom = zoomLevel
             updateAirspace(false)
         }
+        //updateGridlines()
     }
     onCenterChanged: {
         QGroundControl.flightMapPosition = center
         updateAirspace(false)
+        //updateGridlines()
     }
+
+
+
+
+/*
+
+    function updateGridlines() {
+        var tl = toCoordinate(Qt.point(0,0))
+        var br = toCoordinate(Qt.point(width, height))
+        mapGridlineModel.updateGridlines(tl, br, zoomLevel)
+    }
+
+    MapItemView {
+        model: mapGridlineModel
+        delegate: MapPolyline{
+            line.width: 1
+            line.color: "black"
+            path: model.path
+            z:          QGroundControl.zOrderTrajectoryLines
+        }
+    }
+    */
+
 
     on_AirspaceEnabledChanged: {
         updateAirspace(true)

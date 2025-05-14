@@ -2674,7 +2674,7 @@ void Vehicle::requestDataStream(MAV_DATA_STREAM stream, uint16_t rate, bool send
 void Vehicle::_sendMessageMultipleNext()
 {
     if (_nextSendMessageMultipleIndex < _sendMessageMultipleList.count()) {
-        qCDebug(VehicleLog) << "_sendMessageMultipleNext:" << _sendMessageMultipleList[_nextSendMessageMultipleIndex].message.msgid;
+        //qCDebug(VehicleLog) << "_sendMessageMultipleNext:" << _sendMessageMultipleList[_nextSendMessageMultipleIndex].message.msgid;
 
         SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
         if (sharedLink) {
@@ -3086,20 +3086,21 @@ void Vehicle::setRC7(int const val){
         qCDebug(VehicleLog) << "setRC7: primary link gone!";
         return;
     }
-    if((int)newVal != _rc7)
+    //if((int)newVal != _rc7)
     {
         qCDebug(VehicleLog) << "setRC7: new RC7 value is "<<newVal;
         _rc7 = (int)newVal;
         emit rc7Changed(_rc7);
         mavlink_message_t msg;
-        mavlink_msg_rc_channels_override_pack(_mavlink->getSystemId(),
-                                              _mavlink->getComponentId(),
-                                              &msg,
-                                              _id, //target system
-                                              defaultComponentId(), //target component
-                                              0, 0, 0, 0, 0, 0,
-                                              newVal,//channel 7
-                                              uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1,uintMaxMin1);
+        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
+                                           _mavlink->getComponentId(),
+                                           sharedLink->mavlinkChannel(),
+                                           &msg,
+                                           id(),
+                                           defaultComponentId(),            // target component
+                                           MAV_CMD_DO_SET_SERVO,    // command id
+                                           0,                                // 0=first transmission of command
+                                           12, (float)val, 0, 0, 0, 0, 0);
         sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
     }
 }
@@ -3707,7 +3708,7 @@ void Vehicle::_handleCommandAck(mavlink_message_t& message)
     mavlink_msg_command_ack_decode(&message, &ack);
 
     QString rawCommandName  =_toolbox->missionCommandTree()->rawName(static_cast<MAV_CMD>(ack.command));
-    qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));
+   // qCDebug(VehicleLog) << QStringLiteral("_handleCommandAck command(%1) result(%2)").arg(rawCommandName).arg(QGCMAVLink::mavResultToString(static_cast<MAV_RESULT>(ack.result)));
 
     if (ack.command == MAV_CMD_DO_SET_ROI_LOCATION) {
         if (ack.result == MAV_RESULT_ACCEPTED) {
@@ -3768,7 +3769,7 @@ void Vehicle::_handleCommandAck(mavlink_message_t& message)
     }
 
     if (!commandInList) {
-        qCDebug(VehicleLog) << "_handleCommandAck Ack not in list" << rawCommandName;
+     //   qCDebug(VehicleLog) << "_handleCommandAck Ack not in list" << rawCommandName;
     }
 
     // advance PID tuning setup/teardown
@@ -5306,7 +5307,7 @@ void Vehicle::_setAutopilotLights(bool enabled)
     QString const parameterName = "NTF_LED_BRIGHT";
     if (_parameterManager->parameterExists(defaultComponentId(), parameterName))
     {
-        _parameterManager->getParameter(defaultComponentId(), parameterName)->setRawValue(enabled ? 3 : 1);
+        _parameterManager->getParameter(defaultComponentId(), parameterName)->setRawValue(enabled ? 3 : 0);
         qCDebug(VehicleLog) << "_setAutopilotLights: sent autopilot lights "<<(enabled?"on":"off");
     }
     else
