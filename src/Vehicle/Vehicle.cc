@@ -2797,7 +2797,7 @@ void Vehicle::_parametersReady(bool parametersReady)
         _setupGuidedModeRadius();
         _getSystemSerialNumber();
         _initialConnectStateMachine->advance();
-        _setAutopilotLights(_rc12==NAV_LIGHTS_RC12_ON);
+        sendNavLightAction(NavLight_On);
         _toolbox->joystickManager()->cameraManagement()->setSysModePilotCommand();
     }
 }
