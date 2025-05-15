@@ -530,6 +530,13 @@
     "min":              5.0,
     "units":            "vertical m",
     "decimalPlaces":    0
+},
+{
+    "name":             "showMapGridlines",
+    "shortDesc": "Show map gridlines",
+    "longDesc":  "Show map gridlines",
+    "type":             "bool",
+    "default":     false
 }
 ]
 }

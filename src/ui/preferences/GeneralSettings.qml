@@ -142,6 +142,14 @@ Rectangle {
 
                                 property Fact _showLogReplayStatusBar: QGroundControl.settingsManager.flyViewSettings.showLogReplayStatusBar
                             }
+                            FactCheckBox {
+                                id:             showMapGridlines
+                                text:           qsTr("Show Map Gridlines")
+                                fact:           _showMapGridlines
+                                visible:        _showMapGridlines.visible
+
+                                property Fact _showMapGridlines: QGroundControl.settingsManager.appSettings.showMapGridlines
+                            }
 
                             RowLayout {
                                 spacing: ScreenTools.defaultFontPixelWidth

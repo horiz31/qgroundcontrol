@@ -177,7 +177,7 @@ DECLARE_SETTINGSFACT(AppSettings, DoodleIP)
 DECLARE_SETTINGSFACT(AppSettings, hcuMessagesMuted)
 DECLARE_SETTINGSFACT(AppSettings, lowAltitudeMuted)
 DECLARE_SETTINGSFACT(AppSettings, lowAltitudeLevel)
-
+DECLARE_SETTINGSFACT(AppSettings, showMapGridlines)
 
 DECLARE_SETTINGSFACT_NO_FUNC(AppSettings, indoorPalette)
 {
