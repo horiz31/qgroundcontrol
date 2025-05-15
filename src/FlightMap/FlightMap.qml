@@ -76,6 +76,68 @@ Map {
             onCoordinateChanged:    center = coordinate
         }
     }
+    onZoomLevelChanged: {
+         gridlineTimer.restart();
+    }
+    onCenterChanged: {
+        gridlineTimer.restart();
+    }
+    onMapReadyChanged: {
+        gridlineTimer.restart();
+    }
+    Component.onCompleted: {
+        updateActiveMapType()
+        _possiblyCenterToVehiclePosition()
+        gridlineTimer.restart();
+    }
+    onHeightChanged: {
+        gridlineTimer.restart();
+    }
+    onWidthChanged: {
+        gridlineTimer.restart();
+    }
+    Connections {
+        target:  QGroundControl.settingsManager.unitsSettings.geoCoordinateSystem
+        function onRawValueChanged() { gridlineTimer.restart(); }
+    }
+    Connections {
+        target: QGroundControl.settingsManager.appSettings.showMapGridlines
+        function onRawValueChanged() { gridlineTimer.restart(); }
+    }
+
+    Timer {
+        id: gridlineTimer
+        interval: 50
+        repeat: false
+        running: false
+        onTriggered: {
+            if(QGroundControl.settingsManager.appSettings.showMapGridlines.rawValue)
+            {
+                if(_root.mapReady)
+                {
+                    var tl = toCoordinate(Qt.point(0,0))
+                    var br = toCoordinate(Qt.point(width, height))
+                    if(tl.isValid && br.isValid)
+                    {
+                        mapGridlineModel.updateGridlines(tl, br, zoomLevel)
+                    }
+                }
+            }
+            else
+            {
+                mapGridlineModel.clearGridlines()
+            }
+        }
+    }
+    MapItemView {
+        model: mapGridlineModel
+        delegate: MapPolyline{
+            line.width: 1
+            line.color: "black"
+            path:       model.path
+            z:          QGroundControl.zOrderTopMost//QGroundControl.zOrderTrajectoryLines
+        }
+    }
 
     // Center map to gcs location
     //onGcsPositionChanged: {
@@ -101,11 +163,6 @@ Map {
     }
 
     on_ActiveVehicleCoordinateChanged: _possiblyCenterToVehiclePosition()
-
-    Component.onCompleted: {
-        updateActiveMapType()
-        _possiblyCenterToVehiclePosition()
-    }
 
     Connections {
         target:             QGroundControl.settingsManager.flightMapSettings.mapType

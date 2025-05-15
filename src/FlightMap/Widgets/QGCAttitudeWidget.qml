@@ -172,9 +172,9 @@ Item {
         columns: 3
 
         QGCLabel {
-            text: vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
+            text: " "+(vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
                                 vehicle.altitudeRelative.rawValue).toFixed(
-                                0) : "----"
+                                0) : "----")
             color: vehicle ? parent.getAltColor() : "white"
             font.family: ScreenTools.normalFontFamily
             font.pointSize: ScreenTools.mediumFontPointSize
@@ -196,9 +196,9 @@ Item {
         }
 
         QGCLabel {
-            text: vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
+            text: " "+(vehicle ? QGroundControl.unitsConversion.metersToAppSettingsVerticalDistanceUnits(
                                 vehicle.altitudeAMSL.rawValue).toFixed(
-                                0) : "----"
+                                0) : "----")
             color: "white"
             font.family: ScreenTools.normalFontFamily
             font.pointSize: ScreenTools.smallFontPointSize

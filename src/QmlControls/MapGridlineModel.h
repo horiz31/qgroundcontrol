@@ -27,7 +27,8 @@ public:
 
     Q_INVOKABLE void updateGridlines(QGeoCoordinate const& topLeft,
                                      QGeoCoordinate const& bottomRight,
-                                     int zoomLevel);
+                                     double zoomLevel);
+    Q_INVOKABLE void clearGridlines();
 
 private:
     QList<MapGridline> m_gridLines;
