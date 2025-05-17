@@ -107,7 +107,7 @@ Map {
 
     Timer {
         id: gridlineTimer
-        interval: 50
+        interval: 100
         repeat: false
         running: false
         onTriggered: {
@@ -132,10 +132,14 @@ Map {
     MapItemView {
         model: mapGridlineModel
         delegate: MapPolyline{
-            line.width: 1
-            line.color: "black"
+            line.width: model.precision>1?2:model.precision<0?1:3
+            //display lat and lon in black/white
+            //display gzd in red
+            //display 100km in green
+            //display 10km and less in black/white
+            line.color: (model.precision<0||model.precision>1)?(isSatelliteMap?"white":"black"):model.precision===0?"red":"green"
             path:       model.path
-            z:          QGroundControl.zOrderTopMost//QGroundControl.zOrderTrajectoryLines
+            z:          QGroundControl.zOrderTopMost
         }
     }
 
