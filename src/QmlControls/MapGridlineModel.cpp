@@ -869,6 +869,7 @@ void MapGridlineModel::_NorwayException(double lat,
     if (lonZone == 31 && lon >= 3)
     {
         lonZone = 32;
+        lon = 3;
     }
     if (overrun)
     {
@@ -884,21 +885,18 @@ void MapGridlineModel::_NorwayException(double lat,
             auto line = _getLonLine(lat + 8, lat, lon);
             line.precision = GridlinePrecisionLevel::GZD;
             m_gridLines.append(line);
-            if (lonZone == 31)
+            switch (lonZone)
             {
+            case 31:
                 lon = 3;
-                lonZone = 32;
-            }
-            else if (lonZone == 32)
-            {
+                break;
+            case 32:
                 lon = 12;
-                lonZone = 33;
-            }
-            else
-            {
+                break;
+            default:
                 lon += 6;
-                ++lonZone;
             }
+            ++lonZone;
         }
     }
     for (;;)
@@ -911,21 +909,18 @@ void MapGridlineModel::_NorwayException(double lat,
         auto line = _getLonLine(lat + 8, lat, lon);
         line.precision = GridlinePrecisionLevel::GZD;
         m_gridLines.append(line);
-        if (lonZone == 31)
+        switch (lonZone)
         {
+        case 31:
             lon = 3;
-            lonZone = 32;
-        }
-        else if (lonZone == 32)
-        {
+            break;
+        case 32:
             lon = 12;
-            lonZone = 33;
-        }
-        else
-        {
+            break;
+        default:
             lon += 6;
-            ++lonZone;
         }
+        ++lonZone;
     }
 }
 
@@ -940,6 +935,20 @@ void MapGridlineModel::_SvalbardException(double lat,
     if (lon >= 0 && lon < 42)
     {
         lonZone = 2 * ((int(lon) + 183) / 12) + 1;
+        switch (lonZone)
+        {
+        case 33:
+            lon = 9;
+            break;
+        case 35:
+            lon = 21;
+            break;
+        case 37:
+            lon = 33;
+            break;
+        default:
+            break;
+        }
     }
     if (overrun)
     {
@@ -955,28 +964,25 @@ void MapGridlineModel::_SvalbardException(double lat,
             auto line = _getLonLine(84, lat, lon);
             line.precision = GridlinePrecisionLevel::GZD;
             m_gridLines.append(line);
-            if (lonZone == 31)
+            switch (lonZone)
             {
+            case 31:
                 lon = 9;
                 lonZone = 33;
-            }
-            else if (lonZone == 33)
-            {
+                break;
+            case 33:
                 lon = 21;
                 lonZone = 35;
-            }
-            else if (lonZone == 35)
-            {
+                break;
+            case 35:
                 lon = 33;
                 lonZone = 37;
-            }
-            else if (lonZone == 37)
-            {
+                break;
+            case 37:
                 lon = 42;
                 lonZone = 38;
-            }
-            else
-            {
+                break;
+            default:
                 ++lonZone;
                 lon += 6;
             }
@@ -992,28 +998,25 @@ void MapGridlineModel::_SvalbardException(double lat,
         auto line = _getLonLine(84, lat, lon);
         line.precision = GridlinePrecisionLevel::GZD;
         m_gridLines.append(line);
-        if (lonZone == 31)
+        switch (lonZone)
         {
+        case 31:
             lon = 9;
             lonZone = 33;
-        }
-        else if (lonZone == 33)
-        {
+            break;
+        case 33:
             lon = 21;
             lonZone = 35;
-        }
-        else if (lonZone == 35)
-        {
+            break;
+        case 35:
             lon = 33;
             lonZone = 37;
-        }
-        else if (lonZone == 37)
-        {
+            break;
+        case 37:
             lon = 42;
             lonZone = 38;
-        }
-        else
-        {
+            break;
+        default:
             ++lonZone;
             lon += 6;
         }
