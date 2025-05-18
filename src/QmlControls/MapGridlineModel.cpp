@@ -787,7 +787,6 @@ QHash<int, QByteArray> MapGridlineModel::roleNames() const
 void MapGridlineModel::clearGridlines()
 {
     //std::lock_guard<std::recursive_mutex> lock(m_mut);
-
     beginResetModel();
     m_gridLines.clear();
     endResetModel();
@@ -809,21 +808,14 @@ void MapGridlineModel::_drawLatLines(QGeoCoordinate const& topLeft,
                                      QGeoCoordinate const& bottomRight,
                                      double latLonStep)
 {
-    //qCritical() << "m_gridLines.size()=" << m_gridLines.size()
-    //            << " ENTER MapGridlineModel::_drawLatLines(topLeft=" << topLeft
-    //            << ", bottomRight=" << bottomRight << ", latLonStep=" << latLonStep << ")";
-    //draw the latitude lines from top to bottom
-    for (double lat = std::floor(topLeft.latitude() / latLonStep) * latLonStep;
+    for (auto lat = std::floor(topLeft.latitude() / latLonStep) * latLonStep;
          lat > bottomRight.latitude();
          lat -= latLonStep)
     {
-        MapGridline line = _getLatLine(lat, topLeft, bottomRight);
+        auto line = _getLatLine(lat, topLeft, bottomRight);
         line.precision = GridlinePrecisionLevel::LatLong;
         m_gridLines.append(line);
     }
-    //qCritical() << "m_gridLines.size()=" << m_gridLines.size()
-    //            << " EXIT  MapGridlineModel::_drawLatLines(topLeft=" << topLeft
-    //            << ", bottomRight=" << bottomRight << ", latLonStep=" << latLonStep << ")";
 }
 
 void MapGridlineModel::_drawLonLines(QGeoCoordinate const& topLeft,
@@ -831,12 +823,12 @@ void MapGridlineModel::_drawLonLines(QGeoCoordinate const& topLeft,
                                      double latLonStep)
 {
     //draw the longitude lines from left to right
-    double lon = std::ceil(topLeft.longitude() / latLonStep) * latLonStep;
+    auto lon = std::ceil(topLeft.longitude() / latLonStep) * latLonStep;
     if (bottomRight.longitude() < topLeft.longitude())
     {
         for (; lon < 180; lon += latLonStep)
         {
-            MapGridline line = _getLonLine(topLeft.latitude(), bottomRight.latitude(), lon);
+            auto line = _getLonLine(topLeft.latitude(), bottomRight.latitude(), lon);
             line.precision = GridlinePrecisionLevel::LatLong;
             m_gridLines.append(line);
         }
@@ -844,19 +836,230 @@ void MapGridlineModel::_drawLonLines(QGeoCoordinate const& topLeft,
     }
     for (; lon < bottomRight.longitude(); lon += latLonStep)
     {
-        MapGridline line = _getLonLine(topLeft.latitude(), bottomRight.latitude(), lon);
+        auto line = _getLonLine(topLeft.latitude(), bottomRight.latitude(), lon);
         line.precision = GridlinePrecisionLevel::LatLong;
         m_gridLines.append(line);
     }
 }
 
-void MapGridlineModel::_drawUTMP100km(QGeoCoordinate const& topLeft,
+void MapGridlineModel::_drawUTMP100km(double bLat,
+                                      double lLon,
+                                      QGeoCoordinate const& topLeft,
                                       QGeoCoordinate const& bottomRight,
                                       double zoomLevel,
                                       int lonZone,
                                       int latBand)
 {
-    //TODO
+    if (zoomLevel >= 8)
+    {
+        //the latBand and the lonZone will always meet at the lower left corner of the GZD
+
+        //TODO
+    }
+}
+
+void MapGridlineModel::_NorwayException(double lat,
+                                        double lon,
+                                        int lonZone,
+                                        bool overrun,
+                                        QGeoCoordinate const& topLeft,
+                                        QGeoCoordinate const& bottomRight,
+                                        double zoomLevel)
+{
+    if (lonZone == 31 && lon >= 3)
+    {
+        lonZone = 32;
+    }
+    if (overrun)
+    {
+        for (;;)
+        {
+            if (lonZone > 60)
+            {
+                lon = -180;
+                lonZone = 1;
+                break;
+            }
+            _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, 7);
+            auto line = _getLonLine(lat + 8, lat, lon);
+            line.precision = GridlinePrecisionLevel::GZD;
+            m_gridLines.append(line);
+            if (lonZone == 31)
+            {
+                lon = 3;
+                lonZone = 32;
+            }
+            else if (lonZone == 32)
+            {
+                lon = 12;
+                lonZone = 33;
+            }
+            else
+            {
+                lon += 6;
+                ++lonZone;
+            }
+        }
+    }
+    for (;;)
+    {
+        _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, 7);
+        if (lon > bottomRight.longitude())
+        {
+            break;
+        }
+        auto line = _getLonLine(lat + 8, lat, lon);
+        line.precision = GridlinePrecisionLevel::GZD;
+        m_gridLines.append(line);
+        if (lonZone == 31)
+        {
+            lon = 3;
+            lonZone = 32;
+        }
+        else if (lonZone == 32)
+        {
+            lon = 12;
+            lonZone = 33;
+        }
+        else
+        {
+            lon += 6;
+            ++lonZone;
+        }
+    }
+}
+
+void MapGridlineModel::_SvalbardException(double lat,
+                                          double lon,
+                                          int lonZone,
+                                          bool overrun,
+                                          QGeoCoordinate const& topLeft,
+                                          QGeoCoordinate const& bottomRight,
+                                          double zoomLevel)
+{
+    if (lon >= 0 && lon < 42)
+    {
+        lonZone = 2 * ((int(lon) + 183) / 12) + 1;
+    }
+    if (overrun)
+    {
+        for (;;)
+        {
+            if (lonZone > 60)
+            {
+                lon = -180;
+                lonZone = 1;
+                break;
+            }
+            _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, 9);
+            auto line = _getLonLine(84, lat, lon);
+            line.precision = GridlinePrecisionLevel::GZD;
+            m_gridLines.append(line);
+            if (lonZone == 31)
+            {
+                lon = 9;
+                lonZone = 33;
+            }
+            else if (lonZone == 33)
+            {
+                lon = 21;
+                lonZone = 35;
+            }
+            else if (lonZone == 35)
+            {
+                lon = 33;
+                lonZone = 37;
+            }
+            else if (lonZone == 37)
+            {
+                lon = 42;
+                lonZone = 38;
+            }
+            else
+            {
+                ++lonZone;
+                lon += 6;
+            }
+        }
+    }
+    for (;;)
+    {
+        _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, 9);
+        if (lon > bottomRight.longitude())
+        {
+            break;
+        }
+        auto line = _getLonLine(84, lat, lon);
+        line.precision = GridlinePrecisionLevel::GZD;
+        m_gridLines.append(line);
+        if (lonZone == 31)
+        {
+            lon = 9;
+            lonZone = 33;
+        }
+        else if (lonZone == 33)
+        {
+            lon = 21;
+            lonZone = 35;
+        }
+        else if (lonZone == 35)
+        {
+            lon = 33;
+            lonZone = 37;
+        }
+        else if (lonZone == 37)
+        {
+            lon = 42;
+            lonZone = 38;
+        }
+        else
+        {
+            ++lonZone;
+            lon += 6;
+        }
+    }
+}
+
+void MapGridlineModel::_MainGZDRoutine(double lat,
+                                       double lon,
+                                       int latBand,
+                                       int lonZone,
+                                       bool overrun,
+                                       QGeoCoordinate const& topLeft,
+                                       QGeoCoordinate const& bottomRight,
+                                       double zoomLevel)
+{
+    if (overrun)
+    {
+        for (;;)
+        {
+            if (lonZone > 60)
+            {
+                lon = -180;
+                lonZone = 1;
+                break;
+            }
+            _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, latBand);
+            auto line = _getLonLine(lat + 8, lat, lon);
+            line.precision = GridlinePrecisionLevel::GZD;
+            m_gridLines.append(line);
+            lon += 6;
+            ++lonZone;
+        }
+    }
+    for (;;)
+    {
+        _drawUTMP100km(lat, lon, topLeft, bottomRight, zoomLevel, lonZone, latBand);
+        if (lon > bottomRight.longitude())
+        {
+            break;
+        }
+        auto line = _getLonLine(lat + 8, lat, lon);
+        line.precision = GridlinePrecisionLevel::GZD;
+        m_gridLines.append(line);
+        lon += 6;
+        ++lonZone;
+    }
 }
 
 void MapGridlineModel::_drawUTMPGrid(QGeoCoordinate const& topLeft,
@@ -865,232 +1068,59 @@ void MapGridlineModel::_drawUTMPGrid(QGeoCoordinate const& topLeft,
 {
     if (bottomRight.latitude() < 84 && topLeft.latitude() >= -80)
     {
-        bool overrun = bottomRight.longitude() < topLeft.longitude();
+        auto const overrun = bottomRight.longitude() < topLeft.longitude();
         if (topLeft.latitude() >= 84)
         {
             //top the top gridline (special case)
-            MapGridline line = _getLatLine(84, topLeft, bottomRight);
+            auto line = _getLatLine(84, topLeft, bottomRight);
             line.precision = GridlinePrecisionLevel::GZD;
             m_gridLines.append(line);
         }
-        int latBand = _LatitudeBand(topLeft.latitude());
-        int ilonStart = int(floor(Math::AngNormalize(topLeft.longitude())));
+        auto latBand = _LatitudeBand(topLeft.latitude());
+        auto ilonStart = int(floor(Math::AngNormalize(topLeft.longitude())));
         if (ilonStart == 180)
         {
             ilonStart = -180; // ilon now in [-180,180)
         }
-        int zoneStart = (ilonStart + 186) / 6;
-        double lonStart = double(((zoneStart) * 6) - 186);
+        auto const zoneStart = (ilonStart + 186) / 6;
+        auto const lonStart = double(((zoneStart) * 6) - 186);
         for (;;)
         {
-            double latBandLat;
-            if (latBand < -10)
+            assert(latBand >= -10);
+            assert(latBand <= 9);
+            auto const lat = double(((latBand + 10) * 8) - 80);
+            switch (latBand)
             {
-                latBandLat = -80;
+            case 7:
+                _NorwayException(lat, lonStart, zoneStart, overrun, topLeft, bottomRight, zoomLevel);
+                break;
+            case 9:
+                _SvalbardException(lat,
+                                   lonStart,
+                                   zoneStart,
+                                   overrun,
+                                   topLeft,
+                                   bottomRight,
+                                   zoomLevel);
+                break;
+            default:
+                _MainGZDRoutine(lat,
+                                lonStart,
+                                latBand,
+                                zoneStart,
+                                overrun,
+                                topLeft,
+                                bottomRight,
+                                zoomLevel);
+                break;
             }
-            else
-            {
-                latBandLat = double(((latBand + 10) * 8) - 80);
-            }
-
-            if (latBand == 7)
-            {
-                int lonZone = zoneStart;
-                //Norway exception (V band)
-                double lon = lonStart;
-                if (lonZone == 31 && lon >= 3)
-                {
-                    lonZone = 32;
-                }
-                if (overrun)
-                {
-                    for (;;)
-                    {
-                        if (lonZone > 60)
-                        {
-                            lon = -180;
-                            lonZone = 1;
-                            break;
-                        }
-                        _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                        MapGridline line = _getLonLine(latBandLat + 8, latBandLat, lon);
-                        line.precision = GridlinePrecisionLevel::GZD;
-                        m_gridLines.append(line);
-                        if (lonZone == 31)
-                        {
-                            lon = 3;
-                            lonZone = 32;
-                        }
-                        else if (lonZone == 32)
-                        {
-                            lon = 12;
-                            lonZone = 33;
-                        }
-                        else
-                        {
-                            lon += 6;
-                            ++lonZone;
-                        }
-                    }
-                }
-                for (;;)
-                {
-                    _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                    if (lon > bottomRight.longitude())
-                    {
-                        break;
-                    }
-                    MapGridline line = _getLonLine(latBandLat + 8, latBandLat, lon);
-                    line.precision = GridlinePrecisionLevel::GZD;
-                    m_gridLines.append(line);
-                    if (lonZone == 31)
-                    {
-                        lon = 3;
-                        lonZone = 32;
-                    }
-                    else if (lonZone == 32)
-                    {
-                        lon = 12;
-                        lonZone = 33;
-                    }
-                    else
-                    {
-                        lon += 6;
-                        ++lonZone;
-                    }
-                }
-            }
-            else if (latBand == 9)
-            {
-                //Svalbard exception (X band)
-                int lonZone = zoneStart;
-                double lon = lonStart;
-                if (lon >= 0 && lon < 42)
-                {
-                    lonZone = 2 * ((int(lon) + 183) / 12) + 1;
-                }
-                if (overrun)
-                {
-                    for (;;)
-                    {
-                        if (lonZone > 60)
-                        {
-                            lon = -180;
-                            lonZone = 1;
-                            break;
-                        }
-                        _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                        MapGridline line = _getLonLine(84, latBandLat, lon);
-                        line.precision = GridlinePrecisionLevel::GZD;
-                        m_gridLines.append(line);
-                        if (lonZone == 31)
-                        {
-                            lon = 9;
-                            lonZone = 33;
-                        }
-                        else if (lonZone == 33)
-                        {
-                            lon = 21;
-                            lonZone = 35;
-                        }
-                        else if (lonZone == 35)
-                        {
-                            lon = 33;
-                            lonZone = 37;
-                        }
-                        else if (lonZone == 37)
-                        {
-                            lon = 42;
-                            lonZone = 38;
-                        }
-                        else
-                        {
-                            ++lonZone;
-                            lon += 6;
-                        }
-                    }
-                }
-                for (;;)
-                {
-                    _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                    if (lon > bottomRight.longitude())
-                    {
-                        break;
-                    }
-                    MapGridline line = _getLonLine(84, latBandLat, lon);
-                    line.precision = GridlinePrecisionLevel::GZD;
-                    m_gridLines.append(line);
-                    if (lonZone == 31)
-                    {
-                        lon = 9;
-                        lonZone = 33;
-                    }
-                    else if (lonZone == 33)
-                    {
-                        lon = 21;
-                        lonZone = 35;
-                    }
-                    else if (lonZone == 35)
-                    {
-                        lon = 33;
-                        lonZone = 37;
-                    }
-                    else if (lonZone == 37)
-                    {
-                        lon = 42;
-                        lonZone = 38;
-                    }
-                    else
-                    {
-                        ++lonZone;
-                        lon += 6;
-                    }
-                }
-            }
-            else
-            {
-                double lon = lonStart;
-                int lonZone = zoneStart;
-                if (overrun)
-                {
-                    for (;;)
-                    {
-                        if (lonZone > 60)
-                        {
-                            lon = -180;
-                            lonZone = 1;
-                            break;
-                        }
-                        _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                        MapGridline line = _getLonLine(latBandLat + 8, latBandLat, lon);
-                        line.precision = GridlinePrecisionLevel::GZD;
-                        m_gridLines.append(line);
-                        lon += 6;
-                        ++lonZone;
-                    }
-                }
-                for (;;)
-                {
-                    _drawUTMP100km(topLeft, bottomRight, zoomLevel, lonZone, latBand);
-                    if (lon > bottomRight.longitude())
-                    {
-                        break;
-                    }
-                    MapGridline line = _getLonLine(latBandLat + 8, latBandLat, lon);
-                    line.precision = GridlinePrecisionLevel::GZD;
-                    m_gridLines.append(line);
-                    lon += 6;
-                }
-            }
-            if (latBand < -10 || latBandLat <= bottomRight.latitude() || latBandLat < -80)
+            if (latBand <= -10 || lat <= bottomRight.latitude())
             {
                 break;
             }
-            {
-                MapGridline line = _getLatLine(latBandLat, topLeft, bottomRight);
-                line.precision = GridlinePrecisionLevel::GZD;
-                m_gridLines.append(line);
-            }
+            auto line = _getLatLine(lat, topLeft, bottomRight);
+            line.precision = GridlinePrecisionLevel::GZD;
+            m_gridLines.append(line);
             --latBand;
         }
     }
@@ -1109,21 +1139,19 @@ void MapGridlineModel::updateGridlines(QGeoCoordinate topLeft,
         bottomRight.setLongitude(std::nextafter(180, -DBL_MAX));
     }
     //TODO investigate why somtimes only some of the lines show up
+    //seems to happen more on lower zoom levels
     //if (zoomLevel > 4.3)
     {
         if (_isMGRS())
         {
-            // qCritical() << "zoomLevel=" << zoomLevel;
             _drawUTMPGrid(topLeft, bottomRight, zoomLevel);
             //TODO handle polar regions? Right now they are just blank
         }
         else
         {
-            //for some reason, some of the lines won't show up below a certain zoom level
             auto const latLonStep = _getLatLonStep(zoomLevel);
             _drawLatLines(topLeft, bottomRight, latLonStep);
             _drawLonLines(topLeft, bottomRight, latLonStep);
-            //qCritical() << "zoomLevel=" << zoomLevel;
         }
     }
     endResetModel();

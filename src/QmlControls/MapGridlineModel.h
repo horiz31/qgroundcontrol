@@ -51,7 +51,9 @@ private:
                        QGeoCoordinate const& bottomRight,
                        double zoomLevel);
 
-    void _drawUTMP100km(QGeoCoordinate const& topLeft,
+    void _drawUTMP100km(double bLat,
+                        double lLon,
+                        QGeoCoordinate const& topLeft,
                         QGeoCoordinate const& bottomRight,
                         double zoomLevel,
                         int lonZone,
@@ -64,6 +66,31 @@ private:
     void _drawLonLines(QGeoCoordinate const& topLeft,
                        QGeoCoordinate const& bottomRight,
                        double latLonStep);
+
+    void _NorwayException(double lat,
+                          double lon,
+                          int lonZone,
+                          bool overrun,
+                          QGeoCoordinate const& topLeft,
+                          QGeoCoordinate const& bottomRight,
+                          double zoomLevel);
+
+    void _SvalbardException(double lat,
+                            double lon,
+                            int lonZone,
+                            bool overrun,
+                            QGeoCoordinate const& topLeft,
+                            QGeoCoordinate const& bottomRight,
+                            double zoomLevel);
+
+    void _MainGZDRoutine(double lat,
+                         double lon,
+                         int latBand,
+                         int lonZone,
+                         bool overrun,
+                         QGeoCoordinate const& topLeft,
+                         QGeoCoordinate const& bottomRight,
+                         double zoomLevel);
 
     QList<MapGridline> m_gridLines;
     mutable std::recursive_mutex m_mut;
