@@ -45,7 +45,7 @@ LinuxBuild {
         CONFIG      += VideoEnabled
 
         LIBS        += -L$$GST_ROOT/lib -lgstreamer-1.0 -lgstgl-1.0 -lgstvideo-1.0 -lgstbase-1.0
-        LIBS        += -lglib-2.0 -lintl -lgobject-2.0
+        LIBS        += -lglib-2.0 -lintl -lgobject-2.0        
 
         INCLUDEPATH += \
             $$GST_ROOT/include \

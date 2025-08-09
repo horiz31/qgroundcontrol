@@ -14,7 +14,10 @@ import QtGraphicalEffects   1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Palette       1.0
 
+
+
 Button {
+
     id:             control
     width:          contentLayoutItem.contentWidth + (contentMargins * 2)
     height:         width
@@ -25,6 +28,7 @@ Button {
     text:           toolStripAction.text
     checked:        toolStripAction.checked
     checkable:      toolStripAction.dropPanelComponent || modelData.checkable
+
 
     property var    toolStripAction:    undefined
     property var    dropPanel:          undefined

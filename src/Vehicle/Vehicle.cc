@@ -3420,6 +3420,7 @@ void Vehicle::setCurrentMissionSequence(int seq)
                 _compID,
                 static_cast<uint16_t>(seq));
     sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
+
 }
 
 void Vehicle::sendMavCommand(int compId, MAV_CMD command, bool showError, float param1, float param2, float param3, float param4, float param5, float param6, float param7)
@@ -4305,7 +4306,6 @@ void Vehicle::_getSystemSerialNumber()
     QString brdSerialParam("BRD_SERIAL_NUM");
     // Board serial number is used to encode unique serial number as well as the vehicle type
     // This GCS is only compatible with
-    // EchoMAV MK1
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, brdSerialParam))
     {
         Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,brdSerialParam);
@@ -5051,7 +5051,7 @@ void Vehicle::_lowBatteryWarningTick()
 void Vehicle::_lowFuelWarningTick()
 {
 
-    if (batteries()->count() >= 2 && _vehicleModel == EchoMAVMK1 && _armed && _flying)
+    if (batteries()->count() >= 2 && _armed && _flying)
     {
         //get battery 1, which is used for storing fuel
         VehicleBatteryFactGroup* group = batteries()->value<VehicleBatteryFactGroup*>(1);

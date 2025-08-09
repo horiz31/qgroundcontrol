@@ -108,12 +108,12 @@ qgroundcontrol
 ```
 ### Windows
 
-Download the gstreamer framework from here: http://gstreamer.freedesktop.org/data/pkg/windows. Supported version is 1.18.1. QGC may work with newer version, but it is untested.
+Download the gstreamer framework from here: http://gstreamer.freedesktop.org/data/pkg/windows. Supported version is 1.24.4. QGC may work with newer version, but it is untested.
 
 You need two packages:
 
 #### 64-Bit: 
-- [gstreamer-1.0-devel-msvc-x86_64-1.24.4.msi](https://gstreamer.freedesktop.org/data/pkg/windows/1.18.1/msvc/gstreamer-1.0-devel-msvc-x86_64-1.24.4.msi)
-- [gstreamer-1.0-msvc-x86_64-1.24.4.msi](https://gstreamer.freedesktop.org/data/pkg/windows/1.18.1/msvc/gstreamer-1.0-msvc-x86_64-1.24.4.msi)
+- [gstreamer-1.0-devel-msvc-x86_64-1.24.4.msi](https://gstreamer.freedesktop.org/data/pkg/windows/1.24.4/msvc/gstreamer-1.0-devel-msvc-x86_64-1.24.4.msi)
+- [gstreamer-1.0-msvc-x86_64-1.24.4.msi](https://gstreamer.freedesktop.org/data/pkg/windows/1.24.4/msvc/https://gstreamer.freedesktop.org/data/pkg/windows/1.24.4/msvc/gstreamer-1.0-msvc-x86_64-1.24.4.msi)
 
 Make sure you select "Complete" installation instead of "Typical" installation during the install process. The installer places them under c:\gstreamer, which is where the QGC build system will look for it.

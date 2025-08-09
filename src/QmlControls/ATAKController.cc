@@ -83,9 +83,9 @@ void ATAKController::send(QGeoCoordinate coordinate, QString uid)
     _atakMcastPort = settings->atakServerPort()->rawValue().toInt();
 
     if (uid.isEmpty())
-        _uid = QString("EchoMAV.") + GetRandomString();
+        _uid = QString("SuperVolo.") + GetRandomString();
     else
-        _uid = QString("EchoMAV.") + uid;
+        _uid = QString("SuperVolo.") + uid;
 
     //qDebug() << "Sending ATAK mcast message";
     //qDebug() << "The specified type is" << _cotTypes[_cotType] << "and the CoT code is"<< _cotMap.value(_cotTypes[_cotType]);

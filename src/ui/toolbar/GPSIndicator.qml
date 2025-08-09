@@ -47,7 +47,7 @@ Item {
 
                 QGCLabel {
                     id:             gpsLabel
-                    text:           (_activeVehicle && _activeVehicle.gps.count.value >= 0) ? qsTr("GPS Status") : qsTr("GPS Data Unavailable")
+                    text:           (_activeVehicle && _activeVehicle.gps.count.value >= 0) ? qsTr("GPS 1 Status") : qsTr("GPS Data Unavailable")
                     font.family:    ScreenTools.demiboldFontFamily
                     anchors.horizontalCenter: parent.horizontalCenter
                 }

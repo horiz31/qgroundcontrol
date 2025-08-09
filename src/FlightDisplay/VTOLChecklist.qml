@@ -80,8 +80,8 @@ Item {
                 allowFailurePercentOverride:    true
             }
 
-            PreFlightRangefinderCheck {
-            }
+           // PreFlightRangefinderCheck {
+           // }
 
             PreFlightSensorsHealthCheck {
                 allowTelemetryFailureOverride:    true
@@ -103,9 +103,9 @@ Item {
             }
 
 
-            PreFlightJoystickCheck {
-                allowTelemetryFailureOverride:    !QGroundControl.settingsManager.appSettings.enforceJoystickRequired.value
-             }
+           // PreFlightJoystickCheck {
+           //     allowTelemetryFailureOverride:    !QGroundControl.settingsManager.appSettings.enforceJoystickRequired.value
+           //  }
 
              PreFlightQHoverCheck {
              }

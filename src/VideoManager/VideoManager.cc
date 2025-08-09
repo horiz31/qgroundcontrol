@@ -52,7 +52,7 @@ static const char* kFileExtension[VideoReceiver::FILE_FORMAT_MAX - VideoReceiver
 
 namespace
 {
-constexpr static inline auto const* np_remoteStreamServer = "srt://data.echomav.com:4200";
+constexpr static inline auto const* np_remoteStreamServer = "srt://data.hybridproject.com:4200";
 constexpr static inline auto const* np_unsecureStreamApp = "LiveApp";
 constexpr static inline auto const* np_secureStreamApp = "SecureApp";
 

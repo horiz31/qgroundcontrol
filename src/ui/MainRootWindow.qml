@@ -441,6 +441,7 @@ ApplicationWindow {
                         }
                         QGCLabel {
                             text:                   qsTr("Click to Toggle Advanced Mode")
+                            visible:                false  //don't show this on volocomm
                             font.pointSize:         ScreenTools.smallFontPointSize
                             font.underline:         true
                             wrapMode:               QGCLabel.WrapAnywhere
@@ -501,7 +502,7 @@ ApplicationWindow {
         color:          Qt.rgba(0,0,0,1.0)
         visible:        getVisible()
         QGCLabel {
-            text:               qsTr("ERROR: UNSUPPORTED VEHICLE TYPE\nThis GCS is designed to be used only with the EchoMAV MK1\nFor more information, contact support@echomav.com ")
+            text:               qsTr("ERROR: UNSUPPORTED VEHICLE TYPE\nThis GCS is designed to be used only with the Hybrid Project SuperVolo\nFor more information, contact support@hybridproject.com ")
             font.family:        ScreenTools.demiboldFontFamily
             color:              "white"
             font.pointSize:     ScreenTools.largeFontPointSize
@@ -510,12 +511,16 @@ ApplicationWindow {
 
         function getVisible()
         {
+            return false;
+            //dont do this for VoloComm
+            /*
             if (_activeVehicle)
             {
-                if (_activeVehicle.parameterManager.parametersReady && _activeVehicle.vehicleModel !== Vehicle.EchoMAVMK1)
+                if (_activeVehicle.parameterManager.parametersReady && _activeVehicle.vehicleModel !== Vehicle.SuperVolo)
                     return true;
             }
             return false;
+            */
         }
     }
 

@@ -175,7 +175,7 @@ public:
     //enum for the model of aircraft, which comes from the BRD_SERIAL_NUM param
     enum Model {
         Unknown = 0,
-        EchoMAVMK1,
+        SuperVolo,
     };
     Q_ENUM(Model)
 
@@ -602,6 +602,7 @@ public:
     void setFlightMode                      (const QString& flightMode);
     float guidedModeRadius                   () { return _guidedModeRadius; }
 
+
     enum NAVLIGHT_OPTIONS
     {
         NavLight_Off = 0,
@@ -1002,6 +1003,7 @@ signals:
     void armedChanged                   (bool armed);
     void flightModeChanged              (const QString& flightMode);
     void guidedModeRadiusChanged        ();
+    void setCurrentMissionSequenceChanged ();
     void flyingChanged                  (bool flying);
     void rc12Changed(int rc12);
     void landingChanged(bool landing);

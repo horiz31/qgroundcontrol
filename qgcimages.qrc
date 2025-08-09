@@ -203,5 +203,9 @@
         <file alias="atakMarker.svg">src/FlightMap/Images/atakMarker.svg</file>
         <file alias="annotation.svg">src/FlightMap/Images/annotation.svg</file>
         <file alias="clearmeasure.svg">resources/clearmeasure.svg</file>
+        <file>src/FirmwarePlugin/APM/Plane3.9.OfflineEditing.params</file>
+        <file alias="APM/VolocommImage">src/FirmwarePlugin/APM/volocomm.png</file>
+        <file alias="APM/VolocommOutdoorImage">src/FirmwarePlugin/APM/volorommoutdoor.png</file>
+        <file alias="Gps2.svg">src/ui/toolbar/Images/Gps2.svg</file>
     </qresource>
 </RCC>

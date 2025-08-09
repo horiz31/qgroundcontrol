@@ -125,8 +125,8 @@ Rectangle {
         property string _userBrandImageOutdoor: QGroundControl.settingsManager.brandImageSettings.userBrandImageOutdoor.value
         property bool   _userBrandingIndoor:    _userBrandImageIndoor.length != 0
         property bool   _userBrandingOutdoor:   _userBrandImageOutdoor.length != 0
-        property string _brandImageIndoor:      "/qmlimages/APM/EchomavImage" //brandImageIndoor()
-        property string _brandImageOutdoor:     "/qmlimages/APM/EchomavOutdoorImage"  //brandImageOutdoor()
+        property string _brandImageIndoor:      "/qmlimages/APM/VolocommImage" //brandImageIndoor()
+        property string _brandImageOutdoor:     "/qmlimages/APM/VolocommOutdoorImage"  //brandImageOutdoor()
 
         function brandImageIndoor() {
             if (_userBrandingIndoor) {

@@ -455,7 +455,7 @@ Rectangle {
                             FactCheckBox {
                                 text:   qsTr("Use MAV_CMD_CONDITION_GATE for pattern generation")
                                 fact:   QGroundControl.settingsManager.planViewSettings.useConditionGate
-                                visible: false //echomav
+                                visible: false //supervolo
                             }
 
                             FactCheckBox {
@@ -1315,7 +1315,7 @@ Rectangle {
 
                     Item { width: 1; height: _margins }
                     QGCLabel {
-                        text:               qsTr("EchoMav GCS Version")
+                        text:               qsTr("VoloComm GCS Version")
                         Layout.alignment:   Qt.AlignHCenter
                     }
                     QGCLabel {

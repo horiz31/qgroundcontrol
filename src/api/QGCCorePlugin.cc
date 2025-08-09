@@ -114,7 +114,7 @@ QGCCorePlugin::~QGCCorePlugin()
 QGCCorePlugin::QGCCorePlugin(QGCApplication *app, QGCToolbox* toolbox)
     : QGCTool(app, toolbox)
     , _showTouchAreas(false)
-    , _showAdvancedUI(false)
+    , _showAdvancedUI(true)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
     _p = new QGCCorePlugin_p;

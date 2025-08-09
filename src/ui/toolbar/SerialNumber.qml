@@ -60,12 +60,12 @@ Item {
                     {
                         if (_activeVehicle.vehicleModel === Vehicle.Unknown)
                             return " Vehicle " + _activeVehicle.brdSerialNumber + " "
-                        else if (_activeVehicle.vehicleModel === Vehicle.EchoMAVMK1)
-                            return " MK1 " + _activeVehicle.brdSerialNumber + " "
+                        else if (_activeVehicle.vehicleModel === Vehicle.SuperVolo)
+                            return " Vehicle " + _activeVehicle.brdSerialNumber + " "
                     }
                     else
                     {
-                       return " MK1 ";
+                       return " SuperVolo ";
                     }
                 }
             }

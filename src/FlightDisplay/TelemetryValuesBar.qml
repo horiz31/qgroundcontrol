@@ -311,7 +311,7 @@ Rectangle {
                         text: "Air:"
                         font.family: ScreenTools.demiboldFontFamily
                         font.pointSize: ScreenTools.mediumFontPointSize
-                        color: qgcPal.text
+                        color: qgcPal.text                     
                     }
                     QGCLabel {
                         text: _activeVehicle ? _activeVehicle.airSpeed.value.toFixed(0) : "--"

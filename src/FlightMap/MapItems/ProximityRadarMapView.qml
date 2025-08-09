@@ -22,7 +22,7 @@ MapQuickItem {
     id:             _root
     property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
 
-    visible:        _activeVehicle ? proximityValues.telemetryAvailable && coordinate.isValid && (_activeVehicle.vehicleModel !== Vehicle.EchoMAVMK1) : false  //the MK1 may have downware looking lidar, but not full 360 distance sensors as the UI presents
+    visible:        _activeVehicle ? proximityValues.telemetryAvailable && coordinate.isValid : false
 
     property var    vehicle                                                         /// Vehicle object, undefined for ADSB vehicle
     property var    map

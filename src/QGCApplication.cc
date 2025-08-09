@@ -16,7 +16,7 @@
  *
  */
 
-#define ECHOMAV_VERSION "v1.3.5"
+#define VOLOCOMM_VERSION "v1.0"
 
 #include <QFile>
 #include <QRegularExpression>
@@ -271,10 +271,10 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         // This gives daily builds their own separate settings space. Allowing you to use daily and stable builds
         // side by side without daily screwing up your stable settings.
         //applicationName = QStringLiteral("%1 Daily").arg(QGC_APPLICATION_NAME);
-        applicationName = QStringLiteral("EchoMav GCS");
+        applicationName = QStringLiteral("VoloComm GCS");
 #else
         //applicationName = QGC_APPLICATION_NAME;
-        applicationName = QStringLiteral("EchoMav GCS");
+        applicationName = QStringLiteral("VoloComm GCS");
 #endif
     }
     setApplicationName(applicationName);
@@ -282,7 +282,7 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
     setOrganizationDomain(QGC_ORG_DOMAIN);
 
     //this->setApplicationVersion(QString(APP_VERSION_STR));
-    this->setApplicationVersion(QString(ECHOMAV_VERSION));
+    this->setApplicationVersion(QString(VOLOCOMM_VERSION));
 
     // Set settings format
     QSettings::setDefaultFormat(QSettings::IniFormat);

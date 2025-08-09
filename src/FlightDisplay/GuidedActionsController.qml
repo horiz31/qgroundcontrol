@@ -133,6 +133,7 @@ Item {
     property bool showTakeoff:          _guidedActionsEnabled && _activeVehicle.takeoffVehicleSupported && !_vehicleFlying && _canArm && !isCheckListOpen
     property bool showLand:             _guidedActionsEnabled && _activeVehicle.guidedModeSupported && _vehicleArmed && !_activeVehicle.fixedWing && !_vehicleInLandMode
     property bool showStartMission:     _guidedActionsEnabled && _missionAvailable && !_missionActive && !_vehicleFlying && _canArm && !isCheckListOpen
+    property bool showStartMissionRefined: _guidedActionsEnabled && _missionAvailable && !_missionActive && !_vehicleFlying && _canArm && !isCheckListOpen
     property bool showContinueMission:  _guidedActionsEnabled && _missionAvailable && !_missionActive && _vehicleArmed && _vehicleFlying && (_currentMissionIndex < _missionItemCount - 1)
     property bool showLandInMission:    _guidedActionsEnabled && _missionAvailable && _vehicleArmed && _missionController.doesContainLanding  //doesMissionContainDoLandStart()// figure out if mission contains do_start_land
     property bool showPause:            _guidedActionsEnabled && _vehicleArmed && _activeVehicle.pauseVehicleSupported && _vehicleFlying && !_vehiclePaused && !_fixedWingOnApproach
@@ -246,9 +247,10 @@ Item {
         }
         _outputState()
         if (showStartMission) {
-            confirmAction(actionStartMission)
+            //confirmAction(actionStartMission)
         }
     }
+
     onShowContinueMissionChanged: {
         if (_corePlugin.guidedActionsControllerLogging()) {
             console.log("showContinueMission", showContinueMission)

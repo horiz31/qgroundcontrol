@@ -59,7 +59,7 @@ Component {
                 maximumValue: QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
                                   33.5).toFixed(0)
                 minimumValue: QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
-                                  22.35).toFixed(0)
+                                  16).toFixed(0)
                 value: vehicle ? QGroundControl.unitsConversion.metersPerSecondToAppSettingsSpeedUnits(
                                      vehicle.targetAirSpeedSetPoint.value).toFixed(
                                      0) : 0
@@ -89,7 +89,7 @@ Component {
                             var temp = QGroundControl.unitsConversion.appSettingsSpeedUnitsToMetersPerSecond(
                                         targetAirspeed.text)
                             //convert to m/s first
-                            if (temp >= 20 && temp <= 33.6)
+                            if (temp >= 16 && temp <= 33.6)
                                 return true
                             return false
                         }

@@ -18,7 +18,7 @@ import QtQuick.Controls         2.12
 import QGroundControl.ScreenTools   1.0
 
 PreFlightCheckButton {    
-    name:               qsTr("Final Mode Check")
+    name:               qsTr("Mode Change Check")
     telemetryFailure:   notAcceptableMode()  //this causes the button to go yellow/red
     allowTelemetryFailureOverride: true
 
@@ -83,7 +83,7 @@ PreFlightCheckButton {
     function updateTelemetryTextFailure() {      
         if (notAcceptableMode())
         {
-            telemetryTextFailure = qsTr("It is recommend to put the aircraft in QHover mode prior to takeoff.")
+            telemetryTextFailure = qsTr("It is recommend to put the aircraft in QHover mode prior to takeoff to ensure you can change modes from the GCS.")
             return
         }
 
