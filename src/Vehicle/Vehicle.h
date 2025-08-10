@@ -557,7 +557,7 @@ public:
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
-    void sendJoystickDataThreadSafe (float roll, float pitch, float yaw, float thrust, quint16 buttons);
+    void sendJoystickDataThreadSafe (bool disableAxis, float roll, float pitch, float yaw, float thrust, quint16 buttons);
 
     // Property accesors
     int id() const{ return _id; }

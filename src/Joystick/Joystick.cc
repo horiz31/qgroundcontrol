@@ -31,6 +31,7 @@ const char* Joystick::_buttonActionNameKey =            "ButtonActionName%1";
 const char* Joystick::_buttonActionRepeatKey =          "ButtonActionRepeat%1";
 const char* Joystick::_throttleModeSettingsKey =        "ThrottleMode";
 const char* Joystick::_negativeThrustSettingsKey =      "NegativeThrust";
+const char* Joystick::_axisDisabledSettingsKey =        "AxisDisabled";
 const char* Joystick::_exponentialSettingsKey =         "Exponential";
 const char* Joystick::_accumulatorSettingsKey =         "Accumulator";
 const char* Joystick::_deadbandSettingsKey =            "Deadband";
@@ -301,6 +302,7 @@ void Joystick::_loadSettings()
     _buttonFrequencyHz  = settings.value(_buttonFrequencySettingsKey,   _defaultButtonFrequencyHz).toFloat();
     _circleCorrection   = settings.value(_circleCorrectionSettingsKey,  false).toBool();
     _negativeThrust     = settings.value(_negativeThrustSettingsKey,    false).toBool();
+    _axisDisabled       = settings.value(_axisDisabledSettingsKey,      false).toBool();
 
 
     _throttleMode   = static_cast<ThrottleMode_t>(settings.value(_throttleModeSettingsKey, ThrottleModeDownZero).toInt(&convertOk));
@@ -1017,6 +1019,7 @@ void Joystick::_handleAxis()
                     buttonPressedBits |= buttonBit;
                 }
             }
+
             emit axisValues(roll, pitch, yaw, throttle);
 
             uint16_t shortButtons = static_cast<uint16_t>(buttonPressedBits & 0xFFFF);
@@ -1027,7 +1030,12 @@ void Joystick::_handleAxis()
                 pitch = 0;
             }
             if (!_runupEnabled)
-                _activeVehicle->sendJoystickDataThreadSafe(roll, pitch, yaw, throttle, shortButtons);
+            {
+                if (_axisDisabled)
+                    _activeVehicle->sendJoystickDataThreadSafe(true, roll, pitch, yaw, throttle, shortButtons);
+                else
+                    _activeVehicle->sendJoystickDataThreadSafe(false, roll, pitch, yaw, throttle, shortButtons);
+            }
         }
     }
 }
@@ -1387,6 +1395,18 @@ void Joystick::setNegativeThrust(bool allowNegative)
 float Joystick::exponential() const
 {
     return _exponential;
+}
+
+bool Joystick::axisDisabled() const
+{
+    return _axisDisabled;
+}
+
+void Joystick::setAxisDisabled(bool axisDisabled)
+{
+    _axisDisabled = axisDisabled;
+    _saveSettings();
+    emit axisDisabledChanged(_axisDisabled);
 }
 
 void Joystick::setExponential(float expo)

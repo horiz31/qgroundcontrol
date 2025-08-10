@@ -16,7 +16,7 @@
  *
  */
 
-#define VOLOCOMM_VERSION "v1.0"
+#define VOLOCOMM_VERSION "v1.1"
 
 #include <QFile>
 #include <QRegularExpression>

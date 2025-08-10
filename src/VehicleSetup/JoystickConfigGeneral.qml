@@ -61,6 +61,17 @@ Item {
                     }
                 }
             }
+            QGCLabel {
+                text:               _activeJoystick ? _activeJoystick.calibrated ? qsTr("Disable Joystick Axis Ouputs (For Use With RC Transmitter)") : qsTr("Disable Axis not allowed (Calibrate First)") : ""
+                Layout.alignment:   Qt.AlignVCenter
+                Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 36
+            }
+            QGCCheckBox {
+                enabled:            _activeJoystick ? _activeJoystick.calibrated : false
+                checked:            _activeJoystick ? _activeJoystick.axisDisabled : false
+                onClicked:          _activeJoystick.axisDisabled = checked
+
+            }
             //---------------------------------------------------------------------
             //-- Joystick Selector
             QGCLabel {
@@ -134,6 +145,17 @@ Item {
             //---------------------------------------------------------------------
             //-- Axis Monitors
             Rectangle {
+                visible:            _activeJoystick.axisDisabled
+                id:                 axisRectdummy
+                color:              Qt.rgba(0,0,0,0)
+                border.color:       qgcPal.text
+                border.width:       1
+                radius:             ScreenTools.defaultFontPixelWidth * 0.5
+                width:              axisGrid.width  + (ScreenTools.defaultFontPixelWidth  * 2)
+                height:             axisGrid.height + (ScreenTools.defaultFontPixelHeight * 2)
+            }
+            Rectangle {
+                visible:            !_activeJoystick.axisDisabled
                 id:                 axisRect
                 color:              Qt.rgba(0,0,0,0)
                 border.color:       qgcPal.text
@@ -151,7 +173,7 @@ Item {
                         text:               globals.activeVehicle.sub ? qsTr("Lateral") : qsTr("Roll")
                         Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 12
                     }
-                    AxisMonitor {
+                    AxisMonitor {                       
                         id:                 rollAxis
                         height:             ScreenTools.defaultFontPixelHeight
                         width:              axisMonitorWidth
@@ -164,7 +186,7 @@ Item {
                         width:              _attitudeLabelWidth
                         text:               globals.activeVehicle.sub ? qsTr("Forward") : qsTr("Pitch")
                     }
-                    AxisMonitor {
+                    AxisMonitor {                       
                         id:                 pitchAxis
                         height:             ScreenTools.defaultFontPixelHeight
                         width:              axisMonitorWidth
@@ -172,12 +194,12 @@ Item {
                         reversed:           controller.pitchAxisReversed
                     }
 
-                    QGCLabel {
+                    QGCLabel {                        
                         id:                 yawLabel
                         width:              _attitudeLabelWidth
                         text:               qsTr("Yaw")
                     }
-                    AxisMonitor {
+                    AxisMonitor {                        
                         id:                 yawAxis
                         height:             ScreenTools.defaultFontPixelHeight
                         width:              axisMonitorWidth
@@ -190,7 +212,7 @@ Item {
                         width:              _attitudeLabelWidth
                         text:               qsTr("Throttle")
                     }
-                    AxisMonitor {
+                    AxisMonitor {                       
                         id:                 throttleAxis
                         height:             ScreenTools.defaultFontPixelHeight
                         width:              axisMonitorWidth
@@ -214,8 +236,8 @@ Item {
                 border.color:       qgcPal.text
                 border.width:       1
                 radius:             ScreenTools.defaultFontPixelWidth * 0.5
-                width:              axisRect.width
-                height:             axisRect.height
+                width:              axisRect ? axisRect.width : axisRectdummy.width
+                height:             axisRect ? axisRect.height : axisRectdummy.height
                 Flow {
                     width:              ScreenTools.defaultFontPixelWidth * 30
                     spacing:            -1

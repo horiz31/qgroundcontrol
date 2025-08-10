@@ -111,6 +111,7 @@ public:
     Q_PROPERTY(float    maxButtonFrequencyHz    MEMBER _maxButtonFrequencyHz                            CONSTANT)
     Q_PROPERTY(bool     negativeThrust          READ negativeThrust         WRITE setNegativeThrust     NOTIFY negativeThrustChanged)
     Q_PROPERTY(float    exponential             READ exponential            WRITE setExponential        NOTIFY exponentialChanged)
+    Q_PROPERTY(float    axisDisabled            READ axisDisabled           WRITE setAxisDisabled      NOTIFY axisDisabledChanged)
     Q_PROPERTY(bool     accumulator             READ accumulator            WRITE setAccumulator        NOTIFY accumulatorChanged)
     Q_PROPERTY(bool     circleCorrection        READ circleCorrection       WRITE setCircleCorrection   NOTIFY circleCorrectionChanged)
 
@@ -199,6 +200,9 @@ public:
     float exponential       () const;
     void  setExponential    (float expo);
 
+    bool axisDisabled       () const;
+    void setAxisDisabled    (bool axisDisabled);
+
     bool  accumulator       () const;
     void  setAccumulator    (bool accu);
 
@@ -237,6 +241,7 @@ signals:
     void throttleModeChanged        (int mode);
     void negativeThrustChanged      (bool allowNegative);
     void exponentialChanged         (float exponential);
+    void axisDisabledChanged        (bool axisDisabled);
     void accumulatorChanged         (bool accumulator);
     void enabledChanged             (bool enabled);
     void circleCorrectionChanged    (bool circleCorrection);
@@ -340,6 +345,7 @@ protected:
     ThrottleMode_t _throttleMode    = ThrottleModeDownZero;
     bool    _negativeThrust         = false;
     float   _exponential            = 0;
+    bool    _axisDisabled           = false;
     float   _throttle_accu          = 0;
     bool    _accumulator            = false;
     bool    _deadband               = false;
@@ -387,6 +393,7 @@ private:
     static const char* _throttleModeSettingsKey;
     static const char* _negativeThrustSettingsKey;
     static const char* _exponentialSettingsKey;
+    static const char* _axisDisabledSettingsKey;
     static const char* _accumulatorSettingsKey;
     static const char* _deadbandSettingsKey;
     static const char* _circleCorrectionSettingsKey;

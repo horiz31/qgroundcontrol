@@ -93,7 +93,7 @@ Item {
                 id:     expoSliderIndicator
                 text:   expoSlider.value.toFixed(2)
             }
-        }
+        }       
         //-----------------------------------------------------------------
         //-- Enable Advanced Mode
         QGCLabel {
