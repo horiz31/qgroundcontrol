@@ -173,8 +173,7 @@ PreFlightCheckButton {
 
 
 
-    function updateTelemetryTextFailure() {      
-        console.log("updateTelemetryTextFailure is running")
+    function updateTelemetryTextFailure() {              
         if(missionLacksLoiterUnlimited() || missionLacksVTOLTakeoff() || missionWPisZero()) {
             if (missionLacksLoiterUnlimited())        telemetryTextFailure = qsTr("Failure. It is recommended that a mission contain a loiter unlimited waypoint.")
             else if(missionLacksVTOLTakeoff())        telemetryTextFailure = qsTr("Failure. The loaded mission does not contain a VTOL Takeoff command.")

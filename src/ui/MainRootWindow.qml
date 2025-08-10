@@ -407,7 +407,7 @@ ApplicationWindow {
                         height:             _toolButtonHeight
                         Layout.fillWidth:   true
                         text:               qsTr("Application Settings")
-                        imageResource:      "/res/QGCLogoFullecho"
+                        imageResource:      "/res/QGCLogoFullvolo"
                         imageColor:         "transparent"
                         visible:            !QGroundControl.corePlugin.options.combineSettingsAndSetup
                         onClicked: {

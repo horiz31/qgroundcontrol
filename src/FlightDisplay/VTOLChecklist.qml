@@ -49,6 +49,15 @@ Item {
                 name:        qsTr("Engine Inspection")
                 manualText:  qsTr("Check that the engine is securely mounted, there are no cracks in the motor/generator, and the prop is in good condition.")
             }
+            PreFlightCheckButton {
+                name:        qsTr("RC Transmitter")
+                manualText:  qsTr("Is the ground RC transmitter (Orange Box) turned on and fully charged?")
+            }
+            PreFlightCheckButton {
+                name:        qsTr("Firmware Version")
+                manualText:  qsTr("Is the loaded firmware ") + (_activeVehicle.firmwareMajorVersion === -1 ? qsTr("Unknown") : _activeVehicle.firmwareMajorVersion + "." + _activeVehicle.firmwareMinorVersion + "." + _activeVehicle.firmwarePatchVersion + _activeVehicle.firmwareVersionTypeString) + qsTr(" correct?")
+            }
+
         }
         PreFlightCheckGroup {
             name: qsTr("Mission, Payload and Failsafe Checks")

@@ -74,6 +74,7 @@
         <file alias="rangefinderWarning.svg">resources/rangefinderWarning.svg</file>
         <file alias="wind.svg">resources/wind.svg</file>
         <file alias="fullscreen.svg">resources/fullscreen.svg</file>
+        <file alias="QGCLogoFullvolo.svg">resources/QGCLogoFullvolo.svg</file>
     </qresource>
     <qresource prefix="/res/firmware">
         <file alias="3drradio.png">resources/firmware/3drradio.png</file>

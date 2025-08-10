@@ -22,7 +22,7 @@ Item {
     id:             _root
     width:          (gpsValuesColumn.x + gpsValuesColumn.width) * 1.1
     anchors.top:    parent.top
-    anchors.bottom: parent.bottom
+    anchors.bottom: parent.bottom    
 
     property bool showIndicator: true
 
@@ -87,7 +87,7 @@ Item {
         source:             "/qmlimages/Gps2.svg"
         fillMode:           Image.PreserveAspectFit
         sourceSize.height:  height
-        opacity:            (_activeVehicle && _activeVehicle.gps.count.value >= 0) ? 1 : 0.5
+        opacity:            (_activeVehicle && _activeVehicle.gps2.count.value >= 0) ? 1 : 0.5
         color:              qgcPal.buttonText
     }
 
@@ -99,15 +99,14 @@ Item {
 
         QGCLabel {
             anchors.horizontalCenter:   hdopValue.horizontalCenter
-            visible:                    _activeVehicle && !isNaN(_activeVehicle.gps.hdop.value)
-            color:                      qgcPal.buttonText
-            //text:                       _activeVehicle ? _activeVehicle.gps.count.valueString : ""
+            visible:                    _activeVehicle && !isNaN(_activeVehicle.gps2.hdop.value)
+            color:                      qgcPal.buttonText            
             text:                       _activeVehicle ? _activeVehicle.gps2.count.valueString : ""
         }
 
         QGCLabel {
             id:         hdopValue
-            visible:    _activeVehicle && !isNaN(_activeVehicle.gps.hdop.value)
+            visible:    _activeVehicle && !isNaN(_activeVehicle.gps2.hdop.value)
             color:      qgcPal.buttonText
             text:       _activeVehicle ? _activeVehicle.gps2.hdop.value.toFixed(1) : ""
         }
