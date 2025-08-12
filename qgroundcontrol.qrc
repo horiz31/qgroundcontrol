@@ -23,6 +23,7 @@
         <file alias="NvGimbalIndicator.qml">src/ui/toolbar/NvGimbalIndicator.qml</file>
         <file alias="SerialNumber.qml">src/ui/toolbar/SerialNumber.qml</file>
         <file alias="GPSIndicator2.qml">src/ui/toolbar/GPSIndicator2.qml</file>
+        <file alias="LinkIndicatorVersion2.qml">src/ui/toolbar/LinkIndicatorVersion2.qml</file>
     </qresource>
     <qresource prefix="/checklists">
         <file alias="DefaultChecklist.qml">src/FlightDisplay/DefaultChecklist.qml</file>

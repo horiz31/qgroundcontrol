@@ -17,6 +17,7 @@
 
 #include "QGCMAVLink.h"
 #include "LinkInterface.h"
+#include "QGCToolbox.h"
 
 Q_DECLARE_LOGGING_CATEGORY(VehicleLinkManagerLog)
 
@@ -55,6 +56,7 @@ public:
     void                    setCommunicationLostEnabled (bool communicationLostEnabled);
     void                    closeVehicle                (void);
 
+
 signals:
     void primaryLinkChanged             (void);
     void allLinksRemoved                (Vehicle* vehicle);
@@ -66,6 +68,7 @@ signals:
 
 private slots:
     void _commLostCheck(void);
+    void _defaultNameChanged(void);
 
 private:
     int                     _containsLinkIndex      (LinkInterface* link);

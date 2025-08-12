@@ -55,7 +55,7 @@ Item {
             }
             PreFlightCheckButton {
                 name:        qsTr("Firmware Version")
-                manualText:  qsTr("Is the loaded firmware ") + (_activeVehicle.firmwareMajorVersion === -1 ? qsTr("Unknown") : _activeVehicle.firmwareMajorVersion + "." + _activeVehicle.firmwareMinorVersion + "." + _activeVehicle.firmwarePatchVersion + _activeVehicle.firmwareVersionTypeString) + qsTr(" correct?")
+                manualText:  _activeVehicle ? "No Active Vehicle" : (qsTr("Is the loaded firmware ") + (_activeVehicle.firmwareMajorVersion === -1 ? qsTr("Unknown") : _activeVehicle.firmwareMajorVersion + "." + _activeVehicle.firmwareMinorVersion + "." + _activeVehicle.firmwarePatchVersion + _activeVehicle.firmwareVersionTypeString) + qsTr(" correct?"))
             }
 
         }
@@ -122,7 +122,7 @@ Item {
         }
 
         PreFlightCheckGroup {
-            name: qsTr("Final Engine and Motor Test")
+            name: qsTr("Final Checks and Motor Test")
 
             PreFlightCheckButton {
                 name:            qsTr("Position Aircraft")
@@ -135,8 +135,10 @@ Item {
 
             PreFlightMultiRotorHealthCheck {
             }
-            PreFlightICEHealthCheck {
-            }
+
+            //at Greg's request, remove ICE Health Check. I don't agree -Brad
+            //PreFlightICEHealthCheck {
+           // }
 
         }
 

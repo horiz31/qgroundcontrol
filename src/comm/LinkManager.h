@@ -23,6 +23,7 @@
 #if !defined(__mobile__)
 #include "LogReplayLink.h"
 #include "UdpIODevice.h"
+#include "AppSettings.h"
 #endif
 #include "QmlObjectListModel.h"
 
@@ -139,6 +140,7 @@ signals:
 
 private slots:
     void _linkDisconnected  (void);
+    void _defaultNameChanged (void);
 
 private:
     QmlObjectListModel* _qmlLinkConfigurations      (void) { return &_qmlConfigurations; }
@@ -163,6 +165,7 @@ private:
     uint32_t                            _mavlinkChannelsUsedBitMask;
 
     AutoConnectSettings*                _autoConnectSettings;
+    AppSettings*                         _appSettings;
     MAVLinkProtocol*                    _mavlinkProtocol;
 
     QList<SharedLinkInterfacePtr>       _rgLinks;
@@ -188,7 +191,7 @@ private:
 #endif
 #endif
 
-    static const char*  _defaultUDPLinkName;
+    QString  _defaultUDPLinkName;
     static const char*  _mavlinkForwardingLinkName;
     static const int    _autoconnectUpdateTimerMSecs;
     static const int    _autoconnectConnectDelayMSecs;

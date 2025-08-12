@@ -341,7 +341,8 @@ const QVariantList& FirmwarePlugin::toolIndicators(const Vehicle*)
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/SingleBatteryIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/FuelIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/ICEIndicator.qml")),
-            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/NvGimbalIndicator.qml"))
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/NvGimbalIndicator.qml")),
+            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/LinkIndicatorVersion2.qml"))
         });
     }
     return _toolIndicatorList;
@@ -354,7 +355,7 @@ const QVariantList& FirmwarePlugin::modeIndicators(const Vehicle*)
         _modeIndicatorList = QVariantList({
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/ROIIndicator.qml")),
             QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/MultiVehicleSelector.qml")),
-            QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/LinkIndicator.qml")),
+            //QVariant::fromValue(QUrl::fromUserInput("qrc:/toolbar/LinkIndicator.qml")),            //replaced with Version2 above
         });
     }
     return _modeIndicatorList;

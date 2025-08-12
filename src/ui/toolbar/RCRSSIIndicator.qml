@@ -129,7 +129,7 @@ Item {
                     QGCLabel { text : (_activeVehicle.RadioRSSI.length === 1) ? "(" +_activeVehicle.RadioRSSI[0].qpercentage + "%)" : "" }
 
                 }
-                // MPU5 Single Radio Row with no data
+                // Doodle Single Radio Row with no data
                 Row {
                     id: singleRssiDoodleNoData
                     visible: (_activeVehicle.RadioRSSI.length === 0 && _rssiSource === 2) ? true : false
@@ -190,11 +190,22 @@ Item {
         }
         */
 
+        //this is currently based on RadioRSSIMin
         SignalStrength {
             anchors.verticalCenter: parent.verticalCenter
             size:                   parent.height * 0.5
-            percent:                _activeVehicle ? ((_activeVehicle.RadioRSSIMin != 255) ? _activeVehicle.RadioRSSIMin : (100 - _activeVehicle.mavlinkLossPercent.toFixed(0))) : 0
-
+            percent:                getPercent()
+            function getPercent()
+            {
+                if (_activeVehicle)
+                {
+                    if (_rssiSource === 0) //mavlink packet or RC
+                        return (_activeVehicle.RadioRSSIMin != 255) ? _activeVehicle.RadioRSSIMin : (100 - _activeVehicle.mavlinkLossPercent.toFixed(0))
+                    else if (_rssiSource === 1 || _rssiSource === 2)  //mpu5 or doodle
+                        return _activeVehicle.RadioRSSI[0] ? _activeVehicle.RadioRSSI[0].qpercentage : 0
+                }
+                return 0;
+            }
         }
         QGCLabel {
             id:             rssiLabel2

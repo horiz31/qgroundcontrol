@@ -46,7 +46,8 @@
 QGC_LOGGING_CATEGORY(LinkManagerLog, "LinkManagerLog")
 QGC_LOGGING_CATEGORY(LinkManagerVerboseLog, "LinkManagerVerboseLog")
 
-const char* LinkManager::_defaultUDPLinkName =       "UDP Link (AutoConnect)";
+//instead of this being hard coded, I want to create a settings that lets the user define what it is called
+//QString LinkManager::_defaultUDPLinkName =       "UDP Link 14550";
 const char* LinkManager::_mavlinkForwardingLinkName =       "MAVLink Forwarding Link";
 
 const int LinkManager::_autoconnectUpdateTimerMSecs =   1000;
@@ -74,6 +75,7 @@ LinkManager::LinkManager(QGCApplication* app, QGCToolbox* toolbox)
     qmlRegisterUncreatableType<LinkManager>         ("QGroundControl", 1, 0, "LinkManager",         "Reference only");
     qmlRegisterUncreatableType<LinkConfiguration>   ("QGroundControl", 1, 0, "LinkConfiguration",   "Reference only");
     qmlRegisterUncreatableType<LinkInterface>       ("QGroundControl", 1, 0, "LinkInterface",       "Reference only");
+
 }
 
 LinkManager::~LinkManager()
@@ -90,10 +92,14 @@ void LinkManager::setToolbox(QGCToolbox *toolbox)
     QGCTool::setToolbox(toolbox);
 
     _autoConnectSettings = toolbox->settingsManager()->autoConnectSettings();
+    _appSettings = toolbox->settingsManager()->appSettings();
     _mavlinkProtocol = _toolbox->mavlinkProtocol();
 
     connect(&_portListTimer, &QTimer::timeout, this, &LinkManager::_updateAutoConnectLinks);
     _portListTimer.start(_autoconnectUpdateTimerMSecs); // timeout must be long enough to get past bootloader on second pass
+
+    Fact* fact = _appSettings->defaultConnectionName();
+    connect(fact, &Fact::valueChanged, this, &LinkManager::_defaultNameChanged);
 
 }
 
@@ -156,6 +162,10 @@ bool LinkManager::createConnectedLink(SharedLinkConfigurationPtr& config, bool i
         connect(link.get(), &LinkInterface::bytesSent,           _mavlinkProtocol,    &MAVLinkProtocol::logSentBytes);
         connect(link.get(), &LinkInterface::disconnected,        this,                &LinkManager::_linkDisconnected);
 
+
+
+
+
         _mavlinkProtocol->resetMetadataForLink(link.get());
         _mavlinkProtocol->setVersion(_mavlinkProtocol->getCurrentVersion());
 
@@ -190,7 +200,27 @@ void LinkManager::disconnectAll(void)
         sharedLink->disconnect();
     }
 }
+void LinkManager::_defaultNameChanged(void)
+{
+    _defaultUDPLinkName = _appSettings->defaultConnectionName() ? _appSettings->defaultConnectionName()->rawValueString() : "UDP Port 14550";
+    //we need to change the name of the link with port 14550
+    for (int i = 0; i < _rgLinks.count(); i++) {
+        SharedLinkConfigurationPtr linkConfig = _rgLinks[i]->linkConfiguration();
+        if (linkConfig->type() == LinkConfiguration::TypeUdp)
+        {
+            UDPConfiguration* udpconfig = (qobject_cast<UDPConfiguration*>(_rgLinks[i]->linkConfiguration().get()));
+            if (udpconfig->localPort() == 14550)
+            {
+                SharedLinkInterfacePtr& link = _rgLinks[i];
+                link->linkConfiguration()->name() = _defaultUDPLinkName;
+                qDebug() << "Changing the link with port 14550 to name" << _defaultUDPLinkName;
+                emit linkConfig->nameChanged(_defaultUDPLinkName);
+                break;
+            }
+        }
+    }
 
+}
 void LinkManager::_linkDisconnected(void)
 {
     LinkInterface* link = qobject_cast<LinkInterface*>(sender());
@@ -372,6 +402,10 @@ void LinkManager::_addUDPAutoConnectLink(void)
 {
     if (_autoConnectSettings->autoConnectUDP()->rawValue().toBool()) {
         bool foundUDP = false;
+
+        //issue here
+
+        _defaultUDPLinkName = _appSettings->defaultConnectionName() ? _appSettings->defaultConnectionName()->rawValueString() : "UDP Port 14550";
 
         for (int i = 0; i < _rgLinks.count(); i++) {
             SharedLinkConfigurationPtr linkConfig = _rgLinks[i]->linkConfiguration();

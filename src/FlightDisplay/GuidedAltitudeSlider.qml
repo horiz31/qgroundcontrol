@@ -194,8 +194,7 @@ Rectangle {
             function radiusConverted()
             {
                 if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
-                {
-                    console.log("guided radius is " + _activeVehicle.guidedModeRadius)
+                {                    
                     return (_activeVehicle.guidedModeRadius * 3.28084).toString()
                 }
                 else

@@ -132,6 +132,13 @@
     "default":     true
 },
 {
+    "name":             "defaultConnectionName",
+    "shortDesc": "Default UDP 14550 Connection name",
+    "longDesc":  "If this option is enabled the virtual joystick will be shown on the Fly view.",
+    "type":             "string",
+    "default":     "MPU5"
+},
+{
     "name":             "virtualJoystickShowZoom",
     "shortDesc": "Show virtual joystick zoom in/out",
     "longDesc":  "If enabled the zoom in/out virtual joystick will be shown on the Fly view.",

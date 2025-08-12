@@ -27,6 +27,7 @@ Item {
     property var _activeVehicle:    QGroundControl.multiVehicleManager.activeVehicle
     property var _rgLinkNames:      _activeVehicle ? _activeVehicle.vehicleLinkManager.linkNames : [ ]
     property var _rgLinkStatus:     _activeVehicle ? _activeVehicle.vehicleLinkManager.linkStatuses : [ ]
+    property var _rgLinkPriorityLinkName:     _activeVehicle ? _activeVehicle.vehicleLinkManager.primaryLinkName : [ ]
     property var _rgMenuItems:      [ ]
 
     function updateLinkSelectionMenu() {
@@ -44,12 +45,15 @@ Item {
             linkSelectionMenu.insertItem(i, menuItem)
         }
 
-        showIndicator = _rgLinkNames.length > 1
+        //showIndicator = _rgLinkNames.length > 1
+        showIndicator = true
+
     }
 
     Component.onCompleted:  updateLinkSelectionMenu()
     on_RgLinkNamesChanged:  updateLinkSelectionMenu()
     on_RgLinkStatusChanged: updateLinkSelectionMenu()
+    on_RgLinkPriorityLinkNameChanged: updateLinkSelectionMenu()
 
     QGCLabel {
         id:                     primaryLinkSelector
@@ -68,8 +72,10 @@ Item {
 
     Component {
         id: linkSelectionMenuItemComponent
-        QGCMenuItem {
-            onTriggered: _activeVehicle.vehicleLinkManager.primaryLinkName = text
+        QGCMenuItem {            
+            onTriggered: {
+                _activeVehicle.vehicleLinkManager.primaryLinkName = text
+            }
         }
     }
 }

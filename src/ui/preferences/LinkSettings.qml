@@ -16,6 +16,9 @@ import QGroundControl               1.0
 import QGroundControl.Controls      1.0
 import QGroundControl.ScreenTools   1.0
 import QGroundControl.Palette       1.0
+import QGroundControl.FactSystem            1.0
+import QGroundControl.FactControls          1.0
+import QGroundControl.SettingsManager       1.0
 
 Rectangle {
     id:                 _linkRoot
@@ -28,6 +31,13 @@ Rectangle {
     property int _secondColumnWidth:    ScreenTools.defaultFontPixelWidth * 30
     property int _rowSpacing:           ScreenTools.defaultFontPixelHeight / 2
     property int _colSpacing:           ScreenTools.defaultFontPixelWidth / 2
+
+    property Fact _defaultConnectionName:     QGroundControl.settingsManager.appSettings.defaultConnectionName
+    property real _valueFieldWidth:           ScreenTools.defaultFontPixelWidth * 10
+    property real _labelWidth:                ScreenTools.defaultFontPixelWidth * 40
+    property real _columnSpacing:       ScreenTools.defaultFontPixelHeight * 0.25
+    property real _margins:                   ScreenTools.defaultFontPixelWidth
+
 
     QGCPalette {
         id:                 qgcPal
@@ -62,11 +72,76 @@ Rectangle {
         contentWidth:       _linkRoot.width
         flickableDirection: Flickable.VerticalFlick
 
+        //-- Default Port Config
+
         Column {
             id:                 settingsColumn
             width:              _linkRoot.width
             anchors.margins:    ScreenTools.defaultFontPixelWidth
             spacing:            ScreenTools.defaultFontPixelHeight / 2
+
+            Item {
+                width:              _linkRoot.width * 0.5
+                height:             defaultNameTitle.height
+                anchors.margins:    ScreenTools.defaultFontPixelWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                QGCLabel {
+                    id:             defaultNameTitle
+                    text:           qsTr("Default UDP Port 14550 Configuration")
+                    font.family:    ScreenTools.demiboldFontFamily
+                }
+            }
+            Rectangle {
+                height:         defaultNameColumn.height + (ScreenTools.defaultFontPixelHeight * 2)
+                width:          _linkRoot.width * 0.5
+                color:          qgcPal.windowShade
+                anchors.margins: ScreenTools.defaultFontPixelWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                Column {
+                    id:         defaultNameColumn
+                    spacing:    _columnSpacing
+                    anchors.centerIn: parent
+                    Row {
+                        spacing:    ScreenTools.defaultFontPixelWidth
+                        QGCLabel {
+                            width:              _labelWidth
+                            anchors.baseline:   defaultConnectionName.baseline
+                            text:               qsTr("Default Connection (UDP 14550) Name:")
+                        }
+                        FactTextField {
+                            id:                     defaultConnectionName
+                            Layout.preferredWidth:  _valueFieldWidth
+                            visible:                fact.visible
+                            fact:                   _defaultConnectionName
+                        }
+                    }
+                    Row {
+                        QGCLabel {
+                            id:                 defaultNameWaring
+                            anchors.margins:    _margins
+                            font.pointSize:     ScreenTools.smallFontPointSize
+                            wrapMode:           Text.WordWrap
+                            text:               qsTr("Note: Port 14550 is enabled by default, you do not need to add it. You can change the connection name above, e.g. MPU5.")
+                        }
+                    }
+                }
+            }
+
+
+            Item { width: 1; height: _margins; }
+
+
+            Item {
+                width:              _linkRoot.width * 0.5
+                height:             defaultNameLabel.height
+                anchors.margins:    ScreenTools.defaultFontPixelWidth
+                anchors.horizontalCenter: parent.horizontalCenter
+                QGCLabel {
+                    id:             defaultNameLabel
+                    text:           qsTr("Additional Link(s)")
+                    font.family:    ScreenTools.demiboldFontFamily
+                }
+            }
             Repeater {
                 model: QGroundControl.linkManager.linkConfigurations
                 delegate: QGCButton {
@@ -129,13 +204,17 @@ Rectangle {
         QGCButton {
             text:       qsTr("Disconnect")
             enabled:    _currentSelection && _currentSelection.link
-            onClicked:  _currentSelection.link.disconnect()
+            onClicked:  {
+                _currentSelection.link.disconnect()
+                _currentSelection.linkChanged()
+            }
         }
         QGCButton {
             text:       qsTr("MockLink Options")
             visible:    _currentSelection && _currentSelection.link && _currentSelection.link.isMockLink
             onClicked:  mainWindow.showPopupDialogFromSource("qrc:/unittest/MockLinkOptionsDlg.qml", { link: _currentSelection.link })
         }
+
     }
 
     Loader {

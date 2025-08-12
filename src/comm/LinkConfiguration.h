@@ -27,7 +27,7 @@ public:
 
     Q_PROPERTY(QString          name                READ name           WRITE setName           NOTIFY nameChanged)
     Q_PROPERTY(LinkInterface*   link                READ link                                   NOTIFY linkChanged)
-    Q_PROPERTY(LinkType         linkType            READ type                                   CONSTANT)
+    Q_PROPERTY(LinkType         linkType            READ type                                   CONSTANT)    
     Q_PROPERTY(bool             dynamic             READ isDynamic      WRITE setDynamic        NOTIFY dynamicChanged)
     Q_PROPERTY(bool             autoConnect         READ isAutoConnect  WRITE setAutoConnect    NOTIFY autoConnectChanged)
     Q_PROPERTY(QString          settingsURL         READ settingsURL                            CONSTANT)
@@ -61,7 +61,7 @@ public:
     };
     Q_ENUM(LinkType)
 
-    bool isDynamic      () const{ return _dynamic; }     ///< Not persisted
+    bool isDynamic      () const{ return _dynamic; }     ///< Not persisted  
     bool isAutoConnect  () const{ return _autoConnect; }
 
     /*!
@@ -74,7 +74,7 @@ public:
     /*!
      * Set if this is this a dynamic configuration. (decided at runtime)
     */
-    void setDynamic(bool dynamic = true) { _dynamic = dynamic; emit dynamicChanged(); }
+    void setDynamic(bool dynamic = true) { _dynamic = dynamic; emit dynamicChanged(); }  
 
     /*!
      * Set if this is this an Auto Connect configuration.
@@ -175,6 +175,7 @@ protected:
 private:
     QString _name;
     bool    _dynamic;       ///< A connection added automatically and not persistent (unless it's edited).
+    int     _port;
     bool    _autoConnect;   ///< This connection is started automatically at boot
     bool    _highLatency;
 };

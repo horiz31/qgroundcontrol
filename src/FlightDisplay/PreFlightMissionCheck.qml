@@ -148,24 +148,21 @@ PreFlightCheckButton {
     Connections {
         target:                 _missionController
         ignoreUnknownSignals:   true
-        function onNewItemsFromVehicle() {
-            console.log("mission controller new items from vehicle change")
+        function onNewItemsFromVehicle() {            
             updateTelemetryTextFailure();
         }
     }
     Connections {
         target:                 _missionController
         ignoreUnknownSignals:   true
-        function onMissionItemCountChanged() {
-            console.log("mission controller item count change")
+        function onMissionItemCountChanged() {            
             updateTelemetryTextFailure();
         }
     }
 
     Connections {
         target: _missionController
-        onCurrentMissionIndexChanged: {
-            console.log("Mission index changed to", _missionController.currentMissionIndex)
+        onCurrentMissionIndexChanged: {          
             updateTelemetryTextFailure();
         }
     }

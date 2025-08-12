@@ -116,10 +116,10 @@ bool VTOLLandingComplexItem::_isValidLandItem(const MissionItem& missionItem)
     if ((missionItem.command() != MAV_CMD_NAV_LAND && missionItem.command() != MAV_CMD_NAV_VTOL_LAND) ||
             !(missionItem.frame() == MAV_FRAME_GLOBAL_RELATIVE_ALT || missionItem.frame() == MAV_FRAME_GLOBAL) ||
             missionItem.param1() != 0 || missionItem.param2() != 0 || missionItem.param3() != 0 || !qIsNaN(missionItem.param4())) {
-        qDebug() << "is valid land item returning false on" << missionItem.command();
+        //qDebug() << "is valid land item returning false on" << missionItem.command();
         return false;
     } else {
-        qDebug() << "is valid land item returning true on" << missionItem.command();
+        //qDebug() << "is valid land item returning true on" << missionItem.command();
         return true;
     }
 }
