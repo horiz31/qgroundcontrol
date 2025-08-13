@@ -207,5 +207,6 @@
         <file alias="APM/VolocommImage">src/FirmwarePlugin/APM/volocomm.png</file>
         <file alias="APM/VolocommOutdoorImage">src/FirmwarePlugin/APM/volorommoutdoor.png</file>
         <file alias="Gps2.svg">src/ui/toolbar/Images/Gps2.svg</file>
+        <file alias="MPU5.svg">src/ui/toolbar/Images/MPU5.svg</file>
     </qresource>
 </RCC>

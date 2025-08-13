@@ -275,6 +275,13 @@
     "default":     true
 },
 {
+    "name":             "allowRunupInChecklist",
+    "shortDesc": "Allow Runup from checklisst",
+    "longDesc":  "If this option is enabled, the user will be allowed to runup the engine from the checklist.",
+    "type":             "bool",
+    "default":     false
+},
+{
     "name":             "enforceChecklist",
     "shortDesc": "Preflight checklist must pass before arming",
     "longDesc":  "If this option is enabled the preflight checklist must pass before arming.",

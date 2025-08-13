@@ -24,9 +24,9 @@ Item {
     anchors.top:    parent.top
     anchors.bottom: parent.bottom
 
-    property bool showIndicator: true
-    property var    _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
-
+    property bool showIndicator: _nvExists
+    property var  _activeVehicle:     QGroundControl.multiVehicleManager.activeVehicle
+    property bool _nvExists:   _activeVehicle.nvGimbal.mode.value !== "" ? true : false
     Component {
         id: gimbalInfo
 

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 46 72">
+  <!-- Generator: Adobe Illustrator 29.7.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 8)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke-width: 3.39px;
+      }
+
+      .st0, .st1 {
+        stroke: #000;
+      }
+
+      .st0, .st1, .st2, .st3 {
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .st1 {
+        stroke-width: 5px;
+      }
+
+      .st4 {
+        display: none;
+      }
+
+      .st2 {
+        stroke: #eb008b;
+        stroke-width: .25px;
+      }
+
+      .st2, .st3 {
+        fill: none;
+      }
+
+      .st3 {
+        stroke: #224a80;
+        stroke-width: 3px;
+      }
+    </style>
+  </defs>
+  <g id="svg3852" sodipodi:docname="gps.svg">
+    <sodipodi:namedview id="namedview3929" bordercolor="#666666" borderopacity="1" gridtolerance="10" guidetolerance="10" inkscape:current-layer="svg3852" inkscape:cx="55" inkscape:cy="55" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="480" inkscape:window-width="640" inkscape:zoom="11.136364" objecttolerance="10" pagecolor="#808080" showgrid="false"/>
+    <g id="Layer_2_copy_4" class="st4">
+      <g id="g3861">
+        <rect id="rect3863" class="st2" x="-49.1" y="-131.3" width="56.3" height="56.3"/>
+        <circle id="circle3865" class="st2" cx="-21" cy="-103.2" r="28.2" transform="translate(84.23 -107.4) rotate(-80.78)"/>
+      </g>
+      <g id="g3867">
+        <rect id="rect3869" class="st2" x="15.3" y="-131.3" width="56.3" height="56.3"/>
+        <circle id="circle3871" class="st2" cx="43.5" cy="-103.2" r="28.2"/>
+      </g>
+      <g id="g3873">
+        <rect id="rect3875" class="st2" x="78.5" y="-131.3" width="56.3" height="56.3"/>
+        <circle id="circle3877" class="st2" cx="106.7" cy="-103.2" r="28.2"/>
+      </g>
+    </g>
+    <g id="Layer_2_copy_2" class="st4">
+      <g id="g3905">
+        <rect id="rect3907" class="st2" x="-49.1" y="-26.7" width="56.3" height="56.3"/>
+        <circle id="circle3909" class="st2" cx="-21" cy="1.5" r="28.2" transform="translate(-19.12 -19.47) rotate(-80.78)"/>
+      </g>
+      <g id="g3911">
+        <rect id="rect3913" class="st2" x="15.3" y="-26.7" width="56.3" height="56.3"/>
+        <circle id="circle3915" class="st2" cx="43.5" cy="1.5" r="28.2"/>
+      </g>
+      <g id="g3917">
+        <rect id="rect3919" class="st2" x="78.5" y="-26.7" width="56.3" height="56.3"/>
+        <circle id="circle3921" class="st2" cx="106.7" cy="1.5" r="28.2"/>
+      </g>
+    </g>
+    <g id="Layer_6" class="st4">
+      <polygon id="polygon3927" class="st3" points="-27.6 1.2 -32.5 1.2 -32.5 42.2 -9.6 42.2 -9.6 1.2 -14.5 1.2 -14.5 -5.3 -27.6 -5.3 -27.6 1.2"/>
+    </g>
+    <line class="st1" x1="17.11" y1="25.05" x2="17.11" y2="4.95"/>
+    <path class="st0" d="M11.33,24.3v43.14h23.56V24.3H11.33Z"/>
+    <line class="st1" x1="29.11" y1="25.05" x2="29.11" y2="4.95"/>
+  </g>
+</svg>

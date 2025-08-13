@@ -2835,7 +2835,7 @@ void Vehicle::_imageProtocolImageReady(void)
 }
 
 void Vehicle::_remoteControlRSSIChanged(uint8_t rssi)
-{
+{   
     //-- 0 <= rssi <= 100 - 255 means "invalid/unknown"
     if(rssi > 100) { // Anything over 100 doesn't make sense
         if(_rcRSSI != 255) {

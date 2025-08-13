@@ -99,31 +99,7 @@ Rectangle {
                             anchors.horizontalCenter:   parent.horizontalCenter
                             spacing:                    _margins
 
-                            FactCheckBox {
-                                id:             useCheckList
-                                text:           qsTr("Use Preflight Checklist")
-                                fact:           _useChecklist
-                                visible:        _useChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
 
-                                property Fact _useChecklist: QGroundControl.settingsManager.appSettings.useChecklist
-                            }
-
-                            FactCheckBox {
-                                text:           qsTr("Enforce Preflight Checklist")
-                                fact:           _enforceChecklist
-                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value
-                                visible:        useCheckList.visible && _enforceChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
-
-                                property Fact _enforceChecklist: QGroundControl.settingsManager.appSettings.enforceChecklist
-                            }
-                            FactCheckBox {
-                                text:           qsTr("Enforce Joystick Required")
-                                fact:           _enforceJoystickRequired
-                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value && QGroundControl.settingsManager.appSettings.enforceChecklist.value
-                                visible:        useCheckList.visible && _enforceJoystickRequired.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
-
-                                property Fact _enforceJoystickRequired: QGroundControl.settingsManager.appSettings.enforceJoystickRequired
-                            }
 
                             /*
                             FactCheckBox {
@@ -408,6 +384,8 @@ Rectangle {
                         }
                     }
 
+
+
                     Item { width: 1; height: _margins; visible: planViewSectionLabel.visible }
                     QGCLabel {
                         id:         planViewSectionLabel
@@ -463,6 +441,68 @@ Rectangle {
                                 fact:       _planViewSettings.takeoffItemNotRequired
                                 visible:    _planViewSettings.takeoffItemNotRequired.visible
                             }
+                        }
+                    }
+
+                    Item { width: 1; height: _margins; visible: checklistSectionLabel.visible }
+                    QGCLabel {
+                        id:         checklistSectionLabel
+                        text:       qsTr("Checklist Settings")
+                        visible:    true
+                    }
+                    Rectangle {
+
+                        Layout.preferredHeight: checklistCol.height + (_margins * 2)
+                        Layout.preferredWidth:  checklistCol.width + (_margins * 2)
+                        color:                  qgcPal.windowShade
+                        visible:                checklistSectionLabel.visible
+                        Layout.fillWidth:       true
+
+
+                        ColumnLayout {
+                            id:                         checklistCol
+                            anchors.margins:            _margins
+                            anchors.top:                parent.top
+                            anchors.horizontalCenter:   parent.horizontalCenter
+                            spacing:                    _margins
+
+
+                            FactCheckBox {
+                                id:             useCheckList
+                                text:           qsTr("Use Preflight Checklist")
+                                fact:           _useChecklist
+                                visible:        _useChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+
+                                property Fact _useChecklist: QGroundControl.settingsManager.appSettings.useChecklist
+                            }
+
+                            FactCheckBox {
+                                text:           qsTr("Enforce Preflight Checklist")
+                                fact:           _enforceChecklist
+                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value
+                                visible:        useCheckList.visible && _enforceChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+
+                                property Fact _enforceChecklist: QGroundControl.settingsManager.appSettings.enforceChecklist
+                            }
+                            FactCheckBox {
+                                text:           qsTr("Enforce Joystick Required")
+                                fact:           _enforceJoystickRequired
+                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value && QGroundControl.settingsManager.appSettings.enforceChecklist.value
+                                visible:        useCheckList.visible && _enforceJoystickRequired.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+
+                                property Fact _enforceJoystickRequired: QGroundControl.settingsManager.appSettings.enforceJoystickRequired
+                            }
+
+                            FactCheckBox {
+                                text:           qsTr("Allow Engine Runup from the Checklist")
+                                fact:           _allowRunupInChecklist
+                                enabled:        QGroundControl.settingsManager.appSettings.useChecklist.value
+                                visible:        useCheckList.visible && _allowRunupInChecklist.visible && QGroundControl.corePlugin.options.preFlightChecklistUrl.toString().length
+
+                                property Fact _allowRunupInChecklist: QGroundControl.settingsManager.appSettings.allowRunupInChecklist
+                            }
+
+
                         }
                     }
 
