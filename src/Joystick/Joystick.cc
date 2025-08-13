@@ -34,6 +34,7 @@ const char* Joystick::_negativeThrustSettingsKey =      "NegativeThrust";
 const char* Joystick::_axisDisabledSettingsKey =        "AxisDisabled";
 const char* Joystick::_exponentialSettingsKey =         "Exponential";
 const char* Joystick::_accumulatorSettingsKey =         "Accumulator";
+const char* Joystick::_accumulatorEnabledSettingsKey =         "Accumulator Disabled";
 const char* Joystick::_deadbandSettingsKey =            "Deadband";
 const char* Joystick::_circleCorrectionSettingsKey =    "Circle_Correction";
 const char* Joystick::_axisFrequencySettingsKey =       "AxisFrequency";
@@ -231,6 +232,7 @@ void Joystick::_setDefaultCalibration(void) {
 
     _exponential        = 0;
     _accumulator        = false;
+    _accumulatorEnabled = false;
     _deadband           = false;
     _axisFrequencyHz    = _defaultAxisFrequencyHz;
     _buttonFrequencyHz  = _defaultButtonFrequencyHz;
@@ -296,6 +298,7 @@ void Joystick::_loadSettings()
     _calibrated         = settings.value(_calibratedSettingsKey,        false).toBool();
     _exponential        = settings.value(_exponentialSettingsKey,       0).toFloat();
     _accumulator        = settings.value(_accumulatorSettingsKey,       false).toBool();
+    _accumulatorEnabled = settings.value(_accumulatorEnabledSettingsKey,       false).toBool();
     _deadband           = settings.value(_deadbandSettingsKey,          false).toBool();
     _axisFrequencyHz    = settings.value(_axisFrequencySettingsKey,     _defaultAxisFrequencyHz).toFloat();
     _minThrottleFBW     = settings.value(_minThrottleFBWSettingsKey,    25.0).toFloat();
@@ -431,6 +434,7 @@ void Joystick::_saveSettings()
     settings.setValue(_calibratedSettingsKey,       _calibrated);
     settings.setValue(_exponentialSettingsKey,      _exponential);
     settings.setValue(_accumulatorSettingsKey,      _accumulator);
+    settings.setValue(_accumulatorEnabledSettingsKey,      _accumulatorEnabled);
     settings.setValue(_deadbandSettingsKey,         _deadband);
     settings.setValue(_axisFrequencySettingsKey,    _axisFrequencyHz);
     settings.setValue(_minThrottleFBWSettingsKey,   _minThrottleFBW);
@@ -1426,6 +1430,11 @@ void Joystick::setAccumulator(bool accu)
     _accumulator = accu;
     _saveSettings();
     emit accumulatorChanged(_accumulator);
+}
+
+bool Joystick::accumulatorEnabled() const
+{
+    return _accumulatorEnabled;
 }
 
 bool Joystick::deadband() const

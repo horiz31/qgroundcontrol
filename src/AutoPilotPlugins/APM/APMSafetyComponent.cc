@@ -112,13 +112,17 @@ QUrl APMSafetyComponent::summaryQmlSource(void) const
     case MAV_TYPE_OCTOROTOR:
     case MAV_TYPE_TRICOPTER:
     case MAV_TYPE_GROUND_ROVER:
-        qmlFile = QStringLiteral("qrc:/qml/APMSafetyComponentSummary.qml");
+        //qmlFile = QStringLiteral("qrc:/qml/APMSafetyComponentSummary.qml");
+        //qmlFile = QStringLiteral("qrc:/qml/APMNotSupported.qml");
+        return QUrl::fromUserInput("");
         break;
     case MAV_TYPE_SUBMARINE:
         qmlFile = QStringLiteral("qrc:/qml/APMSafetyComponentSummarySub.qml");
         break;
     default:
-        qmlFile = QStringLiteral("qrc:/qml/APMNotSupported.qml");
+        //qDebug() << "outputting apmnotsupported";
+        //qmlFile = QStringLiteral("qrc:/qml/APMNotSupported.qml");
+        return QUrl::fromUserInput("");
         break;
     }
 

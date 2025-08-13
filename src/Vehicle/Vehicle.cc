@@ -2986,7 +2986,10 @@ QString Vehicle::_vehicleIdSpeech()
 void Vehicle::_setupAccumulatorJoystick()
 {
      //only applicable for fixedwind or vtol or if not flying
-     if (!vtol() && !fixedWing() && flying()) {
+     //AND if accumulator in FBW settign is enabled
+    //TODO
+    bool accumulatorEnabled = _toolbox->joystickManager()->activeJoystick()->accumulatorEnabled();
+     if (!vtol() && !fixedWing() && flying() && !accumulatorEnabled) {
          return;
      }
 

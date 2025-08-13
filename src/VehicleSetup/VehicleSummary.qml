@@ -106,7 +106,7 @@ Rectangle {
                         visible:    modelData.summaryQmlSource.toString() !== ""
                         border.width: 1
                         border.color: qgcPal.text
-                        Component.onCompleted: {
+                        Component.onCompleted: {                           
                             border.color = Qt.rgba(border.color.r, border.color.g, border.color.b, 0.1)
                         }
 

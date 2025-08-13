@@ -33,6 +33,7 @@ PreFlightCheckButton {
     property bool   _virtualJoyStickInitialState: false
     property string _modeInitialState: ""
     property bool _virtualJoystickEnabled: QGroundControl.settingsManager.appSettings.virtualJoystick.rawValue
+    property bool _engineRunupAllowed: QGroundControl.settingsManager.appSettings.allowRunupInChecklist.rawValue
     property real _joyValue: -1
     property bool _isJoystickRunupActive: false
     property bool _cancelTest: false  //flag to keep track of the user requesting a test cancel
@@ -86,25 +87,101 @@ PreFlightCheckButton {
                             anchors.horizontalCenter: parent.horizontalCenter
                             width:          ScreenTools.defaultFontPixelWidth * 60
                             height:     ScreenTools.defaultFontPixelHeight * 4
+                            visible:    _engineRunupAllowed
                             wrapMode:       Text.WordWrap
                             text:           qsTr("WARNING: Running up the engine is dangerous! Ensure that the prop is clear of the ground, obstacles and people. Set the desired throttle level, then push and hold the button below. Release to stop the engine.")
+                        }
+                        QGCLabel {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width:          ScreenTools.defaultFontPixelWidth * 60
+                            height:     ScreenTools.defaultFontPixelHeight * 4
+                            visible:    !_engineRunupAllowed
+                            wrapMode:       Text.WordWrap
+                            text:           qsTr("WARNING: Running up the engine is dangerous! Ensure that the prop is clear of the ground, obstacles and people. Follow the instructions below to do an engine running using the hand controller.")
                         }
                         Item {
                             width:  1
                             height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
                         }
 
+                        //we want two sets of instructions, depending on if _engineRunupAllowed is enabled
+                        //if it is, then we use the instructions below, if not, then we instruct to use the hand held controllers
 
                         QGCLabel {
                             anchors.horizontalCenter: parent.horizontalCenter
                             width:          ScreenTools.defaultFontPixelWidth * 60
                             height:     ScreenTools.defaultFontPixelHeight * 4
                             wrapMode:       Text.WordWrap
+                            visible:    _engineRunupAllowed
                             text:           qsTr("Use the slider below to start the engine runup test. Alternatively, if you have the 'Hold for Engine Runup' joystick button action configured, you can press and hold that button to start the test.")
                         }
                         Item {
                             width:  1
+                            visible:    _engineRunupAllowed
                             height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
+                        }
+
+                        //these instructions are shown if enginerunup is NOT allowed
+                        QGCLabel {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width:          ScreenTools.defaultFontPixelWidth * 60
+                            //height:     ScreenTools.defaultFontPixelHeight * 1
+                            wrapMode:       Text.WordWrap
+                            visible:    !_engineRunupAllowed
+                            font.pointSize: ScreenTools.mediumFontPointSize
+                            text:           qsTr("1. Enter MANUAL control mode by raising the lower right toggle switch on the hand remote then depressing the top left push button.")
+                        }
+                        Item {
+                            width:  1
+                            visible:    !_engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * .3)
+                        }
+                        QGCLabel {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width:          ScreenTools.defaultFontPixelWidth * 60
+                            //height:     ScreenTools.defaultFontPixelHeight * 1
+                            wrapMode:       Text.WordWrap
+                            visible:    !_engineRunupAllowed
+                            font.pointSize: ScreenTools.mediumFontPointSize
+                            text:           qsTr("2. Lift the tail of the aircraft to provide clearance for the prop, then raise the throttle to 100%.")
+                        }
+                        Item {
+                            width:  1
+                            visible:    !_engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * .3)
+                        }
+                        QGCLabel {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width:          ScreenTools.defaultFontPixelWidth * 60
+                            //height:     ScreenTools.defaultFontPixelHeight * 1
+                            wrapMode:       Text.WordWrap
+                            visible:    !_engineRunupAllowed
+                            font.pointSize: ScreenTools.mediumFontPointSize
+                            text:           qsTr("3. Allow engine to run while monitoring the cyclinder temperature below, then shut down and restart to ensure the engine is starting quickly.")
+                        }
+                        Item {
+                            width:  1
+                            visible:    !_engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * .3)
+                        }
+                        QGCLabel {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width:          ScreenTools.defaultFontPixelWidth * 60
+                            //height:     ScreenTools.defaultFontPixelHeight * 1
+                            wrapMode:       Text.WordWrap
+                            visible:    !_engineRunupAllowed
+                            font.pointSize: ScreenTools.mediumFontPointSize
+                            text:           qsTr("4. Lower throttle on the hand remote then return all toggle switches to the down position.")
+                        }
+                        Item {
+                            width:  1
+                            visible:    _engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
+                        }
+                        Item {
+                            width:  1
+                            visible:    !_engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
                         }
 
                         Row {
@@ -138,11 +215,13 @@ PreFlightCheckButton {
                         }
                         Item {
                             width:  1
+                            visible:    _engineRunupAllowed
                             height: Math.round(ScreenTools.defaultFontPixelHeight * 1.5)
                         }
                         Row{
                             anchors.horizontalCenter: parent.horizontalCenter
                             spacing: ScreenTools.defaultFontPixelWidth
+                            visible:    _engineRunupAllowed
                             QGCLabel {
                                 text:           qsTr("Throttle Level:")
                             }
@@ -166,20 +245,27 @@ PreFlightCheckButton {
                         }
 
                         Item {
-                            width:  1
+                            width:  1                      
                             height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
                         }                  
-                        QGCLabel {
+                        QGCLabel {                            
                             id: iceMotorJoystickRunupLabel
-                            visible: _isJoystickRunupActive
+                            visible: _isJoystickRunupActive && _engineRunupAllowed
                             anchors.horizontalCenter: parent.horizontalCenter
                             font.pointSize: ScreenTools.mediumFontPointSize
                             font.family:    ScreenTools.demiboldFontFamily
                             text:           qsTr("Hold button for 2 seconds...")
+                            color:          qgcPal.text
+                        }
+                        Item {
+                            width:  1
+                            visible: _isJoystickRunupActive && _engineRunupAllowed
+                            height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
                         }
 
                         SliderSwitch {
                             id:                     iceMotorTestButton
+                            visible:    _engineRunupAllowed && !iceMotorJoystickRunupLabel.visible
                             confirmText:            qsTr("Slide to Start Engine RunUp")
                             Layout.minimumWidth:    Math.max(implicitWidth, ScreenTools.defaultFontPixelWidth * 30)
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -203,9 +289,13 @@ PreFlightCheckButton {
 
                             }
 
+
+
                             Connections {
                                 target: engineRunupController
                                 onJoystickStartRunup: {
+                                    if (!_engineRunupAllowed)
+                                        return
                                     //console.log("qml got joystick runup start")
                                     _cancelTest= false
                                     _isJoystickRunupActive = true
@@ -213,12 +303,15 @@ PreFlightCheckButton {
                                     timer1.setTimeout(function(){}, 2 * 1000);
                                 }
                                 onJoystickStopRunup: {
+                                    if (!_engineRunupAllowed)
+                                        return
                                     //console.log("qml got joystick runup stop")
                                     timer1.stop()
                                     stopRunup(true)
                                     _isJoystickRunupActive = false
                                     _cancelTest = true
                                     iceMotorJoystickRunupLabel.text = qsTr("Hold button for 2 seconds....")
+                                    iceMotorJoystickRunupLabel.color = qgcPal.text
                                    }
                             }
 
@@ -227,7 +320,7 @@ PreFlightCheckButton {
                         QGCButton {
                             text:               qsTr("STOP ENGINE")
                             anchors.horizontalCenter: parent.horizontalCenter
-                            visible: !iceMotorTestButton.visible
+                            visible: !iceMotorTestButton.visible && _engineRunupAllowed && !iceMotorJoystickRunupLabel.visible
                             warning: true
                             onClicked: {
 
@@ -250,6 +343,7 @@ PreFlightCheckButton {
                         }
                         Item {
                             width:  1
+                            visible: _engineRunupAllowed
                             height: Math.round(ScreenTools.defaultFontPixelHeight * .5)
                         }
 
@@ -332,6 +426,7 @@ PreFlightCheckButton {
                                     if (!_cancelTest)
                                     {
                                         iceMotorJoystickRunupLabel.text = qsTr("Engine running, release to stop...")
+                                        iceMotorJoystickRunupLabel.color = "red"
                                         timer1.stop()
                                         startRunup(true)
                                     }
@@ -348,6 +443,7 @@ PreFlightCheckButton {
                 }
                 Item {
                     width:  1
+                    visible: _engineRunupAllowed
                     height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
                 }
                 RowLayout

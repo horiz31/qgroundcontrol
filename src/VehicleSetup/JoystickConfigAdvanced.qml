@@ -94,6 +94,19 @@ Item {
                 text:   expoSlider.value.toFixed(2)
             }
         }       
+        //-- Enable Accumulator
+        QGCLabel {
+            text:               qsTr("Enable throttle accumulator for self-centering joystick in FBW modes")
+            Layout.alignment:   Qt.AlignVCenter
+            Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 36
+            //visible:            _activeJoystick ? true : false
+        }
+        QGCCheckBox {
+            checked:            _activeJoystick ? _activeJoystick.accumulatorEnabled : false
+           // visible:            _activeJoystick ? true : false
+            onClicked:          _activeJoystick.accumulatorEnabled = checked
+        }
+
         //-----------------------------------------------------------------
         //-- Enable Advanced Mode
         QGCLabel {

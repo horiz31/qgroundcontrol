@@ -113,6 +113,7 @@ public:
     Q_PROPERTY(float    exponential             READ exponential            WRITE setExponential        NOTIFY exponentialChanged)
     Q_PROPERTY(float    axisDisabled            READ axisDisabled           WRITE setAxisDisabled      NOTIFY axisDisabledChanged)
     Q_PROPERTY(bool     accumulator             READ accumulator            WRITE setAccumulator        NOTIFY accumulatorChanged)
+    Q_PROPERTY(bool     accumulatorEnabled      READ accumulatorEnabled                                 CONSTANT)
     Q_PROPERTY(bool     circleCorrection        READ circleCorrection       WRITE setCircleCorrection   NOTIFY circleCorrectionChanged)
 
     Q_INVOKABLE void    setButtonRepeat     (int button, bool repeat);
@@ -206,6 +207,8 @@ public:
     bool  accumulator       () const;
     void  setAccumulator    (bool accu);
 
+    bool accumulatorEnabled    () const;
+
     bool  deadband          () const;
     void  setDeadband       (bool accu);
 
@@ -242,7 +245,7 @@ signals:
     void negativeThrustChanged      (bool allowNegative);
     void exponentialChanged         (float exponential);
     void axisDisabledChanged        (bool axisDisabled);
-    void accumulatorChanged         (bool accumulator);
+    void accumulatorChanged         (bool accumulator);    
     void enabledChanged             (bool enabled);
     void circleCorrectionChanged    (bool circleCorrection);
     void axisValues                 (float roll, float pitch, float yaw, float throttle);
@@ -348,6 +351,7 @@ protected:
     bool    _axisDisabled           = false;
     float   _throttle_accu          = 0;
     bool    _accumulator            = false;
+    bool    _accumulatorEnabled    = false;
     bool    _deadband               = false;
     bool    _circleCorrection       = true;
     bool    _runupEnabled           = false;
@@ -395,6 +399,7 @@ private:
     static const char* _exponentialSettingsKey;
     static const char* _axisDisabledSettingsKey;
     static const char* _accumulatorSettingsKey;
+    static const char* _accumulatorEnabledSettingsKey;
     static const char* _deadbandSettingsKey;
     static const char* _circleCorrectionSettingsKey;
     static const char* _axisFrequencySettingsKey;
