@@ -2987,11 +2987,24 @@ void Vehicle::_setupAccumulatorJoystick()
 {
      //only applicable for fixedwind or vtol or if not flying
      //AND if accumulator in FBW settign is enabled
-    //TODO
-    bool accumulatorEnabled = _toolbox->joystickManager()->activeJoystick()->accumulatorEnabled();
-     if (!vtol() && !fixedWing() && flying() && !accumulatorEnabled) {
-         return;
-     }
+    if (!vtol() && !fixedWing() && flying()) {
+        return;
+    }
+
+   if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+   {
+        bool accumulatorEnabled = _toolbox->joystickManager()->activeJoystick()->accumulatorEnabled();
+        qDebug() << "acculator is" << accumulatorEnabled;
+        if (!accumulatorEnabled)
+        {
+            if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+            {
+                _toolbox->joystickManager()->activeJoystick()->setThrottleMode(1);  //this also sets accumulator false
+                _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.0);
+            }
+            return;
+        }
+    }
 
      QString currentMode = _firmwarePlugin->flightMode(_base_mode, _custom_mode);
      if ((currentMode == "FBW A" || currentMode == "FBW B"))

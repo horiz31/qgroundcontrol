@@ -96,7 +96,7 @@ Item {
         }       
         //-- Enable Accumulator
         QGCLabel {
-            text:               qsTr("Enable throttle accumulator for self-centering joystick in FBW modes")
+            text:               qsTr("Enable throttle accumulator for self-centering joysticks in FBW modes")
             Layout.alignment:   Qt.AlignVCenter
             Layout.minimumWidth: ScreenTools.defaultFontPixelWidth * 36
             //visible:            _activeJoystick ? true : false
@@ -105,6 +105,14 @@ Item {
             checked:            _activeJoystick ? _activeJoystick.accumulatorEnabled : false
            // visible:            _activeJoystick ? true : false
             onClicked:          _activeJoystick.accumulatorEnabled = checked
+        }
+        QGCLabel{
+            Layout.fillWidth:   true
+            Layout.columnSpan:  2
+            font.pointSize:     ScreenTools.smallFontPointSize
+            wrapMode:           Text.WordWrap
+            visible:            advancedSettings.checked
+            text:   qsTr("If you are using a controller with a throttle which self-centers or is spring-loaded when you release it, check this option. It will enable this type of throttle to be used in Fly By Wire modes. If your controller is NOT spring loaded (.e.g., it stays in place when you stop touching it), do NOT check this option.")
         }
 
         //-----------------------------------------------------------------

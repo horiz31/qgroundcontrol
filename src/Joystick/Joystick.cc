@@ -1432,6 +1432,14 @@ void Joystick::setAccumulator(bool accu)
     emit accumulatorChanged(_accumulator);
 }
 
+void Joystick::setAccumulatorEnabled(bool accuEnabled)
+{
+    _accumulatorEnabled = accuEnabled;
+    _saveSettings();
+    emit accumulatorEnabledChanged(_accumulatorEnabled);
+}
+
+
 bool Joystick::accumulatorEnabled() const
 {
     return _accumulatorEnabled;

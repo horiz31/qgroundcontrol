@@ -113,7 +113,7 @@ public:
     Q_PROPERTY(float    exponential             READ exponential            WRITE setExponential        NOTIFY exponentialChanged)
     Q_PROPERTY(float    axisDisabled            READ axisDisabled           WRITE setAxisDisabled      NOTIFY axisDisabledChanged)
     Q_PROPERTY(bool     accumulator             READ accumulator            WRITE setAccumulator        NOTIFY accumulatorChanged)
-    Q_PROPERTY(bool     accumulatorEnabled      READ accumulatorEnabled                                 CONSTANT)
+    Q_PROPERTY(bool     accumulatorEnabled      READ accumulatorEnabled     WRITE setAccumulatorEnabled NOTIFY accumulatorEnabledChanged)
     Q_PROPERTY(bool     circleCorrection        READ circleCorrection       WRITE setCircleCorrection   NOTIFY circleCorrectionChanged)
 
     Q_INVOKABLE void    setButtonRepeat     (int button, bool repeat);
@@ -208,6 +208,7 @@ public:
     void  setAccumulator    (bool accu);
 
     bool accumulatorEnabled    () const;
+    void setAccumulatorEnabled (bool accuEnabled);
 
     bool  deadband          () const;
     void  setDeadband       (bool accu);
@@ -245,7 +246,8 @@ signals:
     void negativeThrustChanged      (bool allowNegative);
     void exponentialChanged         (float exponential);
     void axisDisabledChanged        (bool axisDisabled);
-    void accumulatorChanged         (bool accumulator);    
+    void accumulatorChanged         (bool accumulator);
+    void accumulatorEnabledChanged  (bool accumlatorEnabled);
     void enabledChanged             (bool enabled);
     void circleCorrectionChanged    (bool circleCorrection);
     void axisValues                 (float roll, float pitch, float yaw, float throttle);
