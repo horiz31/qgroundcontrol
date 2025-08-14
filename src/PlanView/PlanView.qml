@@ -134,52 +134,85 @@ Item {
         }
     }
 
+
+
+
     Component {
-        id: promptForPlanUsageOnVehicleChangePopupComponent
-        QGCPopupDialog {
-            title:      _planMasterController.managerVehicle.isOfflineEditingVehicle ? qsTr("Plan View - Vehicle Disconnected") : qsTr("Plan View - Vehicle Changed")
-            buttons:    StandardButton.NoButton
+          id: promptForPlanUsageOnVehicleChangePopupComponent
+          QGCPopupDialog {
+              title:      _planMasterController.managerVehicle.isOfflineEditingVehicle ? qsTr("Vehicle Disconnected") : qsTr("Vehicle Changed")
+              buttons:    StandardButton.NoButton
 
-            ColumnLayout {
-                QGCLabel {
-                    Layout.maximumWidth:    parent.width
-                    wrapMode:               QGCLabel.WordWrap
-                    text:                   _planMasterController.managerVehicle.isOfflineEditingVehicle ?
-                                                qsTr("The vehicle associated with the plan in the Plan View is no longer available. What would you like to do with that plan?") :
-                                                qsTr("The plan being worked on in the Plan View is not from the current vehicle. What would you like to do with that plan?")
+              ColumnLayout {
+                  id: iceMotorTestCol
+                  Layout.fillWidth:   true
+                  Layout.fillHeight:   true
+
+                  RowLayout{
+                      Layout.fillWidth:           true
+                      Layout.fillHeight:          true
+                      spacing: ScreenTools.defaultFontPixelWidth * 4
+
+                      ColumnLayout {
+                          Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 50
+                          Layout.alignment: Qt.AlignHCenter
+
+
+                          QGCLabel {
+                             Layout.maximumWidth:    parent.width
+                             wrapMode:               Text.WordWrap  //QGCLabel.WordWrap
+                             text:                   _planMasterController.managerVehicle.isOfflineEditingVehicle ?
+                                                         qsTr("The vehicle associated with the plan in the Plan View is no longer available. What would you like to do with that plan?") :
+                                                         qsTr("The plan being worked on in the Plan View is not from the current vehicle. What would you like to do with that plan?")
+                         }
+                          Item {
+                              width:  1
+                              height: Math.round(ScreenTools.defaultFontPixelHeight * 1)
+                          }
+
+                             QGCButton {
+                                 Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 45
+                                 Layout.alignment: Qt.AlignHCenter
+                                 text:               _planMasterController.dirty ?
+                                                         (_planMasterController.managerVehicle.isOfflineEditingVehicle ?
+                                                              qsTr("Discard Unsaved Changes") :
+                                                              qsTr("Discard Unsaved Changes, Load New Plan From Vehicle")) :
+                                                         qsTr("Load New Plan From Vehicle")
+                                 onClicked: {
+                                    _planMasterController.showPlanFromManagerVehicle()
+                                    _promptForPlanUsageShowing = false
+                                    hideDialog();
+                                 }
+                             }
+                             Item {
+                                 width:  1
+                                 height: Math.round(ScreenTools.defaultFontPixelHeight * .7)
+                             }
+
+                             QGCButton {
+                                 Layout.preferredWidth: ScreenTools.defaultFontPixelWidth * 45
+                                 Layout.alignment: Qt.AlignHCenter
+                                 text:               _planMasterController.managerVehicle.isOfflineEditingVehicle ?
+                                                         qsTr("Keep Current Plan") :
+                                                         qsTr("Keep Current Plan, Don't Update From Vehicle")
+                                 onClicked: {
+                                     if (!_planMasterController.managerVehicle.isOfflineEditingVehicle) {
+                                                              _planMasterController.dirty = true
+                                        }
+                                      _promptForPlanUsageShowing = false
+                                      hideDialog()
+                                 }
+                             }
+                             Item {
+                                 width:  1
+                                 height: Math.round(ScreenTools.defaultFontPixelHeight * .7)
+                             }
+
+                      }
                 }
-
-                QGCButton {
-                    Layout.fillWidth:   true
-                    text:               _planMasterController.dirty ?
-                                            (_planMasterController.managerVehicle.isOfflineEditingVehicle ?
-                                                 qsTr("Discard Unsaved Changes") :
-                                                 qsTr("Discard Unsaved Changes, Load New Plan From Vehicle")) :
-                                            qsTr("Load New Plan From Vehicle")
-                    onClicked: {
-                        _planMasterController.showPlanFromManagerVehicle()
-                        _promptForPlanUsageShowing = false
-                        hideDialog();
-                    }
-                }
-
-                QGCButton {
-                    Layout.fillWidth:   true
-                    text:               _planMasterController.managerVehicle.isOfflineEditingVehicle ?
-                                            qsTr("Keep Current Plan") :
-                                            qsTr("Keep Current Plan, Don't Update From Vehicle")
-                    onClicked: {
-                        if (!_planMasterController.managerVehicle.isOfflineEditingVehicle) {
-                            _planMasterController.dirty = true
-                        }
-                        _promptForPlanUsageShowing = false
-                        hideDialog()
-                    }
-                }
-            }
-        }
-    }
-
+              }
+          }
+      }
 
     Component {
         id: firmwareOrVehicleMismatchUploadDialogComponent
