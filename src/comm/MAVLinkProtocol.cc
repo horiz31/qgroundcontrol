@@ -231,60 +231,63 @@ void MAVLinkProtocol::receiveBytes(LinkInterface* link, QByteArray b)
             // MAVLink Status
 
             //volocomm edit
+            // NextVision TRIP sends as 255, next vision system reports don't use packet sequence, so don't calc lostMessages for that systemid as it will screw up the telemetry lost display
+
             //see if the link where the bytes received was the primary link, use this for calculation of loss packets
             //don't care about loss packets being visualized if the link is secondary
             if (_multiVehicleManager->activeVehicle())
             {
-                WeakLinkInterfacePtr weakLink = _multiVehicleManager->activeVehicle()->vehicleLinkManager()->primaryLink();
-                SharedLinkInterfacePtr  sharedLink = weakLink.lock();
-                if (sharedLink == linkPtr)
+                if (_message.sysid != 255)
                 {
-                    uint8_t lastSeq = lastIndex[_message.sysid][_message.compid];
-                    uint8_t expectedSeq = lastSeq + 1;
-                    // Increase receive counter
-                    totalReceiveCounter[mavlinkChannel]++;
-                    // Determine what the next expected sequence number is, accounting for
-                    // never having seen a message for this system/component pair.
-                    if(firstMessage[_message.sysid][_message.compid]) {
-                        firstMessage[_message.sysid][_message.compid] = 0;
-                        lastSeq     = _message.seq;
-                        expectedSeq = _message.seq;
-                    }
-                    // And if we didn't encounter that sequence number, record the error
-
-                    if (_message.seq != expectedSeq && _message.sysid != 255)  //NextVision TRIP sends as 255, next vision system reports don't use packet sequence, so don't calc lostMessages for that systemid as it will screw up the telemetry lost display
+                    WeakLinkInterfacePtr weakLink = _multiVehicleManager->activeVehicle()->vehicleLinkManager()->primaryLink();
+                    SharedLinkInterfacePtr  sharedLink = weakLink.lock();
+                    if (sharedLink == linkPtr)
                     {
-                        int lostMessages = 0;
-                        //-- Account for overflow during packet loss
-                        if(_message.seq < expectedSeq) {
-                            lostMessages = (_message.seq + 255) - expectedSeq;
-                        } else {
-                            lostMessages = _message.seq - expectedSeq;
+                        uint8_t lastSeq = lastIndex[_message.sysid][_message.compid];
+                        uint8_t expectedSeq = lastSeq + 1;
+                        // Increase receive counter
+                        totalReceiveCounter[mavlinkChannel]++;
+                        // Determine what the next expected sequence number is, accounting for
+                        // never having seen a message for this system/component pair.
+                        if(firstMessage[_message.sysid][_message.compid]) {
+                            firstMessage[_message.sysid][_message.compid] = 0;
+                            lastSeq     = _message.seq;
+                            expectedSeq = _message.seq;
                         }
-                        // Log how many were lost
-                        totalLossCounter[mavlinkChannel] += static_cast<uint64_t>(lostMessages);
-                    }
+                        // And if we didn't encounter that sequence number, record the error
+
+                        if (_message.seq != expectedSeq)
+                        {
+                            int lostMessages = 0;
+                            //-- Account for overflow during packet loss
+                            if(_message.seq < expectedSeq) {
+                                lostMessages = (_message.seq + 255) - expectedSeq;
+                            } else {
+                                lostMessages = _message.seq - expectedSeq;
+                            }
+                            // Log how many were lost
+                            totalLossCounter[mavlinkChannel] += static_cast<uint64_t>(lostMessages);
+                        }
 
 
-                    // And update the last sequence number for this system/component pair
-                    lastIndex[_message.sysid][_message.compid] = _message.seq;;
-                    // Calculate new loss ratio
-                    uint64_t totalSent = totalReceiveCounter[mavlinkChannel] + totalLossCounter[mavlinkChannel];
-                    float receiveLossPercent = static_cast<float>(static_cast<double>(totalLossCounter[mavlinkChannel]) / static_cast<double>(totalSent));
-                    receiveLossPercent *= 100.0f;
-                    receiveLossPercent = (receiveLossPercent * 0.5f) + (runningLossPercent[mavlinkChannel] * 0.5f);
-                    runningLossPercent[mavlinkChannel] = receiveLossPercent;
+                        // And update the last sequence number for this system/component pair
+                        lastIndex[_message.sysid][_message.compid] = _message.seq;;
+                        // Calculate new loss ratio
+                        uint64_t totalSent = totalReceiveCounter[mavlinkChannel] + totalLossCounter[mavlinkChannel];
+                        float receiveLossPercent = static_cast<float>(static_cast<double>(totalLossCounter[mavlinkChannel]) / static_cast<double>(totalSent));
+                        receiveLossPercent *= 100.0f;
+                        receiveLossPercent = (receiveLossPercent * 0.5f) + (runningLossPercent[mavlinkChannel] * 0.5f);
+                        runningLossPercent[mavlinkChannel] = receiveLossPercent;
 
-                    //qDebug() << foo << _message.seq << expectedSeq << lastSeq << totalLossCounter[mavlinkChannel] << totalReceiveCounter[mavlinkChannel] << "(" << _message.sysid << _message.compid << ")";
+                        //qDebug() << foo << _message.seq << expectedSeq << lastSeq << totalLossCounter[mavlinkChannel] << totalReceiveCounter[mavlinkChannel] << "(" << _message.sysid << _message.compid << ")";
 
-                    // Update MAVLink status on every 32th packet
-                    if ((totalReceiveCounter[mavlinkChannel] & 0x1F) == 0) {
-                        emit mavlinkMessageStatus(_message.sysid, totalSent, totalReceiveCounter[mavlinkChannel], totalLossCounter[mavlinkChannel], receiveLossPercent);
+                        // Update MAVLink status on every 32th packet
+                        if ((totalReceiveCounter[mavlinkChannel] & 0x1F) == 0) {
+                            emit mavlinkMessageStatus(_message.sysid, totalSent, totalReceiveCounter[mavlinkChannel], totalLossCounter[mavlinkChannel], receiveLossPercent);
+                        }
                     }
                 }
-
             }
-
 
             //-----------------------------------------------------------------
             // MAVLink forwarding

@@ -16,7 +16,7 @@
  *
  */
 
-#define VOLOCOMM_VERSION "v1.2"
+#define VOLOCOMM_VERSION "v1.3"
 
 #include <QFile>
 #include <QRegularExpression>
@@ -271,10 +271,10 @@ QGCApplication::QGCApplication(int &argc, char* argv[], bool unitTesting)
         // This gives daily builds their own separate settings space. Allowing you to use daily and stable builds
         // side by side without daily screwing up your stable settings.
         //applicationName = QStringLiteral("%1 Daily").arg(QGC_APPLICATION_NAME);
-        applicationName = QStringLiteral("VoloComm GCS");
+        applicationName = QStringLiteral("QGroundControl");
 #else
         //applicationName = QGC_APPLICATION_NAME;
-        applicationName = QStringLiteral("VoloComm GCS");
+        applicationName = QStringLiteral("QGroundControl");
 #endif
     }
     setApplicationName(applicationName);
