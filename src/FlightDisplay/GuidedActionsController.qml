@@ -335,11 +335,13 @@ Item {
     }
 
     function armVehicleRequest() {
-        confirmAction(actionArm)
+        //volocomm edit
+        //confirmAction(actionArm)
     }
 
     function forceArmVehicleRequest() {
-        confirmAction(actionForceArm)
+       //volocomm edit
+        // confirmAction(actionForceArm)
     }
 
     function disarmVehicleRequest() {
@@ -621,10 +623,10 @@ Item {
             }
             break
         case actionArm:
-            _activeVehicle.armed = true
+            //_activeVehicle.armed = true
             break
         case actionForceArm:
-            _activeVehicle.forceArm()
+            //_activeVehicle.forceArm()
             break
         case actionDisarm:
             _activeVehicle.armed = false

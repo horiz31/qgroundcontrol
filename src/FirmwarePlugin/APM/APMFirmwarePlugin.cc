@@ -898,6 +898,12 @@ double APMFirmwarePlugin::minimumTakeoffAltitude(Vehicle* vehicle)
 
 bool APMFirmwarePlugin::_guidedModeTakeoff(Vehicle* vehicle, double altitudeRel)
 {
+    //volocom edit, we don't want to allow guided mode takeoff
+    qgcApp()->showAppMessage(tr("Vehicle does not support guided takeoff, please use a mission plan."));
+    return false;
+
+    //code below will not execute...
+
     if (!vehicle->multiRotor() && !vehicle->vtol()) {
         qgcApp()->showAppMessage(tr("Vehicle does not support guided takeoff"));
         return false;
@@ -937,6 +943,8 @@ bool APMFirmwarePlugin::_guidedModeTakeoff(Vehicle* vehicle, double altitudeRel)
 
 void APMFirmwarePlugin::startMission(Vehicle* vehicle)
 {
+
+    //
     if (vehicle->flying()) {
         // Vehicle already in the air, we just need to switch to auto
         if (!_setFlightModeAndValidate(vehicle, "Auto")) {
@@ -944,6 +952,12 @@ void APMFirmwarePlugin::startMission(Vehicle* vehicle)
         }
         return;
     }
+
+    //volocom edit
+    qgcApp()->showAppMessage(tr("Unable to start mission: Please use the hand controller to takeoff."));
+    return;
+
+    //code below will not execute
 
     if (!vehicle->armed()) {
         // First switch to flight mode we can arm from
@@ -978,7 +992,8 @@ void APMFirmwarePlugin::startMission(Vehicle* vehicle)
             qgcApp()->showAppMessage(tr("Unable to start mission: Vehicle failed to change to Auto mode."));
             return;
         }
-    } else {
+    }
+    else {
         vehicle->sendMavCommand(vehicle->defaultComponentId(), MAV_CMD_MISSION_START, true /*show error */);
     }
 }

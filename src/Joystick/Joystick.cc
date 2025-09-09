@@ -1644,7 +1644,8 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _availableActionTitles.clear();
     //-- Available Actions
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNone));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArm));
+    //volocom edit, remove optino to arm from joystick
+    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArm));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionDisarm));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleArm));
     if (activeVehicle) {
