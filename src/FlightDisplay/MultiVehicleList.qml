@@ -149,7 +149,7 @@ Item {
 
                     QGCButton {
                         text:       qsTr("Arm")
-                        visible:    _vehicle && !_vehicle.armed
+                        visible:    false //_vehicle && !_vehicle.armed  //volocom edit
                         onClicked:  _vehicle.armed = true
                     }
 

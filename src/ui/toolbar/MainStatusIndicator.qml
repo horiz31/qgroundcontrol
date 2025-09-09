@@ -171,6 +171,8 @@ RowLayout {
                     QGCButton {
                         Layout.alignment:   Qt.AlignHCenter
                         text:               _armed ?  qsTr("Disarm") : (forceArm ? qsTr("Force Arm") : qsTr("Arm"))
+                        //volocom edit
+                        visible: false
 
                         property bool forceArm: false
 
