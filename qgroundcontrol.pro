@@ -61,11 +61,11 @@ WindowsBuild {
 # Branding
 #
 
-QGC_APP_NAME        = "QGroundControl"
-QGC_ORG_NAME        = "QGroundControl"
-QGC_ORG_DOMAIN      = "QGroundControl.com"
-QGC_APP_DESCRIPTION = "QGroundControl GCS"
-QGC_APP_COPYRIGHT   = "Copyright (C) 2025 QGroundControl All Rights Reserved."
+QGC_APP_NAME        = "VoloCom GCS"
+QGC_ORG_NAME        = "Hybrid Project"
+QGC_ORG_DOMAIN      = "hybridproject.com"
+QGC_APP_DESCRIPTION = "VoloCom GCS"
+QGC_APP_COPYRIGHT   = "Copyright (C) 2025 Hybrid Project All Rights Reserved."
 
 WindowsBuild {
     QGC_INSTALLER_SCRIPT        = "$$SOURCE_DIR\\deploy\\windows\\nullsoft_installer.nsi"
