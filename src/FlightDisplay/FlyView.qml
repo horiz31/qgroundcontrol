@@ -106,12 +106,12 @@ Item {
         missionController:  _missionController
         actionList:         _guidedActionList
         actionLandingList: _guidedActionLandingList
-        altitudeSlider:     _guidedAltSlider   
+        altitudeSlider:     _guidedAltSlider
         //adding widget layer to the guided actions controller can tell if checklist is open
         widgetLayer:        _widgetLayer
     }
 
-    /*GuidedActionConfirm {
+    GuidedActionConfirm {
         id:                         guidedActionConfirm
         anchors.margins:            _margins
         anchors.bottom:             parent.bottom
@@ -119,7 +119,7 @@ Item {
         z:                          QGroundControl.zOrderTopMost
         guidedController:           _guidedController
         altitudeSlider:             _guidedAltSlider
-    }*/
+    }
 
     GuidedActionList {
         id:                         guidedActionList
@@ -142,6 +142,7 @@ Item {
     //-- Altitude slider
     GuidedAltitudeSlider {
         id:                 guidedAltSlider
+        actionsController:  _root
         anchors.margins:    _toolsMargin
         anchors.right:      parent.right
         anchors.top:        parent.top
@@ -152,6 +153,8 @@ Item {
         color:              qgcPal.window
         visible:            false
     }
+
+
     FlyViewMap {
         id:                     mapControl
         planMasterController:   _planController

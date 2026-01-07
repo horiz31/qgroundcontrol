@@ -24,6 +24,8 @@ Rectangle {
     property real _dragStartX:                  _border
     property real _dragStopX:                   _root.width - (_diameter + _border)
 
+
+
     Keys.onPressed:  (event) => {
              if (event.key === Qt.Key_Space && !event.isAutoRepeat && event.modifiers === Qt.NoModifier && !sliderDragArea.drag.active)
              {

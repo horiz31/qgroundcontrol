@@ -256,11 +256,7 @@ Vehicle::Vehicle(LinkInterface*             link,
 
     connect(this, &Vehicle::remoteControlRSSIChanged,   this, &Vehicle::_remoteControlRSSIChanged);
 
-
     _commonInit();
-
-
-    sendNavLightAction(NavLight_On);
 
     _vehicleLinkManager->_addLink(link);
 
@@ -2464,12 +2460,13 @@ void Vehicle::_startJoystick(bool start)
     if (joystick) {
         if (start) {
             joystick->startPolling(this);
+            _setupAccumulatorJoystick();
         } else {
             joystick->stopPolling();
             joystick->wait(500);
         }
 
-        _setupAccumulatorJoystick();
+
     }
 }
 
@@ -2531,14 +2528,14 @@ void Vehicle::setArmed(bool armed, bool showError)
 {
     // We specifically use COMMAND_LONG:MAV_CMD_COMPONENT_ARM_DISARM since it is supported by more flight stacks.
 
-    //volocom edit, do not let gcs arm
-    /*
-
+    //volocom edit, do not let gcs arm until build with CONFIG+=MAVLinkArm
+#ifdef QGC_ENABLED_ARM
     sendMavCommand(_defaultComponentId,
                    MAV_CMD_COMPONENT_ARM_DISARM,
                    showError,
                    armed ? 1.0f : 0.0f);
-    */
+#endif
+
 
 }
 
@@ -2804,7 +2801,7 @@ void Vehicle::_parametersReady(bool parametersReady)
         disconnect(_parameterManager, &ParameterManager::parametersReadyChanged, this, &Vehicle::_parametersReady);
         _setupAutoDisarmSignalling();
         _setupGuidedModeRadius();
-        _getSystemSerialNumber();
+        _getSystemSerialNumber();        
         _initialConnectStateMachine->advance();
         sendNavLightAction(NavLight_On);
         _toolbox->joystickManager()->cameraManagement()->setSysModePilotCommand();
@@ -3000,10 +2997,10 @@ void Vehicle::_setupAccumulatorJoystick()
         return;
     }
 
-   if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+   Joystick* joystick = _joystickManager->activeJoystick();
+   if (joystick)
    {
-        bool accumulatorEnabled = _toolbox->joystickManager()->activeJoystick()->accumulatorEnabled();
-        qDebug() << "acculator is" << accumulatorEnabled;
+        bool accumulatorEnabled = _toolbox->joystickManager()->activeJoystick()->accumulatorEnabled();        
         if (!accumulatorEnabled)
         {
             if (_toolbox->joystickManager()->activeJoystick() != nullptr)
@@ -3018,7 +3015,7 @@ void Vehicle::_setupAccumulatorJoystick()
      QString currentMode = _firmwarePlugin->flightMode(_base_mode, _custom_mode);
      if ((currentMode == "FBW A" || currentMode == "FBW B"))
      {
-         if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+         if (joystick)
          {           
               _toolbox->joystickManager()->activeJoystick()->setThrottleMode(0);
               _toolbox->joystickManager()->activeJoystick()->setAccumulator(true);
@@ -3027,7 +3024,7 @@ void Vehicle::_setupAccumulatorJoystick()
      }
      else
      {
-         if (_toolbox->joystickManager()->activeJoystick() != nullptr)
+         if (joystick)
          {
              _toolbox->joystickManager()->activeJoystick()->setThrottleMode(1);  //this also sets accumulator false
              _toolbox->joystickManager()->activeJoystick()->setThrottleAccumulatorValue(0.0);
@@ -3392,8 +3389,8 @@ void Vehicle::abortLanding(double climbOutAltitude)
                 static_cast<float>(climbOutAltitude));
 }
 
-bool Vehicle::guidedMode() const
-{
+bool Vehicle::guidedMode()
+{    
     return _firmwarePlugin->isGuidedMode(this);
 }
 
@@ -3408,6 +3405,7 @@ void Vehicle::setGuidedModeRadius(float radius)
     QString guidedRadius("GUIDED_RADIUS");
     if (_parameterManager->parameterExists(FactSystem::defaultComponentId, guidedRadius))
     {
+        //qDebug() << "Changing GUIDED_RADIUS parameter to" << _guidedModeRadius;
         Fact* paramFact = _parameterManager->getParameter(FactSystem::defaultComponentId, guidedRadius);
         paramFact->setRawValue(_guidedModeRadius);
         emit guidedModeRadiusChanged();
@@ -3424,12 +3422,18 @@ void Vehicle::emergencyStop()
                 21196.0f);  // Magic number for emergency stop
 }
 
-void Vehicle::setCurrentMissionSequence(int seq)
+void Vehicle::setCurrentMissionSequence(int seq, bool announce)
 {
     SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
     if (!sharedLink) {
         qCDebug(VehicleLog) << "setCurrentMissionSequence: primary link gone!";
         return;
+    }
+
+    if (announce)
+    {
+        QString warningText = QString("Setting Waypoint to %1").arg(seq);
+        qgcApp()->toolbox()->audioOutput()->say(warningText);
     }
 
     mavlink_message_t       msg;
@@ -4376,7 +4380,7 @@ void Vehicle::_setupGuidedModeRadius()
     }
     else
     {
-         QString guidedRadius("WP_RADIUS");  //guided radius does not exist on this platform, so set it to wp_radius so the user knows what to expect. disable the control
+         QString guidedRadius("WP_LOITER_RAD");  //guided radius does not exist on this platform, so set it to wp_loiter_rad so the user knows what to expect. disable the control
          _supportsGuidedRadius = false;
          emit supportsGuidedRadiusChanged(_supportsGuidedRadius);
          Fact* fact = _parameterManager->getParameter(FactSystem::defaultComponentId,guidedRadius);

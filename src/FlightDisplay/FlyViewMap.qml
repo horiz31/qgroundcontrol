@@ -288,7 +288,7 @@ FlightMap {
     MapPolyline {
         id:         trajectoryPolyline
         line.width: 3
-        line.color: "red"
+        line.color: "white"
         z:          QGroundControl.zOrderTrajectoryLines
         visible:    !pipMode
 

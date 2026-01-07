@@ -43,7 +43,7 @@ Rectangle {
 
     onVisibleChanged: {
            if (visible) {
-               slider.focus = true
+               sliderSwitch.focus = true
            }
        }
 
@@ -112,23 +112,24 @@ Rectangle {
             Layout.alignment:       Qt.AlignHCenter
             spacing:                ScreenTools.defaultFontPixelWidth
 
-            SliderSwitch {
-                id:                     slider
-                //confirmText:            qsTr("Slide to confirm")
-                confirmText:        ScreenTools.isMobile ? qsTr("Slide to confirm") : qsTr("Slide or hold spacebar")
+            EnterSwitch {
+                id:                 sliderSwitch
+                altSlider:          altitudeSlider
+                confirmText:        ScreenTools.isMobile ? qsTr("Slide to confirm") : qsTr("Click Here or <Enter> to Confirm")
                 Layout.minimumWidth:    Math.max(implicitWidth, ScreenTools.defaultFontPixelWidth * 30)
 
                 onAccept: {
                     _root.visible = false
                     var altitudeChange = 0
                     var isClockwise = true
-                    var guidedRadius = _activeVehicle.guidedModeRadius
-                    if (altitudeSlider.visible) {
+                    var guidedRadius = _activeVehicle.guidedModeRadius                    
+                    //if (altitudeSlider.visible) {  //for some reason when the signal from altitudeslider, when I check for visibility, the numbers belong are old/wrong
+                    //so far, I don't see any harm it just reading them each time since for volocom we are really only using confirmation for altitude slider
                         altitudeChange = altitudeSlider.getAltitudeChangeValue()
                         isClockwise = altitudeSlider.isClockwise()
                         guidedRadius = altitudeSlider.guidedRadius()
                         altitudeSlider.visible = false
-                    }
+                    //}
                     hideTrigger = false
                     guidedController.executeAction(_root.action, _root.actionData, altitudeChange, _root.optionChecked, isClockwise, guidedRadius)
                     if (mapIndicator) {
@@ -144,7 +145,7 @@ Rectangle {
             }
 
             Rectangle {
-                height: slider.height * 0.75
+                height: sliderSwitch.height * 0.9
                 width:  height
                 radius: height / 2
                 color:  qgcPal.colorBlue

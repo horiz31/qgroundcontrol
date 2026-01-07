@@ -264,6 +264,12 @@ virtualkeyboard {
     DEFINES += QGC_USE_VIRTUAL_KEYBOARD
 }
 
+# Enable MAVLink Arm
+MAVLinkArm {
+    message("Warning: Building with MAVLink ARM enabled")
+    DEFINES += QGC_ENABLED_ARM
+}
+
 # Setup our supported build flavors
 
 CONFIG(debug, debug|release) {

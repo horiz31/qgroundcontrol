@@ -682,7 +682,7 @@ QString APMFirmwarePlugin::getHobbsMeter(Vehicle* vehicle)
 } 
 
 bool APMFirmwarePlugin::isGuidedMode(const Vehicle* vehicle) const
-{
+{    
     return vehicle->flightMode() == "Guided";
 }
 
@@ -730,6 +730,9 @@ QString APMFirmwarePlugin::_internalParameterMetaDataFile(Vehicle* vehicle)
     case MAV_TYPE_VTOL_RESERVED4:
     case MAV_TYPE_VTOL_RESERVED5:
     case MAV_TYPE_FIXED_WING:
+        if (vehicle->versionCompare(4, 2, 0) >= 0) {
+            return QStringLiteral(":/FirmwarePlugin/APM/APMParameterFactMetaData.Plane.4.2.xml");
+        }
         if (vehicle->versionCompare(4, 1, 0) >= 0) {
             return QStringLiteral(":/FirmwarePlugin/APM/APMParameterFactMetaData.Plane.4.1.xml");
         }

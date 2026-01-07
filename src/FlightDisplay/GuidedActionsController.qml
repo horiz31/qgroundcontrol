@@ -182,6 +182,7 @@ Item {
     property bool __orbitSupported:         _activeVehicle ? !_hideOrbit && _activeVehicle.orbitModeSupported : false
     property bool __flightMode:             _flightMode
 
+
     function doesMissionContainDoLandStart() {
         return _missionController.doesContainLanding
         /*
@@ -317,13 +318,15 @@ Item {
         _vehicleInRTLMode =     _activeVehicle ? _flightMode === _activeVehicle.rtlFlightMode || _flightMode === _activeVehicle.smartRTLFlightMode : false
         _vehicleInLandMode =    _activeVehicle ? _flightMode === _activeVehicle.landFlightMode : false
         _vehicleInMissionMode = _activeVehicle ? _flightMode === _activeVehicle.missionFlightMode : false // Must be last to get correct signalling for showStartMission popups
-        _vehicleFlyinginGuided = _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false
+        _vehicleFlyinginGuided = _activeVehicle ? (_activeVehicle.guidedMode && _activeVehicle.flying) : false        
     }
 
     Connections {
         target:                     missionController
         function onResumeMissionUploadFail() { confirmAction(actionResumeMissionUploadFail) }
     }
+
+
 
     Connections {
         target:                             mainWindow
@@ -368,10 +371,62 @@ Item {
         altitudeSlider.visible =    false
     }
 
+    function delay(ms, func) {
+       let timer = Qt.createQmlObject(
+           'import QtQuick 2.0; Timer { interval: ' + ms +
+           '; running: true; repeat: false }',
+           parent, "tempDelayTimer")
+
+       timer.triggered.connect(func)   // connect function here
+    }
+
     // Called when an action is about to be executed in order to confirm
     function confirmAction(actionCode, actionData, mapIndicator, mapRadiusIndicator) {
-        var showImmediate = true
+
         closeAll()
+        //For volocom, there are a subset of actions we don't care about confirming
+        //issues are caused by these associated with landing, not sure why yet
+
+        switch (actionCode)
+        {
+            case actionSetWaypoint:  //unless it is in guided, go ahead and change waypoint
+                if (!_vehicleFlyinginGuided && _activeVehicle.flying)
+                {
+                    delay(100, () => executeAction(actionCode, actionData, null, null, null))
+                    return
+                }
+                break
+            case actionStartMission:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionMVStartMission:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionContinueMission:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionLand:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionRTL:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionLandAbort:
+                delay(500, () => executeAction(actionCode, actionData, null, null, null))
+                return
+            case actionMissionLand:
+                delay(500, () => executeAction(actionCode, null, null, null, null))
+                return
+            case actionQRTLLand:
+                delay(500, () => executeAction(actionCode, null, null, null, null))
+                return
+            default:
+                break
+        }
+
+
+        var showImmediate = true
+
         confirmDialog.action = actionCode
         confirmDialog.actionData = actionData
         confirmDialog.hideTrigger = true
@@ -480,12 +535,12 @@ Item {
             mapRadiusIndicator.show()
             altitudeSlider.visible = true            
             break;
-        case actionSetWaypoint:
+        case actionSetWaypoint:                        
             confirmDialog.title = setWaypointTitle
             if (_vehicleFlyinginGuided)
                 confirmDialog.message = setAndGoWaypointMessage
             else
-                confirmDialog.message = setWaypointMessage
+                confirmDialog.message = setWaypointMessage                
             break;
         case actionOrbit:
             confirmDialog.title = orbitTitle
@@ -539,7 +594,7 @@ Item {
             break;
         case actionLandQLand:
             confirmDialog.title = "QLAND Mode"
-            confirmDialog.message = "Enable QLAND and land at current location?"
+            confirmDialog.message = "Switch to quadrotors and land at current position?"
             confirmDialog.hideTrigger = true
             break;
         case actionMissionLand:
@@ -571,6 +626,8 @@ Item {
         confirmDialog.show(showImmediate)
     }
 
+
+
     // Executes the specified action
     function executeAction(actionCode, actionData, actionAltitudeChange, optionChecked, isClockwise, guidedRadius) {
         var i;
@@ -585,7 +642,8 @@ Item {
         case actionMissionLand:
            if (_missionController.doesContainLanding)
            {
-                _activeVehicle.setCurrentMissionSequence(_missionController.startLandingSequenceNumber)
+               _activeVehicle.say("Starting Landing Sequence");
+                _activeVehicle.setCurrentMissionSequence(_missionController.startLandingSequenceNumber, false) //don't announce waypoint change
                 _activeVehicle.startMission()
            }
             /*
@@ -639,8 +697,9 @@ Item {
             _activeVehicle.guidedModeChangeAltitude(actionAltitudeChange, false /* pauseVehicle */)
             break
         case actionGoto:
+            _activeVehicle.say("Going to new guided point");
             _activeVehicle.guidedModeGotoLocationAndAltitude(actionData, actionAltitudeChange, isClockwise);            
-            _activeVehicle.setGuidedModeRadius(guidedRadius);
+            _activeVehicle.setGuidedModeRadius(guidedRadius);            
             break
         case actionSetWaypoint:
             _activeVehicle.setCurrentMissionSequence(actionData)          

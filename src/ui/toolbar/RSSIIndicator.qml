@@ -53,7 +53,7 @@ Item {
         if (!_activeVehicle)
             return "--"
 
-        console.log("rssiSource is " + _rssiSource)
+        //console.log("rssiSource is " + _rssiSource)
         switch (_rssiSource)
         {
 

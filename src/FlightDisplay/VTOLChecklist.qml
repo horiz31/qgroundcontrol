@@ -116,8 +116,8 @@ Item {
            //     allowTelemetryFailureOverride:    !QGroundControl.settingsManager.appSettings.enforceJoystickRequired.value
            //  }
 
-             PreFlightQHoverCheck {
-             }
+           //  PreFlightQHoverCheck {
+           //  }
 
         }
 

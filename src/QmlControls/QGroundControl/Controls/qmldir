@@ -100,6 +100,7 @@ SetupPage                               1.0 SetupPage.qml
 SignalStrength                          1.0 SignalStrength.qml
 SimpleItemMapVisuals                    1.0 SimpleItemMapVisuals.qml
 SliderSwitch                            1.0 SliderSwitch.qml
+EnterSwitch                            1.0 EnterSwitch.qml
 SubMenuButton                           1.0 SubMenuButton.qml
 SurveyMapVisuals                        1.0 SurveyMapVisuals.qml
 TerrainStatus                           1.0 TerrainStatus.qml

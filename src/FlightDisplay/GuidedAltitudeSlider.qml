@@ -19,6 +19,8 @@ import QGroundControl.Palette               1.0
 /// Altitude slider for guided change altitude command
 Rectangle {
     id:                 _root
+    signal executeAction()
+    property Item actionsController
 
     readonly property real _maxAlt: 121.92  // 400 feet
     readonly property real _minAlt: 3
@@ -176,7 +178,9 @@ Rectangle {
             anchors.right:  parent.right
             inputMethodHints: Qt.ImhDigitsOnly
             validator: IntValidator {bottom: 20; top: 10000;}
-            onEditingFinished: {               
+
+
+            onAccepted: {
                 if (_root.mapRadiusIndicator)
                 {
                     //need to convert this to meters
@@ -184,17 +188,35 @@ Rectangle {
                     if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
                         convertedRadius *= 0.3048  //covert from ft to meters for proper ui display
 
-                     console.log("sending " + convertedRadius + " radius");
+                     //console.log("sending " + convertedRadius + " radius");
                      _root.mapRadiusIndicator.setRadius(convertedRadius)
                 }
-                altSlider.forceActiveFocus()
+
+                // delay focus change and execution so the textfield finishes internal work
+                Qt.callLater(function() {
+                    _root.executeAction()
+                })
+
+
             }
-            onAccepted: {                
-            }
+             onTextChanged: {
+                var value = Number(guidedRadiusField.text)
+                if (!isNaN(value) && value >= 20 && value <= 10000) {
+                     if (_root.mapRadiusIndicator)
+                     {
+                         //need to convert this to meters
+                         var convertedRadius = Number(guidedRadiusField.text)
+                         if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
+                             convertedRadius *= 0.3048  //covert from ft to meters for proper ui display
+                          _root.mapRadiusIndicator.setRadius(convertedRadius)
+                     }
+                }
+             }
+
             function radiusConverted()
             {
                 if (QGroundControl.unitsConversion.appSettingsHorizontalDistanceUnitsString === "ft")
-                {                    
+                {
                     return (_activeVehicle.guidedModeRadius * 3.28084).toString()
                 }
                 else

@@ -1644,10 +1644,13 @@ void Joystick::_buildActionList(Vehicle* activeVehicle)
     _availableActionTitles.clear();
     //-- Available Actions
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionNone));
-    //volocom edit, remove optino to arm from joystick
-    //_assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArm));
-    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionDisarm));
+    //volocom edit, remove option to arm from joystick unless the build includes CONFIG+=MAVLinkArm
+#ifdef QGC_ENABLED_ARM
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionArm));
     _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionToggleArm));
+#endif
+    _assignableButtonActions.append(new AssignableButtonAction(this, _buttonActionDisarm));
+
     if (activeVehicle) {
         QStringList list = activeVehicle->flightModes();
         foreach(auto mode, list) {

@@ -458,7 +458,7 @@ public:
     Q_INVOKABLE void startMission();
 
     /// Alter the current mission item on the vehicle
-    Q_INVOKABLE void setCurrentMissionSequence(int seq);
+    Q_INVOKABLE void setCurrentMissionSequence(int seq, bool announce = true);
 
     /// Reboot vehicle
     Q_INVOKABLE void rebootVehicle();
@@ -627,7 +627,7 @@ public:
     bool supportsMotorInterference      () const;
     bool supportsTerrainFrame           () const;
 
-    void setGuidedMode(bool guidedMode);
+    void setGuidedMode(bool Mode);
 
     QString prearmError() const { return _prearmError; }
     void setPrearmError(const QString& prearmError);
@@ -679,7 +679,7 @@ public:
     int rc12() const { return _rc12; }
     bool navLightOn() const;
     bool            landing                     () const { return _landing; }
-    bool            guidedMode                  () const;
+    bool            guidedMode                  ();
     bool            vtolInFwdFlight             () const { return _vtolInFwdFlight; }
     uint8_t         baseMode                    () const { return _base_mode; }
     uint32_t        customMode                  () const { return _custom_mode; }
@@ -1007,7 +1007,7 @@ signals:
     void flyingChanged                  (bool flying);
     void rc12Changed(int rc12);
     void landingChanged(bool landing);
-    void guidedModeChanged              (bool guidedMode);
+    void guidedModeChanged              (bool mode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
     void prearmErrorChanged             (const QString& prearmError);
     void soloFirmwareChanged            (bool soloFirmware);

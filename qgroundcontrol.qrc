@@ -319,6 +319,7 @@
         <file alias="QGroundControl/FlightDisplay/PreFlightRangefinderCheck.qml">src/FlightDisplay/PreFlightRangefinderCheck.qml</file>
         <file alias="QGroundControl/FlightDisplay/GuidedActionChangeAirSpeed.qml">src/FlightDisplay/GuidedActionChangeAirSpeed.qml</file>
         <file alias="QGroundControl/FlightDisplay/ChangeAirSpeedMenu.qml">src/FlightDisplay/ChangeAirSpeedMenu.qml</file>
+        <file alias="QGroundControl/Controls/EnterSwitch.qml">src/QmlControls/EnterSwitch.qml</file>
     </qresource>
     <qresource prefix="/FirstRunPromptDialogs">
         <file alias="UnitsFirstRunPrompt.qml">src/FirstRunPromptDialogs/UnitsFirstRunPrompt.qml</file>
