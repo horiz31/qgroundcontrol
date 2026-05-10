@@ -3,6 +3,7 @@
 
 #include <QAbstractListModel>
 #include <QGeoCoordinate>
+#include <mutex>
 class QGCApplication;
 
 enum GridlinePrecisionLevel

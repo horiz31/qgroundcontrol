@@ -11,6 +11,7 @@
 
 QMAKE_POST_LINK += echo "Post Link Common"
 
+
 #
 # Perform platform specific setup
 #
@@ -103,6 +104,7 @@ LinuxBuild {
         libQt5Sql.so.5 \
         libQt5Svg.so.5 \
         libQt5Test.so.5 \
+        libQt5VirtualKeyboard.so.5 \
         libQt5Widgets.so.5 \
         libQt5X11Extras.so.5 \
         libQt5XcbQpa.so.5 \

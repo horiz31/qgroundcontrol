@@ -134,7 +134,23 @@ WindowsBuild {
 
 #
 # [REQUIRED] protobuf library
-# TDB libs for linux/mac
+# For now, using the same include files for Windows and Linux
+LinuxBuild {
+    INCLUDEPATH += $$SOURCE_DIR/libs/protobuf/windows/include
+    LIBS += -lprotobuf
+    SOURCES += \
+        $$SOURCE_DIR/libs/protobuf/windows/include/cotevent.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/contact.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/detail.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/group.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/precisionlocation.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/status.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/takcontrol.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/takmessage.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/takv.pb.cc \
+        $$SOURCE_DIR/libs/protobuf/windows/include/track.pb.cc
+
+}
 WindowsBuild {
     INCLUDEPATH += $$SOURCE_DIR/libs/protobuf/windows/include
     LIBS += -L$$SOURCE_DIR/libs/protobuf/windows/lib

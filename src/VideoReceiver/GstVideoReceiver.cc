@@ -2,7 +2,7 @@
 #include <QDir>
 #include <QNetworkInterface>
 #include <QUrl>
-
+#include <QDateTime>
 #include <gst/gst.h>
 namespace
 {

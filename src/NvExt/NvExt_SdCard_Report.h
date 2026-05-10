@@ -16,27 +16,31 @@ typedef struct __mavlink_nvext_sd_card_report_t {
 #define MAVLINK_MSG_NVEXT_SD_CARD_REPORT_CRC 8
 
 #if MAVLINK_COMMAND_24BIT
+#ifndef MAVLINK_MSG_NVEXT_SD_CARD_REPORT
 #define MAVLINK_MSG_NVEXT_SD_CARD_REPORT { \
-    248, \
+248, \
     "V2_EXTENSION", \
     5, \
-    {  { "target_network", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_v2_extension_t, target_network) }, \
-         { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 3, offsetof(mavlink_v2_extension_t, target_system) }, \
-         { "target_component", NULL, MAVLINK_TYPE_UINT8_T, 0, 4, offsetof(mavlink_v2_extension_t, target_component) }, \
-         { "message_type", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_v2_extension_t, message_type) }, \
-         { "payload", NULL, MAVLINK_TYPE_UINT8_T, 249, 5, offsetof(mavlink_v2_extension_t, payload) }, \
-         } \
+{  { "target_network", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(mavlink_v2_extension_t, target_network) }, \
+        { "target_system", NULL, MAVLINK_TYPE_UINT8_T, 0, 3, offsetof(mavlink_v2_extension_t, target_system) }, \
+        { "target_component", NULL, MAVLINK_TYPE_UINT8_T, 0, 4, offsetof(mavlink_v2_extension_t, target_component) }, \
+        { "message_type", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(mavlink_v2_extension_t, message_type) }, \
+        { "payload", NULL, MAVLINK_TYPE_UINT8_T, 249, 5, offsetof(mavlink_v2_extension_t, payload) }, \
+} \
 }
+#endif
 #else
+#ifndef MAVLINK_MESSAGE_INFO_NVEXT_SD_CARD_REPORT
 #define MAVLINK_MESSAGE_INFO_NVEXT_SD_CARD_REPORT { \
-    "NVEXT_SD_CARD_REPORT", \
+"NVEXT_SD_CARD_REPORT", \
     5, \
-    {  { "report_type", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(__mavlink_nvext_sd_card_report_t, report_type) }, \
-         { "sd_card_detected", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(__mavlink_nvext_sd_card_report_t, sd_card_detected) }, \
-         { "sd_total_capacity", NULL, MAVLINK_TYPE_FLOAT, 0, 3, offsetof(__mavlink_nvext_sd_card_report_t, sd_total_capacity) }, \
-         { "sd_available_capacity", NULL, MAVLINK_TYPE_FLOAT, 0, 7, offsetof(__mavlink_nvext_sd_card_report_t, sd_available_capacity) }, \
-         } \
+{  { "report_type", NULL, MAVLINK_TYPE_UINT16_T, 0, 0, offsetof(__mavlink_nvext_sd_card_report_t, report_type) }, \
+        { "sd_card_detected", NULL, MAVLINK_TYPE_UINT8_T, 0, 2, offsetof(__mavlink_nvext_sd_card_report_t, sd_card_detected) }, \
+        { "sd_total_capacity", NULL, MAVLINK_TYPE_FLOAT, 0, 3, offsetof(__mavlink_nvext_sd_card_report_t, sd_total_capacity) }, \
+        { "sd_available_capacity", NULL, MAVLINK_TYPE_FLOAT, 0, 7, offsetof(__mavlink_nvext_sd_card_report_t, sd_available_capacity) }, \
+} \
 }
+#endif
 #endif
 
 

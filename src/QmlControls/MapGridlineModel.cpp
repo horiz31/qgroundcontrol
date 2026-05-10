@@ -9,6 +9,7 @@
 #include "Utility.hpp"
 #include <complex>
 #include <limits>
+#include <cfloat>
 
 namespace
 {

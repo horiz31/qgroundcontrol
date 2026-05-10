@@ -850,8 +850,6 @@ AndroidBuild {
 }
 
 SOURCES += \
-    src/Annotations/Annotation.cc \
-    src/Annotations/AnnotationManager.cc \
     src/ATAK/ATAKMarker.cc \
     src/ATAK/ATAKMarkerManager.cc \
     src/ADSB/ADSBVehicle.cc \
@@ -1570,13 +1568,11 @@ DISTFILES += \
 
 #
 # Steps for "install" target on Linux
-#
+
 LinuxBuild {
     target.path = $${PREFIX}/bin/
-
     share_qgroundcontrol.path = $${PREFIX}/share/qgroundcontrol/
     share_qgroundcontrol.files = $${IN_PWD}/resources/
-
     share_icons.path = $${PREFIX}/share/icons/hicolor/128x128/apps/
     share_icons.files = $${IN_PWD}/resources/icons/qgroundcontrol.png
     share_metainfo.path = $${PREFIX}/share/metainfo/
