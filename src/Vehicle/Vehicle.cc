@@ -3173,7 +3173,7 @@ bool Vehicle::hasNavLight()  const
 }
 
 void Vehicle::startMission()
-{
+{    
     _firmwarePlugin->startMission(this);
 }
 

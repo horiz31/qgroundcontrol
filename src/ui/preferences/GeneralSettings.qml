@@ -1355,7 +1355,7 @@ Rectangle {
 
                     Item { width: 1; height: _margins }
                     QGCLabel {
-                        text:               qsTr("VoloCom Version")
+                        text:               qsTr("GCS Version")
                         Layout.alignment:   Qt.AlignHCenter
                     }
                     QGCLabel {

@@ -88,6 +88,25 @@ bool VTOLLandingComplexItem::load(const QJsonObject& complexObject, int sequence
     return _load(complexObject, sequenceNumber, jsonComplexItemTypeValue, false /* useDeprecatedRelAltKeys */, errorString);
 }
 
+// new code, set alt hard coded to 0, this was at Shane's request. I'm not sure what symptom is solved here. awaiting feedback
+MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, double lat, double lon, double alt, QObject* parent)
+{
+    //qDebug() << "vtol altitude for landing is" << alt;
+    return new MissionItem(seqNum,
+                           MAV_CMD_NAV_VTOL_LAND,
+                           altRel ? MAV_FRAME_GLOBAL_RELATIVE_ALT : MAV_FRAME_GLOBAL,
+                           0.0, 0.0, 0.0,
+                           qQNaN(),         // Yaw - not specified
+                           lat, lon, 0.0,  // at Shane's request, hard coding alt to 0.0
+                           true,            // autoContinue
+                           false,           // isCurrentItem
+                           parent);
+
+}
+
+
+// old code
+/*
 MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, double lat, double lon, double alt, QObject* parent)
 {
     qDebug() << "writing vtol land mission item";
@@ -102,6 +121,7 @@ MissionItem* VTOLLandingComplexItem::_createLandItem(int seqNum, bool altRel, do
                            parent);
 
 }
+*/
 
 void VTOLLandingComplexItem::_calcGlideSlope(void)
 {

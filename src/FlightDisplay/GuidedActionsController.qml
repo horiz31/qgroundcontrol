@@ -258,10 +258,11 @@ Item {
         }
         _outputState()
         if (showContinueMission) {
-            if (_activeVehicle.flightMode !== _activeVehicle.gotoFlightMode)
+            //if (_activeVehicle.flightMode !== _activeVehicle.gotoFlightMode && _activeVehicle.flightMode !== "FBW A")
+            if (_activeVehicle.flightMode === "Auto")
             {
-                //prompting to continue the mission when the vehicle is in guided mode introduces a bug into the goto icon display
-                //I feel this is an ok workaround because the user can simply use the action button to restart the mission
+                //I haven't unwound this logic, but the above check is required, otherwise the gcs will auto do a actionContinueMission when in auto and the mode is changed to any other mode
+                console.log( "mission controller is continuing the mission")
                 confirmAction(actionContinueMission)
             }
         }
@@ -672,6 +673,8 @@ Item {
         case actionStartMission:
             _activeVehicle.setCurrentMissionSequence(1)
         case actionContinueMission:
+
+            _activeVehicle.say("Changing Altitude")
             _activeVehicle.startMission()
             break
         case actionMVStartMission:
