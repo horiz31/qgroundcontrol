@@ -19,8 +19,25 @@ import QtGraphicalEffects 1.0
 Item {
     id:         _root
     visible:    QGroundControl.videoManager.hasVideo
+    focus:      true
     property var _lastZoomDirection: ""
     property Item pipState: videoPipState
+
+    // --- Arrow-key gimbal pan properties -------------------------------------------
+    // Magnitude of each pan nudge, in normalized stick units (-1.0 .. 1.0).
+    // sendGimbalCommand() takes (roll_yaw, pitch) already normalized.
+    property real _panStep: 0.3
+    // Flip these if a key pans the wrong way on your gimbal.
+    property int  _panYawSign:   1
+    property int  _panPitchSign: 1
+
+    // track which arrows are currently held (for diagonals + clean stop)
+    property bool _keyLeft:  false
+    property bool _keyRight: false
+    property bool _keyUp:    false
+    property bool _keyDown:  false
+    property bool _keyCtrl:  false
+
     QGCPipState {
         id:         videoPipState
         pipOverlay: _pipOverlay
@@ -49,6 +66,53 @@ Item {
         running:      false
         repeat:       false
         onTriggered:  QGroundControl.videoManager.startDecoding()
+    }
+
+
+    function _sendPan() {
+        if (!_keyLeft && !_keyRight && !_keyUp && !_keyDown) {
+            // nothing held -> stop the gimbal
+            joystickManager.cameraManagement.sendGimbalCommand(0, 0)
+            return
+        }
+        var step  = _keyCtrl ? _panStep * 3.0 : _panStep
+        var yaw   = 0.0
+        var pitch = 0.0
+        if (_keyLeft)  yaw   -= step
+        if (_keyRight) yaw   += step
+        if (_keyUp)    pitch += step
+        if (_keyDown)  pitch -= step
+        console.log("sending pan command, yaw: " + yaw * _panYawSign + " pitch: " + pitch * _panPitchSign)
+        joystickManager.cameraManagement.sendGimbalCommand(yaw * _panYawSign,
+                                                           pitch * _panPitchSign)
+    }
+
+    Keys.onPressed: {
+        switch (event.key) {
+            case Qt.Key_Left:    _keyLeft  = true; break
+            case Qt.Key_Right:   _keyRight = true; break
+            case Qt.Key_Up:      _keyUp    = true; break
+            case Qt.Key_Down:    _keyDown  = true; break
+            case Qt.Key_Control: _keyCtrl  = true; break
+            default: return            // let other keys propagate
+        }
+        event.accepted = true
+        _sendPan()                     // also re-fires on auto-repeat -> keeps panning
+    }
+
+    Keys.onReleased: {
+        if (event.isAutoRepeat)        // ignore the fake release from key auto-repeat
+            return
+        switch (event.key) {
+            case Qt.Key_Left:    _keyLeft  = false; break
+            case Qt.Key_Right:   _keyRight = false; break
+            case Qt.Key_Up:      _keyUp    = false; break
+            case Qt.Key_Down:    _keyDown  = false; break
+            case Qt.Key_Control: _keyCtrl  = false; break
+            default: return
+        }
+        event.accepted = true
+        _sendPan()                     // recompute with updated speed/direction
     }
 
     //-- Video Streaming
@@ -86,6 +150,7 @@ Item {
         repeat:       false
         onTriggered:  stopZoom()
     }
+
 
     MouseArea {
         id: flyViewVideoMouseArea

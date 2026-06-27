@@ -131,8 +131,7 @@ const char* Vehicle::_hygrometerFactGroupName =         "hygrometer";
 
 namespace
 {
-constexpr static inline auto const NAV_LIGHTS_RC12_ON = 1500;
-constexpr static inline auto const NAV_LIGHTS_RC12_OFF = 1000;
+constexpr static inline auto const NAV_LIGHTS_RC8_THRESHOLD = 1950;
 }
 
 // Standard connected vehicle
@@ -149,8 +148,7 @@ Vehicle::Vehicle(LinkInterface*             link,
     , _firmwareType                 (firmwareType)
     , _vehicleType                  (vehicleType)
     , _toolbox                      (qgcApp()->toolbox())
-    , _settingsManager              (_toolbox->settingsManager())
-    , _rc12                         (NAV_LIGHTS_RC12_OFF)
+    , _settingsManager              (_toolbox->settingsManager())    
     , _defaultCruiseSpeed           (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed            (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _firmwarePluginManager        (firmwarePluginManager)
@@ -408,8 +406,7 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
     , _firmwareType                     (firmwareType)
     , _vehicleType                      (vehicleType)
     , _toolbox                          (qgcApp()->toolbox())
-    , _settingsManager                  (_toolbox->settingsManager())
-    , _rc12                             (NAV_LIGHTS_RC12_OFF)
+    , _settingsManager                  (_toolbox->settingsManager())    
     , _defaultCruiseSpeed               (_settingsManager->appSettings()->offlineEditingCruiseSpeed()->rawValue().toDouble())
     , _defaultHoverSpeed                (_settingsManager->appSettings()->offlineEditingHoverSpeed()->rawValue().toDouble())
     , _mavlinkProtocolRequestComplete   (true)
@@ -480,9 +477,17 @@ Vehicle::Vehicle(MAV_AUTOPILOT              firmwareType,
 }
 
 
-bool            Vehicle::navLightOn                  () const
+bool Vehicle::navLightOn() const
 {
-    return hasNavLight() && _rc12 == NAV_LIGHTS_RC12_ON;
+    return hasNavLight() && _navLightOn;
+}
+
+void Vehicle::_setNavLightState(bool on)
+{
+    if (_navLightOn != on) {
+        _navLightOn = on;
+        emit lightStatusChanged();
+    }
 }
 
 void Vehicle::trackFirmwareVehicleTypeChanges(void)
@@ -2139,6 +2144,15 @@ void Vehicle::_handleRCChannels(mavlink_message_t& message)
         }
     }
 
+    if (channels.chancount > 7 && pwmValues[7] != -1 && pwmValues[7] != _rcChannel8) {
+        bool wasOn = _rcChannel8 != -1 && _rcChannel8 >= NAV_LIGHTS_RC8_THRESHOLD;
+        _rcChannel8 = pwmValues[7];
+        bool isOn  = _rcChannel8 >= NAV_LIGHTS_RC8_THRESHOLD;
+        if (wasOn != isOn) {
+            _setNavLightState(isOn);
+        }
+    }
+
     emit remoteControlRSSIChanged(channels.rssi);
     emit rcChannelsChanged(channels.chancount, pwmValues);
 }
@@ -3105,32 +3119,6 @@ void Vehicle::guidedModeRTL(bool smartRTL)
         return;
     }
     _firmwarePlugin->guidedModeRTL(this, smartRTL);
-}
-
-void Vehicle::setRC12(int const val){
-    constexpr uint16_t const uintMaxMin1=std::numeric_limits<uint16_t>::max()-1;
-    uint16_t newVal = (uint16_t)std::clamp<int>(val,0,(int)uintMaxMin1);
-    SharedLinkInterfacePtr sharedLink = vehicleLinkManager()->primaryLink().lock();
-    if (!sharedLink) {
-        qCDebug(VehicleLog) << "setRC12: primary link gone!";
-        return;
-    }
-    {
-        qCDebug(VehicleLog) << "setRC12: new RC7 value is "<<newVal;
-        _rc12 = (int)newVal;
-        emit rc12Changed(_rc12);
-        mavlink_message_t msg;
-        mavlink_msg_command_long_pack_chan(_mavlink->getSystemId(),
-                                           _mavlink->getComponentId(),
-                                           sharedLink->mavlinkChannel(),
-                                           &msg,
-                                           id(),
-                                           defaultComponentId(),            // target component
-                                           MAV_CMD_DO_SET_SERVO,    // command id
-                                           0,                                // 0=first transmission of command
-                                           12, (float)val, 0, 0, 0, 0, 0);
-        sendMessageOnLinkThreadSafe(sharedLink.get(), msg);
-    }
 }
 
 void Vehicle::guidedModeLand()
@@ -5371,24 +5359,58 @@ void Vehicle::_setAutopilotLights(bool enabled)
 
 void Vehicle::sendNavLightAction(NAVLIGHT_OPTIONS navLightOption)
 {
+    // Light state is controlled by two independent sources using a "last event wins" model:
+    //
+    // 1. GCS command (this function): sets ACC_LED_STATE parameter to 0 or 1 via MAVLink,
+    //    then calls _setNavLightState() to update the UI immediately.
+    //
+    // 2. RC channel 8 transitions (monitored in _handleRCChannels): if the RC transmitter
+    //    moves channel 8 across the 1500us threshold, _setNavLightState() is called to
+    //    reflect the external user's intent — 1000us = off, 2000us = on.
+    //
+    // Whichever source fires last wins. A GCS "on" command followed by an RC "off" transition
+    // will show lights off. An RC "on" transition followed by a GCS "off" command will show
+    // lights off. _navLightOn tracks the current state and lightStatusChanged notifies QML.
     switch(navLightOption)
     {
     case NavLight_Off:
     {
         qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_Off";
-        setRC12(NAV_LIGHTS_RC12_OFF);
+
+        QString const parameterName = "ACC_LED_STATE";
+        if (_parameterManager->parameterExists(defaultComponentId(), parameterName))
+        {
+            _parameterManager->getParameter(defaultComponentId(), parameterName)->setRawValue(0);
+            qCDebug(VehicleLog) << "ACC_LED_STATE: parameter set to 0";
+            _setNavLightState(false);
+        }
+        else
+        {
+            qCCritical(VehicleLog) << "ACC_LED_STATE parameter does not exist";
+        }
+
         _setAutopilotLights(false);
         break;
     }
     case NavLight_On:
     {
-        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_On";
-        setRC12(NAV_LIGHTS_RC12_ON);
+        qCDebug(VehicleLog) << "sendNavLightAction: sending NavLight_On";        
+        QString const parameterName = "ACC_LED_STATE";
+        if (_parameterManager->parameterExists(defaultComponentId(), parameterName))
+        {
+            _parameterManager->getParameter(defaultComponentId(), parameterName)->setRawValue(1);
+            qCDebug(VehicleLog) << "ACC_LED_STATE: parameter set to 1";
+            _setNavLightState(true);
+        }
+        else
+        {
+            qCCritical(VehicleLog) << "ACC_LED_STATE parameter does not exist";
+        }
+
         _setAutopilotLights(true);
         break;
     }
-    default:
-        qCDebug(VehicleLog) << "sendNavLightAction: doing nothing";
+    default:      
         break;
     }
 }

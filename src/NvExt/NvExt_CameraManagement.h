@@ -194,7 +194,7 @@ public:
     }MavlinkExtCmd;
 
     explicit CameraManagement(QObject *parent = nullptr,MultiVehicleManager *multiVehicleManager = nullptr, JoystickManager *joystickManager = nullptr);
-    void sendGimbalCommand(float cam_roll_yaw,float cam_pitch);
+
     void sendGimbalVirtualCommand(float cam_roll_yaw,float cam_pitch);
 
     JoyBtnState _camButtonFuncState[32];
@@ -207,6 +207,7 @@ public:
 
     void _landingChanged(bool isLanding);
 
+    Q_INVOKABLE void sendGimbalCommand(float cam_roll_yaw,float cam_pitch);
     Q_INVOKABLE void pointToCoordinate(float lat,float lon);
     Q_INVOKABLE void pointToCoordinateAndHold(float lat,float lon);
     Q_INVOKABLE void trackOnPosition(float posX,float posY, int chan);

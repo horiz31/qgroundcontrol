@@ -299,14 +299,11 @@ public:
     Q_PROPERTY(int                  RadioRSSIMax                 READ RadioRSSIMax                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(int                  RadioRSSIMin                 READ RadioRSSIMin                                                    NOTIFY RSSIChanged)
     Q_PROPERTY(bool hasNavLight READ hasNavLight CONSTANT)
-    Q_PROPERTY(bool navLightOn READ navLightOn NOTIFY rc12Changed)
+    Q_PROPERTY(bool navLightOn READ navLightOn NOTIFY lightStatusChanged)
 
     // The following properties relate to Orbit status
     Q_PROPERTY(bool             orbitActive     READ orbitActive        NOTIFY orbitActiveChanged)
     Q_PROPERTY(QGCMapCircle* orbitMapCircle READ orbitMapCircle CONSTANT)
-
-    //RC States
-    Q_PROPERTY(int rc12 READ rc12 WRITE setRC12 NOTIFY rc12Changed)
 
     // Vehicle state used for guided control
     Q_PROPERTY(bool     flying                  READ flying                                         NOTIFY flyingChanged)       ///< Vehicle is flying
@@ -553,7 +550,7 @@ public:
     void setMinIlluminatorAltitude(float minAltitude);
     float minIlluminatorPitch() const;
     void setMinIlluminatorPitch(float minPitch);
-    void setRC12(int val);
+
 
     bool joystickCamEnabled();                      /* NextVision */
     void setJoystickCamEnabled(bool enabled);           /* NextVision */
@@ -1005,7 +1002,7 @@ signals:
     void guidedModeRadiusChanged        ();
     void setCurrentMissionSequenceChanged ();
     void flyingChanged                  (bool flying);
-    void rc12Changed(int rc12);
+    void lightStatusChanged             ();
     void landingChanged(bool landing);
     void guidedModeChanged              (bool mode);
     void vtolInFwdFlightChanged         (bool vtolInFwdFlight);
@@ -1245,6 +1242,7 @@ private:
     void _lowBatteryWarningTick         ();
     void _lowFuelWarningTick              ();
     void _setAutopilotLights(bool enabled);
+    void _setNavLightState(bool on);
 
     QWebSocket _persistentWebSocket;
 
@@ -1302,6 +1300,8 @@ private:
     double          _rcRSSIstore = 255;
     bool            _flying = false;
     int _rc12;
+    int  _rcChannel8  = -1;
+    bool _navLightOn  = false;
     bool            _landing = false;
     bool            _vtolInFwdFlight = false;
     bool            _lowAltitudeWarningEnable = false;
