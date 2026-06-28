@@ -77,7 +77,7 @@ Button {
                 width:                      contentLayoutItem.width  * imageScale
                 smooth:                     true
                 mipmap:                     true
-                color:                      _currentContentColor
+                color:                      (toolStripAction.iconColor !== undefined) ? toolStripAction.iconColor : _currentContentColor
                 fillMode:                   Image.PreserveAspectFit
                 antialiasing:               true
                 sourceSize.height:          height

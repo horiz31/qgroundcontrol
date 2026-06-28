@@ -2145,9 +2145,9 @@ void Vehicle::_handleRCChannels(mavlink_message_t& message)
     }
 
     if (channels.chancount > 7 && pwmValues[7] != -1 && pwmValues[7] != _rcChannel8) {
-        bool wasOn = _rcChannel8 != -1 && _rcChannel8 >= NAV_LIGHTS_RC8_THRESHOLD;
+        bool wasOn = _rcChannel8 != -1 && _rcChannel8 < NAV_LIGHTS_RC8_THRESHOLD;
         _rcChannel8 = pwmValues[7];
-        bool isOn  = _rcChannel8 >= NAV_LIGHTS_RC8_THRESHOLD;
+        bool isOn  = _rcChannel8 < NAV_LIGHTS_RC8_THRESHOLD;
         if (wasOn != isOn) {
             _setNavLightState(isOn);
         }
